@@ -13,7 +13,7 @@ import { z } from 'zod'
 // Building blocks
 // ---------------------------------------------------------------------------
 
-const PortSchema = z.coerce.number().int().min(1).max(65535)
+const PortSchema = z.coerce.number().int().min(1).max(65_535)
 
 const UrlSchema = z.string().url()
 

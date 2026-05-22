@@ -7,26 +7,27 @@
 import { defineCommand } from 'citty'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'pathe'
+
 import { loadEnv } from '../../utils/config-loader'
 import { flattenToEnv, formatEnvFile } from '../../utils/flatten'
 import { emit, fail } from '../../utils/output'
 import { repoPath } from '../../utils/paths'
 
 export const envRender = defineCommand({
-  meta: {
-    name: 'render',
-    description: 'Render config/<env>.yaml to a flat .env file for docker-compose.',
-  },
   args: {
-    env: { type: 'positional', description: 'env name (e.g. dev, staging, prod)', required: true },
-    out: { type: 'string', description: 'Output path', default: 'docker/.env.rendered' },
-    tenant: { type: 'string', description: 'Tenant slug (loads config/tenants/<slug>.yaml)' },
     'allow-missing-secrets': {
-      type: 'boolean',
+      default: false,
       description:
         'Render anyway even if SecretRefs are unresolved (NOT for production). Useful for dry-runs.',
-      default: false,
+      type: 'boolean',
     },
+    env: { description: 'env name (e.g. dev, staging, prod)', required: true, type: 'positional' },
+    out: { default: 'docker/.env.rendered', description: 'Output path', type: 'string' },
+    tenant: { description: 'Tenant slug (loads config/tenants/<slug>.yaml)', type: 'string' },
+  },
+  meta: {
+    description: 'Render config/<env>.yaml to a flat .env file for docker-compose.',
+    name: 'render',
   },
   async run({ args }) {
     const envName = String(args.env)
@@ -36,8 +37,8 @@ export const envRender = defineCommand({
     let loaded
     try {
       loaded = await loadEnv(envName, tenant ? { tenant } : {})
-    } catch (e) {
-      fail((e as Error).message)
+    } catch (error) {
+      fail((error as Error).message)
     }
 
     if (loaded.missingEnvVars.length > 0) {
@@ -60,14 +61,14 @@ export const envRender = defineCommand({
     writeFileSync(outPath, text)
 
     emit({
-      status: 'ok',
-      message: `Rendered ${envName} -> ${outPath}`,
       data: {
-        path: outPath,
         keys: Object.keys(pairs).length,
-        unresolvedSecrets: loaded.unresolvedSecrets,
+        path: outPath,
         source: loaded.source,
+        unresolvedSecrets: loaded.unresolvedSecrets,
       },
+      message: `Rendered ${envName} -> ${outPath}`,
+      status: 'ok',
     })
   },
 })

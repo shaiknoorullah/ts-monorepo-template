@@ -1,9 +1,14 @@
-import { defineProject } from 'vitest/config'
+// @ts-expect-error — config alias resolver is a plain .mjs helper
+import { workspaceAliases } from '../../config/vitest-workspace-aliases.mjs'
+import { defineConfig } from 'vitest/config'
 
-export default defineProject({
+export default defineConfig({
+  resolve: {
+    alias: workspaceAliases(),
+  },
   test: {
-    name: '@app/api-gateway',
-    include: ['src/**/*.test.ts'],
     environment: 'node',
+    include: ['src/**/*.test.ts'],
+    name: '@app/api-gateway',
   },
 })

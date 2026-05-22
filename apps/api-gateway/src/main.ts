@@ -6,7 +6,7 @@ import { loadAppConfig } from './config.js'
 
 async function bootstrap(): Promise<void> {
   const config = loadAppConfig()
-  const logger = createLogger({ service: config.SERVICE_NAME, level: config.LOG_LEVEL })
+  const logger = createLogger({ level: config.LOG_LEVEL, service: config.SERVICE_NAME })
 
   const app = await buildApp({ config, logger })
 
@@ -16,8 +16,8 @@ async function bootstrap(): Promise<void> {
       await app.close()
       logger.info('shutdown complete')
       process.exit(0)
-    } catch (e) {
-      logger.error({ err: toError(e) }, 'shutdown failed')
+    } catch (error) {
+      logger.error({ err: toError(error) }, 'shutdown failed')
       process.exit(1)
     }
   }
@@ -25,13 +25,13 @@ async function bootstrap(): Promise<void> {
   process.on('SIGINT', () => void shutdown('SIGINT'))
   process.on('SIGTERM', () => void shutdown('SIGTERM'))
 
-  await app.listen({ port: config.PORT, host: config.HOST })
-  logger.info({ port: config.PORT, host: config.HOST }, 'api-gateway listening')
+  await app.listen({ host: config.HOST, port: config.PORT })
+  logger.info({ host: config.HOST, port: config.PORT }, 'api-gateway listening')
 }
 
-bootstrap().catch((e: unknown) => {
-  const err = toError(e)
-  // eslint-disable-next-line no-console
+bootstrap().catch((error: unknown) => {
+  const err = toError(error)
+   
   console.error('FATAL: bootstrap failed', err)
   process.exit(1)
 })

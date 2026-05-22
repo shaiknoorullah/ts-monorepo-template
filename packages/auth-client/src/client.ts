@@ -2,28 +2,28 @@
 //
 // Minimal Ory Kratos REST client. Keycloak provider in a sibling file.
 
-import { UserSchema, type AuthClient, type AuthConfig, type Session } from './types'
+import { type AuthClient, type AuthConfig, type Session, UserSchema } from './types'
 
 export function createAuthClient(cfg: AuthConfig): AuthClient {
   const base = cfg.baseUrl.replace(/\/$/, '')
 
-  async function getSession(): Promise<Session | null> {
+  async function getSession(): Promise<null | Session> {
     const res = await fetch(`${base}/sessions/whoami`, { credentials: 'include' })
     if (res.status === 401) return null
     if (!res.ok) throw new Error(`whoami failed: ${res.status}`)
-    const data = (await res.json()) as { identity?: { id: string; traits: unknown }; expires_at?: string }
+    const data = (await res.json()) as { expires_at?: string; identity?: { id: string; traits: unknown }; }
     if (!data.identity) return null
     const traits = data.identity.traits as Record<string, unknown>
     const user = UserSchema.parse({
-      id: data.identity.id,
       email: String(traits.email ?? ''),
+      id: data.identity.id,
       name: typeof traits.name === 'string' ? traits.name : undefined,
       roles: Array.isArray(traits.roles) ? (traits.roles as string[]) : [],
     })
     return {
-      user,
+      expiresAt: data.expires_at ?? new Date(Date.now() + 3_600_000).toISOString(),
       token: '',
-      expiresAt: data.expires_at ?? new Date(Date.now() + 3600_000).toISOString(),
+      user,
     }
   }
 
@@ -31,9 +31,9 @@ export function createAuthClient(cfg: AuthConfig): AuthClient {
     // Ory Kratos uses flow tokens; this is a simplified path. Real flows
     // initiate a login-flow first, then submit.
     const res = await fetch(`${base}/self-service/login?flow=api`, {
-      method: 'POST',
+      body: JSON.stringify({ identifier: input.email, method: 'password', password: input.password }),
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ method: 'password', password: input.password, identifier: input.email }),
+      method: 'POST',
     })
     if (!res.ok) throw new Error(`sign-in failed: ${res.status}`)
     const session = await getSession()

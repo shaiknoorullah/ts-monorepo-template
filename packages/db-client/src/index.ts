@@ -11,28 +11,28 @@
 
 import { toError } from '@pkg/types'
 
-/** Connection-pool tuning options. */
-export interface DbClientOptions {
-  /** Postgres connection URL. Required. */
-  readonly url: string
-  /** Maximum number of clients in the pool. Default 10. */
-  readonly maxConnections?: number
-  /** Connection idle timeout in ms. Default 30000. */
-  readonly idleTimeoutMs?: number
-  /** Statement timeout passed to every connection. Default 30000 (30s). */
-  readonly statementTimeoutMs?: number
-  /** Application name attached to every connection — visible in `pg_stat_activity`. */
-  readonly applicationName?: string
-}
-
 /** The minimal db-client surface every consumer relies on. */
 export interface DbClient {
-  /** Resolve when the connection pool can reach the database. */
-  ping: () => Promise<void>
-  /** Close the pool. Idempotent. */
-  close: () => Promise<void>
   /** Number of active connections at the moment. */
   activeConnections: () => number
+  /** Close the pool. Idempotent. */
+  close: () => Promise<void>
+  /** Resolve when the connection pool can reach the database. */
+  ping: () => Promise<void>
+}
+
+/** Connection-pool tuning options. */
+export interface DbClientOptions {
+  /** Application name attached to every connection — visible in `pg_stat_activity`. */
+  readonly applicationName?: string
+  /** Connection idle timeout in ms. Default 30000. */
+  readonly idleTimeoutMs?: number
+  /** Maximum number of clients in the pool. Default 10. */
+  readonly maxConnections?: number
+  /** Statement timeout passed to every connection. Default 30000 (30s). */
+  readonly statementTimeoutMs?: number
+  /** Postgres connection URL. Required. */
+  readonly url: string
 }
 
 /**
@@ -60,45 +60,45 @@ export function createDbClient(options: DbClientOptions): DbClient {
 
   // Lazy load the pg driver so test/type environments don't need it installed.
   // In production each service depends on `pg` directly via the runtime catalog.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  type PgPool = { connect: () => Promise<{ release: () => void }>; end: () => Promise<void>; totalCount: number }
+   
+  interface PgPool { connect: () => Promise<{ release: () => void }>; end: () => Promise<void>; totalCount: number }
 
   let pool: PgPool | undefined
   let closed = false
 
   const getPool = async (): Promise<PgPool> => {
     if (pool) return pool
-    const mod = (await import('pg').catch(() => null)) as { Pool?: new (cfg: unknown) => PgPool } | null
+    const mod = (await import('pg').catch(() => null)) as null | { Pool?: new (cfg: unknown) => PgPool }
     if (!mod?.Pool) {
       throw new Error('createDbClient: `pg` driver is not installed. `pnpm add pg` in your service.')
     }
     pool = new mod.Pool({
-      connectionString: options.url,
-      max: options.maxConnections ?? 10,
-      idleTimeoutMillis: options.idleTimeoutMs ?? 30_000,
       application_name: options.applicationName,
+      connectionString: options.url,
+      idleTimeoutMillis: options.idleTimeoutMs ?? 30_000,
+      max: options.maxConnections ?? 10,
       statement_timeout: options.statementTimeoutMs ?? 30_000,
     })
     return pool
   }
 
   return {
-    async ping(): Promise<void> {
-      try {
-        const p = await getPool()
-        const client = await p.connect()
-        client.release()
-      } catch (err) {
-        throw toError(err)
-      }
+    activeConnections(): number {
+      return pool?.totalCount ?? 0
     },
     async close(): Promise<void> {
       if (closed) return
       closed = true
       if (pool) await pool.end()
     },
-    activeConnections(): number {
-      return pool?.totalCount ?? 0
+    async ping(): Promise<void> {
+      try {
+        const p = await getPool()
+        const client = await p.connect()
+        client.release()
+      } catch (error) {
+        throw toError(error)
+      }
     },
   }
 }

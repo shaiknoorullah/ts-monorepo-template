@@ -4,12 +4,13 @@
 // swapping for Prisma/Drizzle migrate is a one-line change.
 
 import { defineCommand } from 'citty'
+
 import { emit, fail } from '../utils/output'
 import { run } from '../utils/run'
 
 const migrate = defineCommand({
-  meta: { name: 'migrate', description: 'Apply pending migrations (atlas migrate apply).' },
-  args: { env: { type: 'string', description: 'Target env name', default: 'dev' } },
+  args: { env: { default: 'dev', description: 'Target env name', type: 'string' } },
+  meta: { description: 'Apply pending migrations (atlas migrate apply).', name: 'migrate' },
   async run({ args }) {
     const { exitCode } = await run('atlas', [
       'migrate',
@@ -18,13 +19,13 @@ const migrate = defineCommand({
       String(args.env),
     ])
     if (exitCode !== 0) fail(`atlas migrate apply failed (exit ${exitCode})`)
-    emit({ status: 'ok', message: `Migrations applied for ${args.env}.` })
+    emit({ message: `Migrations applied for ${args.env}.`, status: 'ok' })
   },
 })
 
 const status = defineCommand({
-  meta: { name: 'status', description: 'Show migration status (atlas migrate status).' },
-  args: { env: { type: 'string', description: 'Target env name', default: 'dev' } },
+  args: { env: { default: 'dev', description: 'Target env name', type: 'string' } },
+  meta: { description: 'Show migration status (atlas migrate status).', name: 'status' },
   async run({ args }) {
     const { exitCode } = await run('atlas', ['migrate', 'status', '--env', String(args.env)])
     if (exitCode !== 0) fail(`atlas migrate status failed (exit ${exitCode})`)
@@ -32,11 +33,11 @@ const status = defineCommand({
 })
 
 const diff = defineCommand({
-  meta: { name: 'diff', description: 'Generate a new migration (atlas migrate diff <name>).' },
   args: {
-    name: { type: 'positional', description: 'Migration name', required: true },
-    env: { type: 'string', description: 'Target env name', default: 'dev' },
+    env: { default: 'dev', description: 'Target env name', type: 'string' },
+    name: { description: 'Migration name', required: true, type: 'positional' },
   },
+  meta: { description: 'Generate a new migration (atlas migrate diff <name>).', name: 'diff' },
   async run({ args }) {
     const { exitCode } = await run('atlas', [
       'migrate',
@@ -46,24 +47,24 @@ const diff = defineCommand({
       String(args.env),
     ])
     if (exitCode !== 0) fail(`atlas migrate diff failed (exit ${exitCode})`)
-    emit({ status: 'ok', message: `Migration ${args.name} drafted.` })
+    emit({ message: `Migration ${args.name} drafted.`, status: 'ok' })
   },
 })
 
 const seed = defineCommand({
-  meta: { name: 'seed', description: 'Run seed scripts (delegates to pnpm seed).' },
+  meta: { description: 'Run seed scripts (delegates to pnpm seed).', name: 'seed' },
   async run() {
     const { exitCode } = await run('pnpm', ['-w', 'run', 'seed'])
     if (exitCode !== 0) fail(`seed failed (exit ${exitCode})`)
-    emit({ status: 'ok', message: 'Seeded.' })
+    emit({ message: 'Seeded.', status: 'ok' })
   },
 })
 
 const psql = defineCommand({
-  meta: { name: 'psql', description: 'Exec psql inside the local postgres dev container.' },
   args: {
-    db: { type: 'positional', description: 'Database name', required: false },
+    db: { description: 'Database name', required: false, type: 'positional' },
   },
+  meta: { description: 'Exec psql inside the local postgres dev container.', name: 'psql' },
   async run({ args }) {
     const db = args.db ? String(args.db) : 'app'
     const { exitCode } = await run(
@@ -76,6 +77,6 @@ const psql = defineCommand({
 })
 
 export const dbCommand = defineCommand({
-  meta: { name: 'db', description: 'Database migrations, seeding, and psql shell.' },
-  subCommands: { migrate, status, diff, seed, psql },
+  meta: { description: 'Database migrations, seeding, and psql shell.', name: 'db' },
+  subCommands: { diff, migrate, psql, seed, status },
 })

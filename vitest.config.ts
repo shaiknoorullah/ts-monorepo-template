@@ -4,7 +4,14 @@ import { defineConfig } from 'vitest/config'
 // Each glob below picks up the per-project vitest config inside that package.
 export default defineConfig({
   test: {
-    projects: ['apps/*', 'packages/*', 'internal/*'],
+    projects: [
+      'apps/*',
+      'packages/*',
+      'internal/cli',
+      'internal/test-utils',
+      // NOTE: internal/templates/* are scaffolding stubs, NOT real projects.
+      // They contain placeholder {{name}} markers and broken tsconfig extends.
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov', 'json-summary'],

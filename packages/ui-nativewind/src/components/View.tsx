@@ -1,14 +1,15 @@
 // packages/ui-nativewind/src/components/View.tsx
 
-import { View as RNView } from 'react-native'
 import type { ViewProps as RNViewProps } from 'react-native'
 
-export type ViewSurface = 'default' | 'muted' | 'transparent'
+import { View as RNView } from 'react-native'
 
 export interface ViewProps extends RNViewProps {
-  surface?: ViewSurface
   padded?: boolean
+  surface?: ViewSurface
 }
+
+export type ViewSurface = 'default' | 'muted' | 'transparent'
 
 const bg: Record<ViewSurface, string> = {
   default: 'bg-surface',
@@ -17,10 +18,10 @@ const bg: Record<ViewSurface, string> = {
 }
 
 export function View({
-  surface = 'transparent',
-  padded,
-  className,
   children,
+  className,
+  padded,
+  surface = 'transparent',
   ...rest
 }: ViewProps): JSX.Element {
   return (

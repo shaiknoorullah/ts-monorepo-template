@@ -2,17 +2,24 @@
 //
 // Typed fetch wrapper. Auth + tenancy headers are injected automatically.
 
-export interface ApiClientOptions {
-  baseUrl: string
-  getAuthToken?: () => string | null | Promise<string | null>
-  getTenantSlug?: () => string | null
-}
-
 export interface ApiClient {
+  delete: <T>(path: string) => Promise<T>
   get: <T>(path: string) => Promise<T>
   post: <T>(path: string, body: unknown) => Promise<T>
   put: <T>(path: string, body: unknown) => Promise<T>
-  delete: <T>(path: string) => Promise<T>
+}
+
+export interface ApiClientOptions {
+  baseUrl: string
+  getAuthToken?: () => null | Promise<null | string> | string
+  getTenantSlug?: () => null | string
+}
+
+export class ApiError extends Error {
+  constructor(public status: number, public body: string) {
+    super(`HTTP ${status}: ${body}`)
+    this.name = 'ApiError'
+  }
 }
 
 export function createApiClient(opts: ApiClientOptions): ApiClient {
@@ -32,10 +39,10 @@ export function createApiClient(opts: ApiClientOptions): ApiClient {
 
   async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
     const res = await fetch(`${base}${path}`, {
-      method,
-      headers: await buildHeaders(),
       body: body == null ? undefined : JSON.stringify(body),
       credentials: 'include',
+      headers: await buildHeaders(),
+      method,
     })
     if (!res.ok) throw new ApiError(res.status, await res.text())
     if (res.status === 204) return undefined as T
@@ -43,16 +50,9 @@ export function createApiClient(opts: ApiClientOptions): ApiClient {
   }
 
   return {
+    delete: <T>(p: string) => request<T>('DELETE', p),
     get: <T>(p: string) => request<T>('GET', p),
     post: <T>(p: string, b: unknown) => request<T>('POST', p, b),
     put: <T>(p: string, b: unknown) => request<T>('PUT', p, b),
-    delete: <T>(p: string) => request<T>('DELETE', p),
-  }
-}
-
-export class ApiError extends Error {
-  constructor(public status: number, public body: string) {
-    super(`HTTP ${status}: ${body}`)
-    this.name = 'ApiError'
   }
 }

@@ -19,28 +19,28 @@ export default function SignIn(): JSX.Element {
       <Text style={styles.title}>Sign in</Text>
       <TextInput
         accessibilityLabel="Email"
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
         autoCapitalize="none"
+        keyboardType="email-address"
+        onChangeText={setEmail}
+        placeholder="Email"
         style={styles.input}
+        value={email}
       />
       <TextInput
         accessibilityLabel="Password"
-        placeholder="Password"
-        value={password}
         onChangeText={setPassword}
+        placeholder="Password"
         secureTextEntry
         style={styles.input}
+        value={password}
       />
-      <Button title="Continue" onPress={onSubmit} />
+      <Button onPress={onSubmit} title="Continue" />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center' },
+  container: { flex: 1, justifyContent: 'center', padding: 24 },
+  input: { borderColor: '#d0d7de', borderRadius: 8, borderWidth: 1, marginBottom: 12, padding: 12 },
   title: { fontSize: 24, fontWeight: '700', marginBottom: 16 },
-  input: { borderWidth: 1, borderColor: '#d0d7de', borderRadius: 8, padding: 12, marginBottom: 12 },
 })

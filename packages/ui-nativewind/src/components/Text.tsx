@@ -1,14 +1,15 @@
 // packages/ui-nativewind/src/components/Text.tsx
 
-import { Text as RNText } from 'react-native'
 import type { TextProps as RNTextProps } from 'react-native'
 
-export type TextVariant = 'body' | 'caption' | 'heading' | 'title'
+import { Text as RNText } from 'react-native'
 
 export interface TextProps extends RNTextProps {
-  variant?: TextVariant
   muted?: boolean
+  variant?: TextVariant
 }
+
+export type TextVariant = 'body' | 'caption' | 'heading' | 'title'
 
 const byVariant: Record<TextVariant, string> = {
   body: 'text-md',
@@ -18,10 +19,10 @@ const byVariant: Record<TextVariant, string> = {
 }
 
 export function Text({
-  variant = 'body',
-  muted,
-  className,
   children,
+  className,
+  muted,
+  variant = 'body',
   ...rest
 }: TextProps): JSX.Element {
   return (

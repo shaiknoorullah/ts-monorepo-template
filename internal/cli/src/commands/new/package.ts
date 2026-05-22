@@ -3,18 +3,19 @@
 import { defineCommand } from 'citty'
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
+
 import { emit, fail } from '../../utils/output'
 import { repoPath } from '../../utils/paths'
 import { renderTemplate } from '../../utils/templates'
 
 export const newPackage = defineCommand({
-  meta: {
-    name: 'package',
-    description: 'Scaffold a new shared library under packages/<name>/.',
-  },
   args: {
-    name: { type: 'positional', description: 'Package name (kebab-case)', required: true },
-    force: { type: 'boolean', description: 'Overwrite existing directory', default: false },
+    force: { default: false, description: 'Overwrite existing directory', type: 'boolean' },
+    name: { description: 'Package name (kebab-case)', required: true, type: 'positional' },
+  },
+  meta: {
+    description: 'Scaffold a new shared library under packages/<name>/.',
+    name: 'package',
   },
   run({ args }) {
     const name = String(args.name)
@@ -40,17 +41,17 @@ export const newPackage = defineCommand({
     )
 
     emit({
-      status: 'ok',
-      message: `Scaffolded packages/${name} (${result.written.length} files).`,
       data: {
-        path: destDir,
         files: result.written.length,
         nextSteps: [
           'pnpm install',
           `add "${name}" to commitlint.config.cjs scope-enum`,
           'pnpm changeset (mark as initial release)',
         ],
+        path: destDir,
       },
+      message: `Scaffolded packages/${name} (${result.written.length} files).`,
+      status: 'ok',
     })
   },
 })

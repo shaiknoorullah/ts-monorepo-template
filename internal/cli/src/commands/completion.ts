@@ -5,6 +5,7 @@
 // dependency.
 
 import { defineCommand } from 'citty'
+
 import { emit, isJsonMode, logRaw } from '../utils/output'
 
 const TOP = [
@@ -27,13 +28,13 @@ const TOP = [
 ]
 
 const SUBS: Record<string, string[]> = {
-  new: ['app', 'package', 'adr', 'changeset', 'workflow', 'runbook'],
-  env: ['render', 'validate', 'show'],
-  dev: ['up', 'down', 'tools', 'logs', 'reset'],
+  completion: ['bash', 'zsh'],
   db: ['migrate', 'status', 'diff', 'seed', 'psql'],
   deps: ['check', 'sync', 'audit'],
+  dev: ['up', 'down', 'tools', 'logs', 'reset'],
+  env: ['render', 'validate', 'show'],
+  new: ['app', 'package', 'adr', 'changeset', 'workflow', 'runbook'],
   release: ['changeset', 'version', 'publish'],
-  completion: ['bash', 'zsh'],
 }
 
 function bashScript(): string {
@@ -88,21 +89,21 @@ compdef _repo repo
 }
 
 export const completionCommand = defineCommand({
-  meta: { name: 'completion', description: 'Emit shell completion script (bash | zsh).' },
-  args: { shell: { type: 'positional', description: 'bash | zsh', required: true } },
+  args: { shell: { description: 'bash | zsh', required: true, type: 'positional' } },
+  meta: { description: 'Emit shell completion script (bash | zsh).', name: 'completion' },
   run({ args }) {
     const shell = String(args.shell)
     if (shell === 'bash') {
-      if (isJsonMode()) emit({ status: 'ok', message: 'bash completion', data: { script: bashScript() } })
+      if (isJsonMode()) emit({ data: { script: bashScript() }, message: 'bash completion', status: 'ok' })
       else logRaw(bashScript())
       return
     }
     if (shell === 'zsh') {
-      if (isJsonMode()) emit({ status: 'ok', message: 'zsh completion', data: { script: zshScript() } })
+      if (isJsonMode()) emit({ data: { script: zshScript() }, message: 'zsh completion', status: 'ok' })
       else logRaw(zshScript())
       return
     }
-    emit({ status: 'error', message: `Unknown shell: ${shell}. Use bash or zsh.` })
+    emit({ message: `Unknown shell: ${shell}. Use bash or zsh.`, status: 'error' })
     process.exit(1)
   },
 })

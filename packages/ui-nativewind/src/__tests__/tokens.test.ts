@@ -1,7 +1,8 @@
 // packages/ui-nativewind/src/__tests__/tokens.test.ts
 
 import { describe, expect, it } from 'vitest'
-import { tokens, lightTheme, darkTheme } from '../tokens'
+
+import { darkTheme, lightTheme, tokens } from '../tokens'
 
 describe('ui-nativewind tokens', () => {
   it('mirrors the @pkg/ui spacing scale', () => {

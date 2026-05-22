@@ -3,11 +3,8 @@
 // Public surface — kept symmetric with @pkg/ui so apps can swap engines by
 // changing imports only.
 
-export { tokens, lightTheme, darkTheme } from './tokens'
-export type { ColorScheme } from './tokens'
-
 export { Button } from './components/Button'
-export type { ButtonProps, ButtonVariant, ButtonSize } from './components/Button'
+export type { ButtonProps, ButtonSize, ButtonVariant } from './components/Button'
 
 export { Card } from './components/Card'
 export type { CardProps } from './components/Card'
@@ -20,3 +17,6 @@ export type { TextProps, TextVariant } from './components/Text'
 
 export { View } from './components/View'
 export type { ViewProps, ViewSurface } from './components/View'
+
+export { darkTheme, lightTheme, tokens } from './tokens'
+export type { ColorScheme } from './tokens'

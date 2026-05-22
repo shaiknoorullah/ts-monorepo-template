@@ -5,17 +5,17 @@
 // app compiles independently while @pkg/seo evolves.
 
 interface OrganizationInput {
+  logo: string
   name: string
   url: string
-  logo: string
 }
 
 export function jsonLdOrganization(input: OrganizationInput): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    logo: input.logo,
     name: input.name,
     url: input.url,
-    logo: input.logo,
   }
 }

@@ -3,8 +3,8 @@
 import type { ReactNode } from 'react'
 
 export const metadata = {
-  title: 'CMS',
   description: 'Payload-powered content management.',
+  title: 'CMS',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }): JSX.Element {

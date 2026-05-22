@@ -1,13 +1,8 @@
 // apps/web-app/app/index.tsx
 
+import { resolveTenantFromHostname } from '@pkg/tenancy-client'
 import { Link } from 'expo-router'
 import { StyleSheet, Text, View } from 'react-native'
-import { resolveTenantFromHostname } from '@pkg/tenancy-client'
-
-function getTenantSlug(): string | null {
-  if (typeof window === 'undefined') return null
-  return resolveTenantFromHostname(window.location.hostname, '.app.example.com')
-}
 
 export default function Home(): JSX.Element {
   const slug = getTenantSlug()
@@ -24,9 +19,14 @@ export default function Home(): JSX.Element {
   )
 }
 
+function getTenantSlug(): null | string {
+  if (globalThis.window === undefined) return null
+  return resolveTenantFromHostname(globalThis.location.hostname, '.app.example.com')
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontSize: 32, fontWeight: '700', marginBottom: 8 },
-  body: { fontSize: 16, color: '#57606a', marginBottom: 24 },
+  body: { color: '#57606a', fontSize: 16, marginBottom: 24 },
+  container: { alignItems: 'center', flex: 1, justifyContent: 'center', padding: 24 },
   link: { color: '#1f6feb', fontSize: 16, fontWeight: '600' },
+  title: { fontSize: 32, fontWeight: '700', marginBottom: 8 },
 })

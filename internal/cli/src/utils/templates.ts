@@ -10,17 +10,17 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
-  readFileSync,
   readdirSync,
+  readFileSync,
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { join, resolve, dirname } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 
 const PLACEHOLDER = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g
 
 export function renderString(input: string, vars: Record<string, string>): string {
-  return input.replace(PLACEHOLDER, (_, name: string) => {
+  return input.replaceAll(PLACEHOLDER, (_, name: string) => {
     if (!(name in vars)) throw new Error(`Template placeholder {{${name}}} has no value`)
     return vars[name]!
   })
@@ -78,9 +78,9 @@ function* walk(dir: string): Generator<string> {
   }
 }
 
-const BINARY_EXT = new Set(['.png', '.jpg', '.jpeg', '.gif', '.ico', '.pdf', '.zip', '.gz', '.tgz'])
+const BINARY_EXT = new Set(['.gif', '.gz', '.ico', '.jpeg', '.jpg', '.pdf', '.png', '.tgz', '.zip'])
 function isBinary(file: string): boolean {
   const dot = file.lastIndexOf('.')
-  if (dot < 0) return false
+  if (dot === -1) return false
   return BINARY_EXT.has(file.slice(dot).toLowerCase())
 }

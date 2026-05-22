@@ -1,0 +1,163 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildOgImageVDOM > matches the dark-theme snapshot 1`] = `
+{
+  "props": {
+    "children": [
+      {
+        "props": {
+          "style": {
+            "height": 64,
+          },
+        },
+        "type": "div",
+      },
+      {
+        "props": {
+          "children": [
+            {
+              "props": {
+                "children": "Snapshot Title",
+                "style": {
+                  "fontSize": 72,
+                  "fontWeight": 700,
+                  "letterSpacing": "-0.02em",
+                  "lineHeight": 1.1,
+                },
+              },
+              "type": "div",
+            },
+            {
+              "props": {
+                "children": "A subtitle",
+                "style": {
+                  "color": "#8b949e",
+                  "fontSize": 32,
+                  "lineHeight": 1.4,
+                },
+              },
+              "type": "div",
+            },
+          ],
+          "style": {
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": 24,
+          },
+        },
+        "type": "div",
+      },
+      {
+        "props": {
+          "style": {
+            "background": "#58a6ff",
+            "borderRadius": 4,
+            "display": "flex",
+            "height": 8,
+          },
+        },
+        "type": "div",
+      },
+    ],
+    "style": {
+      "background": "linear-gradient(135deg, #0d1117 0%, #161b22 100%)",
+      "color": "#c9d1d9",
+      "display": "flex",
+      "flexDirection": "column",
+      "fontFamily": "Inter, sans-serif",
+      "height": 630,
+      "justifyContent": "space-between",
+      "padding": 64,
+      "width": 1200,
+    },
+  },
+  "type": "div",
+}
+`;
+
+exports[`buildOgImageVDOM > matches the light-theme snapshot with logo 1`] = `
+{
+  "props": {
+    "children": [
+      {
+        "props": {
+          "children": [
+            {
+              "props": {
+                "height": 64,
+                "src": "https://example.com/logo.png",
+                "width": 64,
+              },
+              "type": "img",
+            },
+          ],
+          "style": {
+            "alignItems": "center",
+            "display": "flex",
+            "height": 64,
+          },
+        },
+        "type": "div",
+      },
+      {
+        "props": {
+          "children": [
+            {
+              "props": {
+                "children": "Light",
+                "style": {
+                  "fontSize": 72,
+                  "fontWeight": 700,
+                  "letterSpacing": "-0.02em",
+                  "lineHeight": 1.1,
+                },
+              },
+              "type": "div",
+            },
+            {
+              "props": {
+                "children": "with logo",
+                "style": {
+                  "color": "#57606a",
+                  "fontSize": 32,
+                  "lineHeight": 1.4,
+                },
+              },
+              "type": "div",
+            },
+          ],
+          "style": {
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": 24,
+          },
+        },
+        "type": "div",
+      },
+      {
+        "props": {
+          "style": {
+            "background": "#1f6feb",
+            "borderRadius": 4,
+            "display": "flex",
+            "height": 8,
+          },
+        },
+        "type": "div",
+      },
+    ],
+    "style": {
+      "background": "linear-gradient(135deg, #ffffff 0%, #f6f8fa 100%)",
+      "color": "#0d1117",
+      "display": "flex",
+      "flexDirection": "column",
+      "fontFamily": "Inter, sans-serif",
+      "height": 630,
+      "justifyContent": "space-between",
+      "padding": 64,
+      "width": 1200,
+    },
+  },
+  "type": "div",
+}
+`;

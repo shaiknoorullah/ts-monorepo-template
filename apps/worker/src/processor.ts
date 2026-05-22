@@ -3,15 +3,15 @@ import { z } from 'zod'
 
 /** Shape of a single job. Extend this with your domain payloads via a union. */
 export const jobPayloadSchema = z.object({
-  type: z.string(),
   payload: z.unknown(),
+  type: z.string(),
 })
 export type JobPayload = z.infer<typeof jobPayloadSchema>
 
 export interface JobResult {
-  readonly ok: boolean
-  readonly handled: string
   readonly durationMs: number
+  readonly handled: string
+  readonly ok: boolean
 }
 
 export interface ProcessJobOptions {
@@ -30,8 +30,8 @@ export async function processJob(raw: unknown, options: ProcessJobOptions): Prom
   // Replace this with your real job-dispatch logic.
   // The template just acknowledges and returns.
   return {
-    ok: true,
-    handled: job.type,
     durationMs: Date.now() - startedAt,
+    handled: job.type,
+    ok: true,
   }
 }

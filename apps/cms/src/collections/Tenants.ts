@@ -1,29 +1,27 @@
 // apps/cms/src/collections/Tenants.ts
 
 import type { CollectionConfig } from 'payload'
+
 import { isAdmin } from '../access'
 
 export const Tenants: CollectionConfig = {
-  slug: 'tenants',
-  admin: { useAsTitle: 'name', defaultColumns: ['name', 'slug', 'plan'] },
   access: { create: isAdmin, delete: isAdmin },
+  admin: { defaultColumns: ['name', 'slug', 'plan'], useAsTitle: 'name' },
   fields: [
-    { name: 'name', type: 'text', required: true },
-    { name: 'slug', type: 'text', required: true, unique: true, index: true },
+    { name: 'name', required: true, type: 'text' },
+    { index: true, name: 'slug', required: true, type: 'text', unique: true },
     {
-      name: 'plan',
-      type: 'select',
-      required: true,
       defaultValue: 'starter',
+      name: 'plan',
       options: [
         { label: 'Starter', value: 'starter' },
         { label: 'Growth', value: 'growth' },
         { label: 'Enterprise', value: 'enterprise' },
       ],
+      required: true,
+      type: 'select',
     },
     {
-      name: 'theme',
-      type: 'group',
       fields: [
         { name: 'brand', type: 'text' },
         { name: 'surface', type: 'text' },
@@ -33,6 +31,9 @@ export const Tenants: CollectionConfig = {
         { name: 'textMuted', type: 'text' },
         { name: 'logoUrl', type: 'text' },
       ],
+      name: 'theme',
+      type: 'group',
     },
   ],
+  slug: 'tenants',
 }

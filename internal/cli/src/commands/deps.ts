@@ -1,17 +1,18 @@
 // `repo deps ...` — hygiene quartet wrappers.
 
 import { defineCommand } from 'citty'
+
 import { emit, fail, info } from '../utils/output'
 import { run } from '../utils/run'
 
 const check = defineCommand({
   meta: {
-    name: 'check',
     description:
       'Run the full dependency hygiene quartet: syncpack + knip + manypkg + attw + publint + type-coverage.',
+    name: 'check',
   },
   async run() {
-    const steps: Array<[string, string[]]> = [
+    const steps: [string, string[]][] = [
       ['pnpm', ['syncpack', 'lint']],
       ['pnpm', ['knip']],
       ['pnpm', ['manypkg', 'check']],
@@ -28,39 +29,39 @@ const check = defineCommand({
     if (failures.length > 0) {
       fail(`deps check failed: ${failures.length} step(s) failed.`, { failures })
     }
-    emit({ status: 'ok', message: 'Dependency hygiene checks all passed.' })
+    emit({ message: 'Dependency hygiene checks all passed.', status: 'ok' })
   },
 })
 
 const sync = defineCommand({
-  meta: { name: 'sync', description: 'Auto-fix dependency drift (syncpack fix + format).' },
+  meta: { description: 'Auto-fix dependency drift (syncpack fix + format).', name: 'sync' },
   async run() {
     const { exitCode } = await run('pnpm', ['syncpack', 'fix-mismatches'])
     if (exitCode !== 0) fail('syncpack fix-mismatches failed')
     const { exitCode: ec2 } = await run('pnpm', ['syncpack', 'format'])
     if (ec2 !== 0) fail('syncpack format failed')
-    emit({ status: 'ok', message: 'Dependencies synced.' })
+    emit({ message: 'Dependencies synced.', status: 'ok' })
   },
 })
 
 const audit = defineCommand({
   meta: {
-    name: 'audit',
     description: 'Run pnpm audit + osv-scanner (if installed) for known-vulnerable deps.',
+    name: 'audit',
   },
   async run() {
     const { exitCode } = await run('pnpm', ['audit', '--prod', '--audit-level=high'])
     // osv-scanner is optional; surface its result but don't fail the whole run on its absence.
     const osv = await run('osv-scanner', ['--lockfile', 'pnpm-lock.yaml'])
     emit({
-      status: exitCode === 0 && osv.exitCode === 0 ? 'ok' : 'warning',
+      data: { osvExit: osv.exitCode, pnpmAuditExit: exitCode },
       message: 'Audit complete.',
-      data: { pnpmAuditExit: exitCode, osvExit: osv.exitCode },
+      status: exitCode === 0 && osv.exitCode === 0 ? 'ok' : 'warning',
     })
   },
 })
 
 export const depsCommand = defineCommand({
-  meta: { name: 'deps', description: 'Dependency hygiene & audit.' },
-  subCommands: { check, sync, audit },
+  meta: { description: 'Dependency hygiene & audit.', name: 'deps' },
+  subCommands: { audit, check, sync },
 })

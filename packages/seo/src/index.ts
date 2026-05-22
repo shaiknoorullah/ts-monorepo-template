@@ -1,3 +1,3 @@
 export * as jsonld from './jsonld'
-export { buildOpenGraph, buildOgImageVDOM, generateOgImage, generateOgImageSvg } from './og'
-export type { OpenGraphInput, OgImageProps } from './og'
+export { buildOgImageVDOM, buildOpenGraph, generateOgImage, generateOgImageSvg } from './og'
+export type { OgImageProps, OpenGraphInput } from './og'

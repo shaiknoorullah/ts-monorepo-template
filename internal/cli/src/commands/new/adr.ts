@@ -1,8 +1,9 @@
 // `repo new adr <title>` — scaffold docs/adrs/<NNNN>-<slug>.md from template
 
 import { defineCommand } from 'citty'
-import { existsSync, mkdirSync, readdirSync, writeFileSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'pathe'
+
 import { emit, fail } from '../../utils/output'
 import { repoPath } from '../../utils/paths'
 import { renderString } from '../../utils/templates'
@@ -10,9 +11,9 @@ import { renderString } from '../../utils/templates'
 function nextNumber(adrDir: string): string {
   if (!existsSync(adrDir)) return '0001'
   const nums = readdirSync(adrDir)
-    .map((f) => f.match(/^(\d{4})-/)?.[1])
+    .map((f) => (/^(\d{4})-/.exec(f))?.[1])
     .filter((n): n is string => !!n)
-    .map((n) => parseInt(n, 10))
+    .map((n) => Number.parseInt(n, 10))
   const max = nums.length === 0 ? 0 : Math.max(...nums)
   return String(max + 1).padStart(4, '0')
 }
@@ -20,15 +21,15 @@ function nextNumber(adrDir: string): string {
 function slugify(title: string): string {
   return title
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replaceAll(/[^a-z0-9]+/g, '-')
+    .replaceAll(/^-+|-+$/g, '')
 }
 
 export const newAdr = defineCommand({
-  meta: { name: 'adr', description: 'Scaffold a new ADR under docs/adrs/.' },
   args: {
-    title: { type: 'positional', description: 'ADR title', required: true },
+    title: { description: 'ADR title', required: true, type: 'positional' },
   },
+  meta: { description: 'Scaffold a new ADR under docs/adrs/.', name: 'adr' },
   run({ args }) {
     const title = String(args.title)
     const adrDir = repoPath('docs/adrs')
@@ -48,18 +49,18 @@ export const newAdr = defineCommand({
       : DEFAULT_ADR_TEMPLATE
 
     const rendered = renderString(template, {
-      number: num,
-      title,
-      slug,
       date: today,
+      number: num,
+      slug,
+      title,
     })
 
     writeFileSync(fullPath, rendered)
 
     emit({
-      status: 'ok',
+      data: { number: num, path: fullPath, slug },
       message: `Created ${filename}`,
-      data: { path: fullPath, number: num, slug },
+      status: 'ok',
     })
   },
 })

@@ -9,14 +9,6 @@
 
 import { isSecretRef } from './config-loader'
 
-export function toEnvKey(path: string[]): string {
-  return path
-    .map((seg) => seg.replace(/([a-z])([A-Z])/g, '$1_$2'))
-    .join('_')
-    .toUpperCase()
-    .replace(/[^A-Z0-9_]/g, '_')
-}
-
 export function flattenToEnv(
   obj: unknown,
   base: string[] = [],
@@ -34,7 +26,7 @@ export function flattenToEnv(
     // For homogeneous arrays of strings/numbers, join with commas (common
     // docker-compose convention, e.g. KAFKA_BOOTSTRAP_SERVERS=a,b,c).
     if (arr.every((v: unknown) => typeof v === 'string' || typeof v === 'number')) {
-      acc[toEnvKey(base)] = arr.map((v) => String(v)).join(',')
+      acc[toEnvKey(base)] = arr.map(String).join(',')
       return acc
     }
     arr.forEach((v: unknown, i: number) => flattenToEnv(v, [...base, String(i)], acc))
@@ -59,10 +51,18 @@ export function formatEnvFile(pairs: Record<string, string>): string {
       .map(([k, v]) => {
         // Quote values that contain whitespace, special chars, or are empty
         if (v === '' || /[\s"'$`\\]/.test(v)) {
-          return `${k}="${v.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+          return `${k}="${v.replaceAll('\\', '\\\\').replaceAll('"', String.raw`\"`)}"`
         }
         return `${k}=${v}`
       })
       .join('\n') + '\n'
   )
+}
+
+export function toEnvKey(path: string[]): string {
+  return path
+    .map((seg) => seg.replaceAll(/([a-z])([A-Z])/g, '$1_$2'))
+    .join('_')
+    .toUpperCase()
+    .replaceAll(/[^A-Z0-9_]/g, '_')
 }

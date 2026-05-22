@@ -7,10 +7,10 @@
 // comes from an env var the bootstrapper writes. Both paths funnel
 // through `getTenantSlug()`.
 
+import { TenantThemeProvider } from '@pkg/ui'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import { TenantThemeProvider } from '@pkg/ui'
 
 function getTenantSlug(): string {
   // Web: window.__TENANT__ injected by the edge router.
@@ -27,11 +27,11 @@ const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? ''
 export default function RootLayout(): JSX.Element {
   return (
     <SafeAreaProvider>
-      <TenantThemeProvider slug={getTenantSlug()} baseUrl={API_BASE}>
+      <TenantThemeProvider baseUrl={API_BASE} slug={getTenantSlug()}>
         <StatusBar style="auto" />
         <Stack screenOptions={{ headerShown: true }}>
           <Stack.Screen name="index" options={{ title: 'Home' }} />
-          <Stack.Screen name="sign-in" options={{ title: 'Sign in', presentation: 'modal' }} />
+          <Stack.Screen name="sign-in" options={{ presentation: 'modal', title: 'Sign in' }} />
         </Stack>
       </TenantThemeProvider>
     </SafeAreaProvider>

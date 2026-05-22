@@ -2,6 +2,7 @@
 // Thin wrapper around execa with sensible defaults for CLI shell-outs.
 
 import { execa } from 'execa'
+
 import { findRepoRoot } from './paths'
 
 export interface RunOptions {
@@ -14,17 +15,17 @@ export async function run(
   bin: string,
   args: string[] = [],
   opts: RunOptions = {},
-): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+): Promise<{ exitCode: number; stderr: string; stdout: string; }> {
   const result = await execa(bin, args, {
     cwd: opts.cwd ?? findRepoRoot(),
     env: { ...process.env, ...opts.env },
-    stdio: opts.stdio ?? 'inherit',
     reject: false,
+    stdio: opts.stdio ?? 'inherit',
   })
   return {
-    stdout: result.stdout?.toString() ?? '',
-    stderr: result.stderr?.toString() ?? '',
     exitCode: result.exitCode ?? 0,
+    stderr: result.stderr?.toString() ?? '',
+    stdout: result.stdout?.toString() ?? '',
   }
 }
 

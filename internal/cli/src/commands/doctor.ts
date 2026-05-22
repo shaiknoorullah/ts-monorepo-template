@@ -3,20 +3,21 @@
 import { defineCommand } from 'citty'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'pathe'
+
 import { emit, fail, info, isJsonMode } from '../utils/output'
 import { repoPath } from '../utils/paths'
 import { run } from '../utils/run'
 
 interface Check {
-  name: string
-  status: 'ok' | 'warning' | 'error'
-  value?: string | undefined
   expected?: string | undefined
   message?: string | undefined
+  name: string
+  status: 'error' | 'ok' | 'warning'
+  value?: string | undefined
 }
 
-async function getVersion(bin: string, args: string[] = ['--version']): Promise<string | null> {
-  const { stdout, exitCode } = await run(bin, args, { stdio: 'pipe' })
+async function getVersion(bin: string, args: string[] = ['--version']): Promise<null | string> {
+  const { exitCode, stdout } = await run(bin, args, { stdio: 'pipe' })
   if (exitCode !== 0) return null
   return stdout.trim().split('\n')[0] ?? null
 }
@@ -27,7 +28,7 @@ function semverGte(actual: string, required: string): boolean {
       .replace(/^v/, '')
       .split(/[.\-+]/)
       .slice(0, 3)
-      .map((n) => parseInt(n, 10) || 0)
+      .map((n) => Number.parseInt(n, 10) || 0)
   const a = norm(actual)
   const r = norm(required)
   for (let i = 0; i < 3; i++) {
@@ -39,9 +40,9 @@ function semverGte(actual: string, required: string): boolean {
 
 export const doctorCommand = defineCommand({
   meta: {
-    name: 'doctor',
     description:
       'Check repo health: node/pnpm versions, lockfile, dev stack reachability, deps installed.',
+    name: 'doctor',
   },
   async run() {
     const checks: Check[] = []
@@ -49,18 +50,18 @@ export const doctorCommand = defineCommand({
     const requiredNode = '22.0.0'
     const node = process.version
     checks.push({
+      expected: `>=${requiredNode}`,
       name: 'node-version',
       status: semverGte(node, requiredNode) ? 'ok' : 'error',
       value: node,
-      expected: `>=${requiredNode}`,
     })
 
     const pnpm = await getVersion('pnpm')
     checks.push({
+      expected: '>=10.15.0',
       name: 'pnpm-version',
       status: pnpm && semverGte(pnpm, '10.15.0') ? 'ok' : 'error',
       value: pnpm ?? '<not found>',
-      expected: '>=10.15.0',
     })
 
     const lock = repoPath('pnpm-lock.yaml')
@@ -72,10 +73,10 @@ export const doctorCommand = defineCommand({
 
     const nodeModules = repoPath('node_modules')
     checks.push({
+      message: existsSync(nodeModules) ? undefined : 'Run `pnpm install` to install dependencies.',
       name: 'node-modules-installed',
       status: existsSync(nodeModules) ? 'ok' : 'error',
       value: existsSync(nodeModules) ? 'present' : 'missing',
-      message: existsSync(nodeModules) ? undefined : 'Run `pnpm install` to install dependencies.',
     })
 
     const docker = await getVersion('docker', ['--version'])
@@ -95,10 +96,10 @@ export const doctorCommand = defineCommand({
     // Config sanity: at least base.yaml + dev.yaml exist.
     for (const f of ['config/base.yaml', 'config/dev.yaml']) {
       checks.push({
+        message: existsSync(repoPath(f)) ? undefined : `Expected file: ${f}`,
         name: `config-${f.split('/')[1]?.replace('.yaml', '')}`,
         status: existsSync(repoPath(f)) ? 'ok' : 'error',
         value: existsSync(repoPath(f)) ? 'present' : 'missing',
-        message: existsSync(repoPath(f)) ? undefined : `Expected file: ${f}`,
       })
     }
 
@@ -113,7 +114,7 @@ export const doctorCommand = defineCommand({
           value: pkg.engines?.node ?? '<unset>',
         })
       } catch {
-        checks.push({ name: 'engines.node', status: 'error', message: 'failed to parse package.json' })
+        checks.push({ message: 'failed to parse package.json', name: 'engines.node', status: 'error' })
       }
     }
 
@@ -122,19 +123,19 @@ export const doctorCommand = defineCommand({
 
     if (isJsonMode()) {
       emit({
-        status: errors > 0 ? 'error' : warns > 0 ? 'warning' : 'ok',
-        message: `${checks.length} checks: ${errors} error / ${warns} warning`,
         data: { checks },
+        message: `${checks.length} checks: ${errors} error / ${warns} warning`,
+        status: errors > 0 ? 'error' : (warns > 0 ? 'warning' : 'ok'),
       })
     } else {
       for (const c of checks) {
-        const icon = c.status === 'ok' ? 'OK ' : c.status === 'warning' ? 'WARN' : 'ERR '
+        const icon = c.status === 'ok' ? 'OK ' : (c.status === 'warning' ? 'WARN' : 'ERR ')
         info(`  [${icon}] ${c.name.padEnd(28)} ${c.value ?? ''} ${c.expected ? `(expected ${c.expected})` : ''}`)
         if (c.message) info(`         -> ${c.message}`)
       }
       emit({
-        status: errors > 0 ? 'error' : warns > 0 ? 'warning' : 'ok',
         message: `${checks.length} checks · ${errors} error · ${warns} warning`,
+        status: errors > 0 ? 'error' : (warns > 0 ? 'warning' : 'ok'),
       })
     }
     if (errors > 0) process.exit(1)

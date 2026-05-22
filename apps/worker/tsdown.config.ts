@@ -1,11 +1,11 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: ['src/main.ts'],
-  format: ['esm'],
-  dts: false,
-  sourcemap: true,
   clean: true,
-  target: 'node22',
+  dts: false,
+  entry: ['src/main.ts'],
   external: ['bullmq', 'ioredis', 'pino', 'zod'],
+  format: ['esm'],
+  sourcemap: true,
+  target: 'node22',
 })

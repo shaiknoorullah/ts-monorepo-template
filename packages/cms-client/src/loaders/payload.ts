@@ -134,7 +134,9 @@ function serializeWhere(where: Record<string, unknown>, prefix = 'where'): strin
     if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
       out.push(...serializeWhere(val as Record<string, unknown>, path))
     } else {
-      out.push(`${path}=${encodeURIComponent(String(val))}`)
+      // URL-encode the bracketed key path so the query string is RFC-3986 clean.
+      // Payload accepts both raw and percent-encoded brackets.
+      out.push(`${encodeURIComponent(path)}=${encodeURIComponent(String(val))}`)
     }
   }
   return out

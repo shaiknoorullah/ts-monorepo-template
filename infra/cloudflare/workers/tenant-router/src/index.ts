@@ -26,9 +26,9 @@ export default {
     headers.set('x-tenant', slug)
 
     const upstreamReq = new Request(upstream.toString(), {
-      method: request.method,
-      headers,
       body: request.body,
+      headers,
+      method: request.method,
       redirect: 'manual',
     })
 
