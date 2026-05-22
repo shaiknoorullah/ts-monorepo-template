@@ -1,66 +1,76 @@
-# TODO — Follow-up work
+# TODO — Remaining work for `shaiknoorullah/ts-monorepo-template`
 
-The initial scaffold (89 files) landed at v1.0.0, but two areas need to be
-populated in a follow-up:
+The template has shipped 16+ commits across v1.0.0+ with substantive scaffolding, specs, governance, frontend tier, and SaaS-commons. This file tracks what's STILL deferred.
 
-## 1. `.github/workflows/` — empty
+## Status of past TODOs
 
-The 12 workflows specified in the build prompt were not populated before the
-build subagent's output was blocked by content filtering. The directory exists
-but contains no `.yml` files.
+| Past TODO | State |
+|---|---|
+| Initial scaffold (89 files) | ✅ Done (v1.0.0) |
+| 20 backend/data specs + 10 docker-compose files | ✅ Done |
+| 7 SaaS-commons compose files (Lago/Umami/Keycloak/Unleash/Meilisearch/Uptime-Kuma/Chatwoot) | ✅ Done |
+| YAML config hierarchy (c12 + Zod) | ✅ Done |
+| `repo` CLI with 17 commands + --json mode | ✅ Done |
+| Frontend tier (Astro + Expo + Cloudflare; Next.js eliminated) | ✅ Done — 5 apps + 9 packages + 4 ADRs + 7 specs |
+| `.github/workflows/{web,mobile,marketing,docs}-{build,deploy}.yml` | ✅ Done (4 of 12 workflows shipped by the frontend agent) |
 
-Workflows to add (per the research file at
-`~/work/.handoffs/cluster-cpu-overcommit/2026-05-22/research-ts-monorepo-template.md`):
+## Still deferred (3 batches, blocked on Anthropic API capacity 2026-05-22)
 
-- `ci.yml` — lint + type-check + test + build matrix, with knip + syncpack +
-  manypkg + attw + publint + type-coverage
-- `release.yml` — changesets action on push to main
-- `pr-changesets.yml` — gate every PR on a changeset (or `no-changeset` label)
-- `codeql.yml`
-- `dependency-review.yml`
-- `sbom.yml`
-- `docker-build.yml` (per-microservice, with Trivy)
-- `docs-deploy.yml` (VitePress → Pages)
-- `pkg-pr-new.yml` (per-PR npm preview)
-- `renovate-validate.yml`
-- `release-notes.yml`
-- `nightly.yml`
+Three subagent batches were dispatched to close these out but all failed at startup with HTTP 529 (Anthropic API overload — capacity issue, not our fault). All to be retried when the API stabilizes.
 
-All third-party actions must be pinned to 40-char commit SHAs (post-Trivy
-March-2026 incident; not version tags).
+### Batch A — 11 GitHub Actions workflows
 
-## 2. `docs/adrs/` — empty
+Add to `.github/workflows/`:
 
-Five Architecture Decision Records were planned but not written:
+1. `ci.yml` — PR + push to main. Concurrency cancel-in-progress. Parallel jobs:
+   - lint (eslint flat + prettier --check + markdownlint + cspell + yamllint + shellcheck)
+   - type-check (Node 20 + 22 matrix)
+   - test (vitest + coverage upload to Codecov via `CODECOV_TOKEN` secret)
+   - build (`nx run-many -t build`)
+   - deps quartet (knip + syncpack lint + @manypkg/cli check + attw + publint + type-coverage threshold 95%)
+2. `release.yml` — push to main; skip if commit author is `github-actions[bot]`; `changesets/action` for Version-Packages PR / publish
+3. `pr-changesets.yml` — require `.changeset/*.md` OR `no-changeset` label on every PR; sticky comment reminder
+4. `codeql.yml` — push to main + PR + weekly Sun 03:00 UTC; js + ts
+5. `dependency-review.yml` — PR; license allowlist MIT/Apache-2.0/BSD-2/BSD-3/ISC/MPL-2.0; denylist GPL-3.0-only/AGPL-3.0-only/SSPL-1.0; fail on `high`
+6. `sbom.yml` — push to main + release tag; CycloneDX via `@cyclonedx/cyclonedx-npm` + SPDX via `anchore/sbom-action`; attach to GitHub Release; `osv-scanner` against SBOM
+7. `pkg-pr-new.yml` — PR; ephemeral npm previews via `pkg-pr-new` action (libraries only)
+8. `renovate-validate.yml` — changes to `renovate.json`; use `suzuki-shunsuke/github-action-renovate-config-validator`
+9. `release-notes.yml` — `workflow_run` after release.yml OR tag push matching `v*`; regenerate notes using `.github/release.yml` categorization
+10. `nightly.yml` — schedule `0 5 * * *` UTC + workflow_dispatch; full E2E + Playwright + Lighthouse + benchmarks
+11. `lighthouse-ci.yml` — PR affecting `apps/marketing/**` or `apps/docs-public/**` + nightly; `treosh/lighthouse-ci-action`; budgets in `.lighthouserc.json` (Perf/A11y/BP/SEO ≥ 95; LCP < 2.5s; CLS < 0.1; INP < 200ms)
 
-- `0001-tsdown-over-tsup.md` — why tsdown, not tsup (tsup is in maintenance)
-- `0002-changesets-over-release-please.md` — independent per-package versioning
-- `0003-eslint-over-biome.md` — Biome pins exact versions; flat-config ESLint chosen
-- `0004-agents-md-universal-spec.md` — AGENTS.md is read by all major AI coding agents
-- `0005-pin-actions-to-shas.md` — supply-chain hygiene
+**Hard rules**:
+- All third-party actions pinned to 40-char commit SHAs (post-Trivy 2026 supply-chain hygiene)
+- Add `# v4.x.x` comments alongside SHAs
+- Workflow-injection safe: any untrusted input via `env:` block before `run:`
+- Comment header per workflow (trigger + purpose + safety notes)
 
-## 3. Sample app/package `src/` directories
+### Batch B — Astro Content Layer loaders + Satori OG image
 
-`apps/api-gateway/src/`, `apps/worker/src/`, and the four `packages/*/src/` exist
-but may be empty. Per the research, populate with:
+1. `packages/cms-client/src/loaders/payload.ts` — Astro Loader pulling Payload REST via fetch with pagination + Zod validation
+2. `packages/cms-client/src/loaders/decap.ts` — git-based loader; reads MD/MDX via tinyglobby + gray-matter
+3. Wire example in `apps/marketing/src/content/config.ts`
+4. `packages/seo/src/og.ts` — Satori + `@resvg/resvg-wasm` based OG image generator (edge-compatible Response); also `generateOgImageBuffer()` for Node
+5. `infra/cloudflare/workers/og-image/` — Hono Worker exposing `GET /og?title=...` returning PNG
+6. Tests for all four (vitest)
 
-- `api-gateway` — Fastify or Hono `GET /health`
-- `worker` — BullMQ or similar background job stub
-- `logger` — Pino-based shared logger
-- `config` — Zod env config loader
-- `db-client` — drizzle-orm or kysely Postgres wrapper
-- `types` — shared TypeScript types
+### Batch C — Per-tenant theming + NativeWind + apps/cms
 
-Each `src/__tests__/index.test.ts` with a minimal passing test.
+1. `packages/ui/src/theme/tenant.ts` + `TenantThemeProvider.tsx` — `useTenantTheme()` hook reading from `@pkg/tenancy-client`; fetches `GET /api/tenants/:slug/theme`; localStorage/SecureStore 1h cache + background revalidate; applies CSS vars (web) + Tamagui `defineTheme` (RN). Wire `apps/web-app/app/_layout.tsx` to wrap in `<TenantThemeProvider>`
+2. New spec `docs/specs/frontend/per-tenant-theming.md`
+3. `packages/ui-nativewind/` — sibling package with same public API as `packages/ui`; NativeWind 4.x; tailwind tokens mirroring Tamagui; Button/Card/Input/Text/View components
+4. ADR `docs/adrs/0012-tamagui-vs-nativewind.md` — when to pick which
+5. `apps/cms/` — self-hosted Payload CMS 3 with `@payloadcms/db-postgres` + `@payloadcms/plugin-cloud-storage` (R2 via S3-compat) + `@payloadcms/plugin-multi-tenant`; collections: Pages, Posts, Media, Tenants, Users; Argon2id auth (Ory Kratos upgrade path documented); Dockerfile multi-stage Node 20
+6. `docker/cms.compose.yml` — local dev setup
+7. ADR `docs/adrs/0013-payload-cms-self-hosted.md` — Payload self-hosted choice + Next.js bundled exception (Payload 3 mandates its bundled Next.js — this is the ONE place Next.js is in scope per the no-Next.js ADR)
 
-## How to finish
+## Other open notes
 
-Open a new Claude Code session, point at the research file, and ask:
-"Read `~/work/.handoffs/cluster-cpu-overcommit/2026-05-22/research-ts-monorepo-template.md`
-and finish the populating the workflows in `.github/workflows/`, the ADRs in
-`docs/adrs/`, and the `src/` directories per the research. SHA-pin all
-third-party GitHub Actions. Commit and push."
+- **pnpm install on the root has a pre-existing bug**: `@vitest/eslint-plugin@^2.0.0` doesn't exist (latest is `1.6.17`). Fix: bump to `^1.6.0` in root `package.json` devDeps.
+- **gh tokens need `workflow` scope** to push to `.github/workflows/*` over HTTPS. Fix: `gh auth refresh -h github.com -s workflow`. Workaround already in place: SSH push via the `github-personal` host alias works.
 
-The template flag is already set on the repo, so anyone can use
-`gh repo create my-monorepo --template shaiknoorullah/ts-monorepo-template`
-right now — they'll get the scaffold, just without the workflows + ADRs.
+## How to pick this up
+
+Three subagent prompts are already written for batches A, B, C — they're in the conversation history of session `b8c5053a-a432-4918-85e9-741aef0033b1`. When the API recovers, redispatch (each is ~30-40 min budget).
+
+Alternative: a human or fresh agent reads this TODO + executes the items directly. The research foundation is in `~/work/.handoffs/cluster-cpu-overcommit/2026-05-22/research-ts-monorepo-template.md` and `~/work/.handoffs/cluster-cpu-overcommit/2026-05-22/research-frontend-stack.md`.
