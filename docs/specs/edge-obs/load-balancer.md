@@ -2,7 +2,7 @@
 title: Load Balancer — L4 vs L7, MetalLB, Cilium, Cloud, HAProxy
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://metallb.universe.tf/concepts/
   - https://docs.cilium.io/en/stable/network/lb-ipam/
@@ -20,16 +20,16 @@ references:
 
 A load balancer terminates a transport. **L4** balances **TCP/UDP connections**; it sees packets and 5-tuples, not HTTP. **L7** terminates the application protocol (HTTP/1.1, HTTP/2, HTTP/3, gRPC), parses headers, and can route on path, method, host, JWT claims, cookies.
 
-| Concern | L4 | L7 |
-|---|---|---|
-| Latency overhead | ~50–200 µs | ~0.5–3 ms |
-| TLS termination | Pass-through or terminate-then-tunnel | Terminate, inspect, re-encrypt optional |
-| Routing on path / header | No | Yes |
-| Connection reuse / multiplexing | No (single TCP stream per client) | HTTP/2 stream-level routing |
-| Stateful protocols (Postgres, Redis, Kafka) | Yes (the only correct answer) | Catastrophic |
-| WebSockets | Yes (transparent) | Yes (after upgrade) |
-| Health-check granularity | TCP open + optional script | HTTP probe per backend with body assertions |
-| Cost (CPU) | Very low | Moderate (TLS + parsing) |
+| Concern                                     | L4                                    | L7                                          |
+| ------------------------------------------- | ------------------------------------- | ------------------------------------------- |
+| Latency overhead                            | ~50–200 µs                            | ~0.5–3 ms                                   |
+| TLS termination                             | Pass-through or terminate-then-tunnel | Terminate, inspect, re-encrypt optional     |
+| Routing on path / header                    | No                                    | Yes                                         |
+| Connection reuse / multiplexing             | No (single TCP stream per client)     | HTTP/2 stream-level routing                 |
+| Stateful protocols (Postgres, Redis, Kafka) | Yes (the only correct answer)         | Catastrophic                                |
+| WebSockets                                  | Yes (transparent)                     | Yes (after upgrade)                         |
+| Health-check granularity                    | TCP open + optional script            | HTTP probe per backend with body assertions |
+| Cost (CPU)                                  | Very low                              | Moderate (TLS + parsing)                    |
 
 ### Decision rules
 
@@ -84,8 +84,8 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-    - 10.50.255.200-10.50.255.220   # WireGuard mesh-internal VIPs
-    - 148.113.49.10-148.113.49.15   # OVH public range (negotiated)
+    - 10.50.255.200-10.50.255.220 # WireGuard mesh-internal VIPs
+    - 148.113.49.10-148.113.49.15 # OVH public range (negotiated)
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
@@ -243,13 +243,13 @@ For the prod-smallest profile:
 
 ### Health-check chain
 
-| Layer | What checks | Action on failure |
-|---|---|---|
-| Cloudflare | TCP + HTTP health check to VIP | Stop routing to origin; serve maintenance page |
-| MetalLB (L2) | Speaker liveness | Re-elect leader, move VIP |
-| Envoy GW Service | kubelet readiness probe on Envoy admin :19000 | Remove pod from endpoints |
-| HTTPRoute backend | Per-backend HTTP probe configured on `BackendTLSPolicy` | Remove backend from load-balancing pool |
-| Application | `/healthz` (liveness) + `/readyz` (readiness, checks DB/Kafka) | kubelet restarts pod |
+| Layer             | What checks                                                    | Action on failure                              |
+| ----------------- | -------------------------------------------------------------- | ---------------------------------------------- |
+| Cloudflare        | TCP + HTTP health check to VIP                                 | Stop routing to origin; serve maintenance page |
+| MetalLB (L2)      | Speaker liveness                                               | Re-elect leader, move VIP                      |
+| Envoy GW Service  | kubelet readiness probe on Envoy admin :19000                  | Remove pod from endpoints                      |
+| HTTPRoute backend | Per-backend HTTP probe configured on `BackendTLSPolicy`        | Remove backend from load-balancing pool        |
+| Application       | `/healthz` (liveness) + `/readyz` (readiness, checks DB/Kafka) | kubelet restarts pod                           |
 
 The probes layer cleanly: each layer's failure surface is bounded.
 

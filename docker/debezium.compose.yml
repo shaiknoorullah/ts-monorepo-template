@@ -6,7 +6,7 @@
 #   curl -sf -X POST -H "Content-Type: application/json" \
 #     --data @docker/debezium/outbox-connector.json \
 #     http://localhost:8083/connectors
-version: "3.9"
+version: '3.9'
 
 services:
   connect:
@@ -14,25 +14,25 @@ services:
     container_name: debezium-connect
     restart: unless-stopped
     environment:
-      BOOTSTRAP_SERVERS: "kafka:9092"
-      GROUP_ID: "connect-cluster"
-      CONFIG_STORAGE_TOPIC: "connect_configs"
-      OFFSET_STORAGE_TOPIC: "connect_offsets"
-      STATUS_STORAGE_TOPIC: "connect_statuses"
-      CONFIG_STORAGE_REPLICATION_FACTOR: "1"
-      OFFSET_STORAGE_REPLICATION_FACTOR: "1"
-      STATUS_STORAGE_REPLICATION_FACTOR: "1"
-      KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
-      VALUE_CONVERTER: "io.debezium.converters.CloudEventsConverter"
-      CONNECT_VALUE_CONVERTER_SERIALIZER_TYPE: "json"
-      CONNECT_VALUE_CONVERTER_DATA_SERIALIZER_TYPE: "json"
-      CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
+      BOOTSTRAP_SERVERS: 'kafka:9092'
+      GROUP_ID: 'connect-cluster'
+      CONFIG_STORAGE_TOPIC: 'connect_configs'
+      OFFSET_STORAGE_TOPIC: 'connect_offsets'
+      STATUS_STORAGE_TOPIC: 'connect_statuses'
+      CONFIG_STORAGE_REPLICATION_FACTOR: '1'
+      OFFSET_STORAGE_REPLICATION_FACTOR: '1'
+      STATUS_STORAGE_REPLICATION_FACTOR: '1'
+      KEY_CONVERTER: 'org.apache.kafka.connect.storage.StringConverter'
+      VALUE_CONVERTER: 'io.debezium.converters.CloudEventsConverter'
+      CONNECT_VALUE_CONVERTER_SERIALIZER_TYPE: 'json'
+      CONNECT_VALUE_CONVERTER_DATA_SERIALIZER_TYPE: 'json'
+      CONNECT_REST_ADVERTISED_HOST_NAME: 'connect'
     ports:
-      - "8083:8083"
+      - '8083:8083'
     networks:
       - events
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8083/ >/dev/null"]
+      test: ['CMD-SHELL', 'curl -sf http://localhost:8083/ >/dev/null']
       interval: 10s
       timeout: 5s
       retries: 18

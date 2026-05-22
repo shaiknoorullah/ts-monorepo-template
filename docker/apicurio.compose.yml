@@ -1,6 +1,6 @@
 # Apicurio Registry 3.x backed by Postgres.
 # REST API and UI on http://localhost:8081 (host-mapped from container :8080).
-version: "3.9"
+version: '3.9'
 
 services:
   apicurio-db:
@@ -15,7 +15,7 @@ services:
       - apicurio-db-data:/var/lib/postgresql/data
     networks: [events]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U apicurio -d apicurio"]
+      test: ['CMD-SHELL', 'pg_isready -U apicurio -d apicurio']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -30,15 +30,15 @@ services:
     environment:
       APICURIO_STORAGE_KIND: sql
       APICURIO_STORAGE_SQL_KIND: postgresql
-      APICURIO_DATASOURCE_URL: "jdbc:postgresql://apicurio-db:5432/apicurio"
+      APICURIO_DATASOURCE_URL: 'jdbc:postgresql://apicurio-db:5432/apicurio'
       APICURIO_DATASOURCE_USERNAME: apicurio
       APICURIO_DATASOURCE_PASSWORD: apicurio
-      QUARKUS_HTTP_CORS_ORIGINS: "*"
+      QUARKUS_HTTP_CORS_ORIGINS: '*'
     ports:
-      - "8081:8080"
+      - '8081:8080'
     networks: [events]
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8080/q/health/ready >/dev/null"]
+      test: ['CMD-SHELL', 'curl -sf http://localhost:8080/q/health/ready >/dev/null']
       interval: 10s
       timeout: 5s
       retries: 18

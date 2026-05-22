@@ -42,7 +42,7 @@ interface AstroLoaderContext {
   logger?: { info: (msg: string) => void; warn: (msg: string) => void }
   store: {
     clear: () => void
-    set: (entry: { body?: string; data: Record<string, unknown>; id: string; }) => void
+    set: (entry: { body?: string; data: Record<string, unknown>; id: string }) => void
   }
 }
 

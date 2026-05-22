@@ -2,15 +2,15 @@
 title: Kroxylicious — Kafka Proxy for Encryption, Multi-Tenancy, and Audit
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
-  - "https://kroxylicious.io/"
-  - "https://github.com/kroxylicious/kroxylicious"
-  - "https://kroxylicious.io/docs/v0.10.0/"
-  - "https://kroxylicious.io/docs/v0.10.0/#assembly-record-encryption"
-  - "https://kroxylicious.io/docs/v0.10.0/#assembly-multi-tenancy"
-  - "https://kafka.apache.org/protocol"
-  - "https://github.com/kroxylicious/kroxylicious/tree/main/kroxylicious-filters"
+  - 'https://kroxylicious.io/'
+  - 'https://github.com/kroxylicious/kroxylicious'
+  - 'https://kroxylicious.io/docs/v0.10.0/'
+  - 'https://kroxylicious.io/docs/v0.10.0/#assembly-record-encryption'
+  - 'https://kroxylicious.io/docs/v0.10.0/#assembly-multi-tenancy'
+  - 'https://kafka.apache.org/protocol'
+  - 'https://github.com/kroxylicious/kroxylicious/tree/main/kroxylicious-filters'
 ---
 
 # Kroxylicious — Kafka Proxy for Encryption, Multi-Tenancy, and Audit
@@ -44,14 +44,14 @@ filters:
     config:
       kms: VaultKmsService
       kmsConfig:
-        vaultTransitEngineUrl: "https://vault.example.com/v1/transit"
-        vaultToken: "${env:VAULT_TOKEN}"
+        vaultTransitEngineUrl: 'https://vault.example.com/v1/transit'
+        vaultToken: '${env:VAULT_TOKEN}'
       selector: TemplateKekSelector
       selectorConfig:
-        template: "kek-${topicName}"
+        template: 'kek-${topicName}'
 ```
 
-The KEK can rotate at the KMS level; old records remain readable because the wrapped DEK was wrapped with the *prior* KEK version, and the KMS keeps prior versions for decrypt. This is the standard envelope-encryption pattern.
+The KEK can rotate at the KMS level; old records remain readable because the wrapped DEK was wrapped with the _prior_ KEK version, and the KMS keeps prior versions for decrypt. This is the standard envelope-encryption pattern.
 
 ### Multi-tenancy
 
@@ -60,7 +60,7 @@ filters:
   - type: MultiTenant
     config:
       prefixResourceNameStrategy:
-        delimiter: "."
+        delimiter: '.'
 ```
 
 When tenant `acme` connects with credentials that carry the principal `tenant.acme.*`, the proxy rewrites all topic names so that `acme.orders` on the wire becomes `orders` to the tenant; `acme` cannot list, produce to, or consume from any topic outside its prefix. Consumer group names are prefixed the same way. The cluster itself is unaware of tenants — it sees ordinary topic names.
@@ -74,8 +74,8 @@ filters:
   - type: ValidateSchema
     config:
       registry:
-        url: "http://apicurio:8080/apis/registry/v2"
-      onValidationFailure: REJECT       # or DLQ
+        url: 'http://apicurio:8080/apis/registry/v2'
+      onValidationFailure: REJECT # or DLQ
       cacheTtlSeconds: 60
 ```
 
@@ -83,12 +83,12 @@ filters:
 
 ```yaml
 filters:
-  - type: ApiLogging          # built-in
+  - type: ApiLogging # built-in
     config:
       includePrincipal: true
-      includeBytes: false     # don't log payloads
+      includeBytes: false # don't log payloads
       includeTopicPartition: true
-      sink: stdout            # or kafka:audit.events
+      sink: stdout # or kafka:audit.events
 ```
 
 ## Full proxy config example (4 filters wired)
@@ -119,13 +119,13 @@ filterDefinitions:
     type: MultiTenant
     config:
       prefixResourceNameStrategy:
-        delimiter: "."
+        delimiter: '.'
 
   - name: ValidateSchema
     type: ValidateSchema
     config:
       registry:
-        url: "http://apicurio:8080/apis/registry/v2"
+        url: 'http://apicurio:8080/apis/registry/v2'
       onValidationFailure: REJECT
       cacheTtlSeconds: 60
 
@@ -134,11 +134,11 @@ filterDefinitions:
     config:
       kms: VaultKmsService
       kmsConfig:
-        vaultTransitEngineUrl: "${env:VAULT_TRANSIT_URL}"
-        vaultToken: "${env:VAULT_TOKEN}"
+        vaultTransitEngineUrl: '${env:VAULT_TRANSIT_URL}'
+        vaultToken: '${env:VAULT_TOKEN}'
       selector: TemplateKekSelector
       selectorConfig:
-        template: "kek-${topicName}"
+        template: 'kek-${topicName}'
 
   - name: ApiLogging
     type: ApiLogging
@@ -149,7 +149,7 @@ filterDefinitions:
       sink: stdout
 ```
 
-Filter order matters. `MultiTenant` runs first to rewrite topic names; `ValidateSchema` and `RecordEncryption` then see the *rewritten* names. Audit logs the un-rewritten principal but the rewritten topic — keep that in mind when reading audit output.
+Filter order matters. `MultiTenant` runs first to rewrite topic names; `ValidateSchema` and `RecordEncryption` then see the _rewritten_ names. Audit logs the un-rewritten principal but the rewritten topic — keep that in mind when reading audit output.
 
 ## docker-compose recipe
 

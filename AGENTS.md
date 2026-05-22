@@ -165,6 +165,7 @@ pnpm docs:build
 - **subject:** sentence case, no trailing period, ≤ 100 chars
 
 Example:
+
 ```
 feat(logger): add OpenTelemetry trace-context injection
 
@@ -306,16 +307,16 @@ The repo ships a frontend stack alongside the backend microservices. **Next.js i
 
 ### Matrix
 
-| Surface | Framework | Path |
-|---|---|---|
-| Marketing + landing pages | **Astro 5** | `apps/marketing` |
-| Customer-facing docs | **Astro Starlight** | `apps/docs-public` |
-| Internal docs / ADRs | VitePress (existing) | `docs/` |
-| Multi-tenant SaaS web app (`*.app.example.com`) | **Expo + react-native-web + expo-router 4** | `apps/web-app` |
-| Customer mobile (iOS + Android) | **Expo + expo-router 4** | `apps/mobile-customer` |
-| Admin mobile (iOS + Android) | **Expo + expo-router 4** | `apps/mobile-admin` |
-| Edge endpoints (Cloudflare Workers) | **Hono** | `infra/cloudflare/workers/*` |
-| Heavy-interaction web NOT shared with mobile (reserved) | TanStack Start | (no app yet) |
+| Surface                                                 | Framework                                   | Path                         |
+| ------------------------------------------------------- | ------------------------------------------- | ---------------------------- |
+| Marketing + landing pages                               | **Astro 5**                                 | `apps/marketing`             |
+| Customer-facing docs                                    | **Astro Starlight**                         | `apps/docs-public`           |
+| Internal docs / ADRs                                    | VitePress (existing)                        | `docs/`                      |
+| Multi-tenant SaaS web app (`*.app.example.com`)         | **Expo + react-native-web + expo-router 4** | `apps/web-app`               |
+| Customer mobile (iOS + Android)                         | **Expo + expo-router 4**                    | `apps/mobile-customer`       |
+| Admin mobile (iOS + Android)                            | **Expo + expo-router 4**                    | `apps/mobile-admin`          |
+| Edge endpoints (Cloudflare Workers)                     | **Hono**                                    | `infra/cloudflare/workers/*` |
+| Heavy-interaction web NOT shared with mobile (reserved) | TanStack Start                              | (no app yet)                 |
 
 ### Shared frontend packages
 

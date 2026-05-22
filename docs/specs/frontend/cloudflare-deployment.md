@@ -2,7 +2,7 @@
 title: Cloudflare deployment
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://developers.cloudflare.com/pages/
   - https://developers.cloudflare.com/workers/
@@ -22,18 +22,18 @@ Everything that goes on the internet lives on Cloudflare. Free tier only.
 
 ## What Cloudflare gives us
 
-| Service | Use | Free tier |
-|---|---|---|
-| **Pages** | Static + SSR hosting for marketing, docs, web-app web build | Unlimited requests, 500 builds/mo |
-| **Workers** | Edge functions, webhook receivers, tenant routing | 100k req/day, 10 ms CPU |
-| **R2** | Static assets, marketing media, CMS uploads | 10 GB + zero egress |
-| **D1** | Marketing forms data, edge cache for tenant lookup | 5 GB |
-| **KV** | Edge config, feature flags, session cache | 1 GB |
-| **Turnstile** | CAPTCHA on marketing forms | Unlimited |
-| **Web Analytics** | Page-view analytics with no cookies | Unlimited |
-| **Tunnels (cloudflared)** | Expose local backends for demos/previews | Free |
-| **Access** | SSO in front of internal docs / preview deploys | 50 users |
-| **DNS** | All zones | Free |
+| Service                   | Use                                                         | Free tier                         |
+| ------------------------- | ----------------------------------------------------------- | --------------------------------- |
+| **Pages**                 | Static + SSR hosting for marketing, docs, web-app web build | Unlimited requests, 500 builds/mo |
+| **Workers**               | Edge functions, webhook receivers, tenant routing           | 100k req/day, 10 ms CPU           |
+| **R2**                    | Static assets, marketing media, CMS uploads                 | 10 GB + zero egress               |
+| **D1**                    | Marketing forms data, edge cache for tenant lookup          | 5 GB                              |
+| **KV**                    | Edge config, feature flags, session cache                   | 1 GB                              |
+| **Turnstile**             | CAPTCHA on marketing forms                                  | Unlimited                         |
+| **Web Analytics**         | Page-view analytics with no cookies                         | Unlimited                         |
+| **Tunnels (cloudflared)** | Expose local backends for demos/previews                    | Free                              |
+| **Access**                | SSO in front of internal docs / preview deploys             | 50 users                          |
+| **DNS**                   | All zones                                                   | Free                              |
 
 ## Project layout
 
@@ -65,33 +65,33 @@ Auth: `wrangler login` once per dev machine. CI uses a `CLOUDFLARE_API_TOKEN` se
 
 ## Per-app deploy
 
-| App | Trigger | Command |
-|---|---|---|
-| `apps/marketing` | push to main | `wrangler pages deploy dist` |
-| `apps/docs-public` | push to main | `wrangler pages deploy dist` |
-| `apps/web-app` | push to main | `wrangler pages deploy dist/web` (Expo web build) |
-| `infra/cloudflare/workers/tenant-router` | push to main | `wrangler deploy` |
-| `infra/cloudflare/workers/webhook-receiver` | push to main | `wrangler deploy` |
+| App                                         | Trigger      | Command                                           |
+| ------------------------------------------- | ------------ | ------------------------------------------------- |
+| `apps/marketing`                            | push to main | `wrangler pages deploy dist`                      |
+| `apps/docs-public`                          | push to main | `wrangler pages deploy dist`                      |
+| `apps/web-app`                              | push to main | `wrangler pages deploy dist/web` (Expo web build) |
+| `infra/cloudflare/workers/tenant-router`    | push to main | `wrangler deploy`                                 |
+| `infra/cloudflare/workers/webhook-receiver` | push to main | `wrangler deploy`                                 |
 
 Preview deploys per PR: Cloudflare Pages auto-creates them when GitHub integration is enabled. Worker previews via `wrangler deploy --env preview`.
 
 ## What "Next.js hides behind Vercel" — and what we use instead
 
-| Capability | Vercel + Next | Our equivalent on CF |
-|---|---|---|
-| Static + SSR | `vercel deploy` | `wrangler pages deploy` |
-| Edge Functions | Vercel Edge runtime | Workers (V8 isolate) |
+| Capability         | Vercel + Next                   | Our equivalent on CF                                                  |
+| ------------------ | ------------------------------- | --------------------------------------------------------------------- |
+| Static + SSR       | `vercel deploy`                 | `wrangler pages deploy`                                               |
+| Edge Functions     | Vercel Edge runtime             | Workers (V8 isolate)                                                  |
 | Image Optimization | `next/image` → Vercel image CDN | Cloudflare Images (`/cdn-cgi/image/`) or Astro `<Image />` build-time |
-| ISR | Vercel revalidation | Workers Cron Triggers + KV cache |
-| Cron jobs | Vercel Cron | Workers Cron Triggers |
-| KV | Vercel KV (Upstash) | Workers KV (native) |
-| Blob storage | Vercel Blob | R2 |
-| SQL at edge | (none) | D1 |
-| Real-time state | (none baseline) | Durable Objects |
-| Analytics | Vercel Analytics | Cloudflare Web Analytics |
-| Geo / IP | Vercel headers | Workers `request.cf.*` |
-| CAPTCHA | Third-party | Turnstile |
-| Preview deploys | Vercel preview URLs | Pages preview deploys per PR |
+| ISR                | Vercel revalidation             | Workers Cron Triggers + KV cache                                      |
+| Cron jobs          | Vercel Cron                     | Workers Cron Triggers                                                 |
+| KV                 | Vercel KV (Upstash)             | Workers KV (native)                                                   |
+| Blob storage       | Vercel Blob                     | R2                                                                    |
+| SQL at edge        | (none)                          | D1                                                                    |
+| Real-time state    | (none baseline)                 | Durable Objects                                                       |
+| Analytics          | Vercel Analytics                | Cloudflare Web Analytics                                              |
+| Geo / IP           | Vercel headers                  | Workers `request.cf.*`                                                |
+| CAPTCHA            | Third-party                     | Turnstile                                                             |
+| Preview deploys    | Vercel preview URLs             | Pages preview deploys per PR                                          |
 
 Every Cloudflare primitive is a documented service with its own wrangler config. Nothing is hidden in a framework flag.
 
@@ -105,13 +105,13 @@ tunnel: <UUID>
 credentials-file: ~/.cloudflared/<UUID>.json
 ingress:
   - hostname: app.dev.example.com
-    service: http://localhost:8081       # apps/web-app web dev
+    service: http://localhost:8081 # apps/web-app web dev
   - hostname: www.dev.example.com
-    service: http://localhost:4321       # apps/marketing
+    service: http://localhost:4321 # apps/marketing
   - hostname: docs.dev.example.com
-    service: http://localhost:4322       # apps/docs-public
+    service: http://localhost:4322 # apps/docs-public
   - hostname: api.dev.example.com
-    service: http://localhost:3000       # apps/api-gateway
+    service: http://localhost:3000 # apps/api-gateway
   - service: http_status:404
 ```
 
@@ -121,14 +121,14 @@ This is useful for: mobile devices testing against your laptop, SSO callback URL
 
 DNS records are added manually in the Cloudflare dashboard for the operator's domain. The pattern:
 
-| Host | Type | Target |
-|---|---|---|
-| `www.example.com` | CNAME | `<pages-project>.pages.dev` |
-| `docs.example.com` | CNAME | `<pages-project>.pages.dev` |
-| `app.example.com` | CNAME | `<pages-project>.pages.dev` |
-| `*.app.example.com` | CNAME (wildcard) | `<pages-project>.pages.dev` |
-| `api.example.com` | CNAME | (origin behind tunnel or load balancer) |
-| `*.dev.example.com` | CNAME | `<tunnel-uuid>.cfargotunnel.com` |
+| Host                | Type             | Target                                  |
+| ------------------- | ---------------- | --------------------------------------- |
+| `www.example.com`   | CNAME            | `<pages-project>.pages.dev`             |
+| `docs.example.com`  | CNAME            | `<pages-project>.pages.dev`             |
+| `app.example.com`   | CNAME            | `<pages-project>.pages.dev`             |
+| `*.app.example.com` | CNAME (wildcard) | `<pages-project>.pages.dev`             |
+| `api.example.com`   | CNAME            | (origin behind tunnel or load balancer) |
+| `*.dev.example.com` | CNAME            | `<tunnel-uuid>.cfargotunnel.com`        |
 
 ## Secrets
 

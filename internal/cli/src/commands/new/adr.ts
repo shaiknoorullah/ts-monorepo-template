@@ -11,7 +11,7 @@ import { renderString } from '../../utils/templates'
 function nextNumber(adrDir: string): string {
   if (!existsSync(adrDir)) return '0001'
   const nums = readdirSync(adrDir)
-    .map((f) => (/^(\d{4})-/.exec(f))?.[1])
+    .map((f) => /^(\d{4})-/.exec(f)?.[1])
     .filter((n): n is string => !!n)
     .map((n) => Number.parseInt(n, 10))
   const max = nums.length === 0 ? 0 : Math.max(...nums)

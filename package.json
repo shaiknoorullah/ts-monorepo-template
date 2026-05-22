@@ -68,7 +68,7 @@
     "@stryker-mutator/core": "^9.6.0",
     "@stryker-mutator/typescript-checker": "^9.6.0",
     "@stryker-mutator/vitest-runner": "^9.6.0",
-    "@types/node": "^22.10.0",
+    "@types/node": "catalog:",
     "@vitest/coverage-v8": "^4.0.0",
     "@vitest/eslint-plugin": "^1.6.0",
     "@vitest/ui": "^4.0.0",
@@ -97,16 +97,16 @@
     "syncpack": "^14.0.0",
     "tsd": "^0.32.0",
     "tsdown": "catalog:",
-    "tsx": "^4.20.0",
+    "tsx": "catalog:",
     "type-coverage": "^2.29.0",
     "typedoc": "^0.28.0",
     "typedoc-plugin-coverage": "^4.0.0",
     "typedoc-plugin-markdown": "^4.5.0",
-    "typescript": "^5.7.0",
+    "typescript": "catalog:",
     "typescript-eslint": "^8.30.0",
     "unrun": "^0.3.0",
     "vitepress": "^1.6.0",
-    "vitest": "^4.0.0"
+    "vitest": "catalog:"
   },
   "packageManager": "pnpm@10.15.0",
   "engines": {

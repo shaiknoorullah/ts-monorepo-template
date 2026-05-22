@@ -83,11 +83,11 @@ ui-nativewind README).
 
 ## Tenant resolution
 
-| Surface | Slug source |
-| --- | --- |
-| Marketing (Astro) | `Host` header parsed by middleware |
+| Surface                                        | Slug source                                        |
+| ---------------------------------------------- | -------------------------------------------------- |
+| Marketing (Astro)                              | `Host` header parsed by middleware                 |
 | Web-app (Cloudflare Worker `cf-tenant-router`) | `x-tenant` header, injected as `window.__TENANT__` |
-| Native | `EXPO_PUBLIC_TENANT_SLUG` build-time env |
+| Native                                         | `EXPO_PUBLIC_TENANT_SLUG` build-time env           |
 
 Apps that fail to resolve a slug must fall back to `'default'`.
 

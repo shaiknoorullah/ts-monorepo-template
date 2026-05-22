@@ -21,12 +21,12 @@ const requestLogger = childLogger(logger, { requestId: 'r-abc' })
 
 ## Configuration
 
-| Option     | Default                            | Description                              |
-| ---------- | ---------------------------------- | ---------------------------------------- |
-| `service`  | (required)                         | Emitted as `service` on every log line.  |
-| `level`    | `process.env.LOG_LEVEL ?? 'info'`  | pino log level.                          |
-| `pretty`   | `NODE_ENV !== 'production'`        | Pretty-print in dev.                     |
-| `bindings` | `{}`                               | Extra fields merged into the base.       |
+| Option     | Default                           | Description                             |
+| ---------- | --------------------------------- | --------------------------------------- |
+| `service`  | (required)                        | Emitted as `service` on every log line. |
+| `level`    | `process.env.LOG_LEVEL ?? 'info'` | pino log level.                         |
+| `pretty`   | `NODE_ENV !== 'production'`       | Pretty-print in dev.                    |
+| `bindings` | `{}`                              | Extra fields merged into the base.      |
 
 ## Status
 

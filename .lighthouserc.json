@@ -8,12 +8,7 @@
         "preset": "desktop",
         "emulatedFormFactor": "mobile",
         "throttlingMethod": "simulate",
-        "onlyCategories": [
-          "performance",
-          "accessibility",
-          "best-practices",
-          "seo"
-        ]
+        "onlyCategories": ["performance", "accessibility", "best-practices", "seo"]
       }
     },
     "assert": {

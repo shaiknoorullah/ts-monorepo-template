@@ -5,16 +5,16 @@ the default; `.env` is only ever a rendered artifact for docker-compose.
 
 ## Files
 
-| File | Purpose |
-|---|---|
-| `schema.ts` | Zod schema — **the source of truth**. TS types derived via `z.infer<typeof AppConfigSchema>`. |
-| `base.yaml` | Shared defaults across all environments. |
-| `dev.yaml` | Local developer-laptop overrides (extends `base.yaml`). |
-| `test.yaml` | CI / Vitest / Testcontainers (extends `base.yaml`). |
-| `staging.yaml` | Staging cluster (extends `base.yaml`). |
-| `prod.yaml` | Production cluster (extends `base.yaml`). |
-| `tenants/*.yaml` | Per-tenant overrides (extend the relevant env file). |
-| `saas-commons.yaml` | Declarative replacement for `.env.saas-commons.example`. |
+| File                | Purpose                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| `schema.ts`         | Zod schema — **the source of truth**. TS types derived via `z.infer<typeof AppConfigSchema>`. |
+| `base.yaml`         | Shared defaults across all environments.                                                      |
+| `dev.yaml`          | Local developer-laptop overrides (extends `base.yaml`).                                       |
+| `test.yaml`         | CI / Vitest / Testcontainers (extends `base.yaml`).                                           |
+| `staging.yaml`      | Staging cluster (extends `base.yaml`).                                                        |
+| `prod.yaml`         | Production cluster (extends `base.yaml`).                                                     |
+| `tenants/*.yaml`    | Per-tenant overrides (extend the relevant env file).                                          |
+| `saas-commons.yaml` | Declarative replacement for `.env.saas-commons.example`.                                      |
 
 ## Layering rules
 
@@ -47,8 +47,8 @@ repo env validate prod
 From application code:
 
 ```ts
-import { loadConfig } from '@pkg/config'      // wraps c12 + the schema
-const cfg = await loadConfig()                  // picks env from NODE_ENV
+import { loadConfig } from '@pkg/config' // wraps c12 + the schema
+const cfg = await loadConfig() // picks env from NODE_ENV
 ```
 
 ## SecretRef
@@ -56,9 +56,9 @@ const cfg = await loadConfig()                  // picks env from NODE_ENV
 ```yaml
 database:
   password:
-    provider: vault          # vault | eso | azure-kv | aws-sm | env
+    provider: vault # vault | eso | azure-kv | aws-sm | env
     path: secret/data/prod/db#password
-    devFallback: dev         # only used when NODE_ENV !== 'production'
+    devFallback: dev # only used when NODE_ENV !== 'production'
 ```
 
 - `provider: env` reads `path` as an env-var name (12-factor mode).

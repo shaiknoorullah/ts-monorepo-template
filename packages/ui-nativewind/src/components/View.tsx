@@ -25,10 +25,7 @@ export function View({
   ...rest
 }: ViewProps): JSX.Element {
   return (
-    <RNView
-      className={`${bg[surface]} ${padded ? 'p-md' : ''} ${className ?? ''}`}
-      {...rest}
-    >
+    <RNView className={`${bg[surface]} ${padded ? 'p-md' : ''} ${className ?? ''}`} {...rest}>
       {children}
     </RNView>
   )

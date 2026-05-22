@@ -2,16 +2,16 @@
 title: Postgres HA — CloudNativePG + PgBouncer
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
-  - "https://cloudnative-pg.io/documentation/current/"
-  - "https://cloudnative-pg.io/documentation/current/architecture/"
-  - "https://www.pgbouncer.org/config.html"
-  - "https://patroni.readthedocs.io/en/latest/"
-  - "https://github.com/wal-g/wal-g"
-  - "https://www.postgresql.org/docs/current/runtime-config-replication.html"
-  - "https://github.com/zalando/spilo"
-  - "https://cloudnative-pg.io/documentation/current/backup_recovery/"
+  - 'https://cloudnative-pg.io/documentation/current/'
+  - 'https://cloudnative-pg.io/documentation/current/architecture/'
+  - 'https://www.pgbouncer.org/config.html'
+  - 'https://patroni.readthedocs.io/en/latest/'
+  - 'https://github.com/wal-g/wal-g'
+  - 'https://www.postgresql.org/docs/current/runtime-config-replication.html'
+  - 'https://github.com/zalando/spilo'
+  - 'https://cloudnative-pg.io/documentation/current/backup_recovery/'
 ---
 
 # Postgres HA — CloudNativePG + PgBouncer
@@ -41,19 +41,19 @@ spec:
 
   postgresql:
     parameters:
-      max_connections: "200"
-      shared_buffers: "2GB"
-      effective_cache_size: "6GB"
-      wal_level: "logical"
-      max_wal_senders: "10"
-      max_replication_slots: "10"
-      max_logical_replication_workers: "8"
-      synchronous_commit: "on"
-      hot_standby: "on"
-      log_min_duration_statement: "200ms"
-      log_lock_waits: "on"
-      log_temp_files: "0"
-      track_io_timing: "on"
+      max_connections: '200'
+      shared_buffers: '2GB'
+      effective_cache_size: '6GB'
+      wal_level: 'logical'
+      max_wal_senders: '10'
+      max_replication_slots: '10'
+      max_logical_replication_workers: '8'
+      synchronous_commit: 'on'
+      hot_standby: 'on'
+      log_min_duration_statement: '200ms'
+      log_lock_waits: 'on'
+      log_temp_files: '0'
+      track_io_timing: 'on'
 
   bootstrap:
     initdb:
@@ -76,11 +76,11 @@ spec:
     updateInterval: 30
 
   minSyncReplicas: 1
-  maxSyncReplicas: 1   # 1 sync + 1 async = quorum but bounded latency
+  maxSyncReplicas: 1 # 1 sync + 1 async = quorum but bounded latency
 
   backup:
     barmanObjectStore:
-      destinationPath: "azure://pg-tenant-ap-south-1-pitr/pg-app"
+      destinationPath: 'azure://pg-tenant-ap-south-1-pitr/pg-app'
       azureCredentials:
         connectionString:
           name: azure-storage
@@ -91,7 +91,7 @@ spec:
       data:
         compression: lz4
         immediateCheckpoint: false
-    retentionPolicy: "30d"
+    retentionPolicy: '30d'
 
   monitoring:
     enablePodMonitor: true
@@ -131,12 +131,12 @@ spec:
   pgbouncer:
     poolMode: transaction
     parameters:
-      max_client_conn: "1000"
-      default_pool_size: "25"
-      reserve_pool_size: "5"
-      server_idle_timeout: "60"
-      server_lifetime: "3600"
-      query_wait_timeout: "120"
+      max_client_conn: '1000'
+      default_pool_size: '25'
+      reserve_pool_size: '5'
+      server_idle_timeout: '60'
+      server_lifetime: '3600'
+      query_wait_timeout: '120'
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Pooler
@@ -150,8 +150,8 @@ spec:
   pgbouncer:
     poolMode: transaction
     parameters:
-      max_client_conn: "1000"
-      default_pool_size: "50"
+      max_client_conn: '1000'
+      default_pool_size: '50'
 ```
 
 Two separate Services: `pg-app-rw` routes to the current primary (CNPG keeps that label synced on failover); `pg-app-ro` routes to any replica. Application connection strings:
@@ -168,7 +168,7 @@ Reads that are tolerant of replication lag (analytics, list views) use the `_RO`
 Logical slots (used by Debezium) accumulate WAL on the primary if the consumer is offline. They are the single most common cause of "primary disk is full" outages on busy CDC setups. Rules:
 
 1. Every slot has a named owner and a documented "what consumes this" in `docs/specs/data-eventing/`.
-2. Decommissioning a consumer requires `pg_drop_replication_slot('name')` *in the same change* that removes the consumer.
+2. Decommissioning a consumer requires `pg_drop_replication_slot('name')` _in the same change_ that removes the consumer.
 3. Alert on `pg_replication_slots.confirmed_flush_lsn` lag > 1 GB.
 4. Never use `pg_replication_slot_advance()` to silence the alert without checking that the consumer is actually done with the LSN range. That manoeuvre is data loss in slow motion.
 
@@ -176,7 +176,7 @@ See `debezium-outbox-pattern.md` for connector-side mitigations (heartbeats).
 
 ## docker-compose recipe
 
-`docker/postgres-ha.compose.yml` provides a 1-primary + 1-replica setup using the upstream `postgres:16` image and `bitnami/pgbouncer:1.23`. It is *not* HA (no failover automation), but it mirrors the production topology for development. It enables `wal_level=logical`, creates the `debezium` user with `REPLICATION`, and starts a WAL archiving sidecar that writes to a local `pgwal/` volume. For production, run CloudNativePG on Kubernetes — compose is for dev only.
+`docker/postgres-ha.compose.yml` provides a 1-primary + 1-replica setup using the upstream `postgres:16` image and `bitnami/pgbouncer:1.23`. It is _not_ HA (no failover automation), but it mirrors the production topology for development. It enables `wal_level=logical`, creates the `debezium` user with `REPLICATION`, and starts a WAL archiving sidecar that writes to a local `pgwal/` volume. For production, run CloudNativePG on Kubernetes — compose is for dev only.
 
 ## References
 

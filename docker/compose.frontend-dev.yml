@@ -21,8 +21,8 @@ services:
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-dev-secret-change-me}
       PAYLOAD_PUBLIC_SERVER_URL: http://localhost:3001
     ports:
-      - "3001:3000"
-    profiles: ["frontend", "cms"]
+      - '3001:3000'
+    profiles: ['frontend', 'cms']
 
   umami:
     image: ghcr.io/umami-software/umami:postgresql-v2.15.0
@@ -33,8 +33,8 @@ services:
       DATABASE_TYPE: postgresql
       APP_SECRET: ${UMAMI_APP_SECRET:-dev-secret-change-me}
     ports:
-      - "3002:3000"
-    profiles: ["frontend", "analytics"]
+      - '3002:3000'
+    profiles: ['frontend', 'analytics']
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -43,4 +43,4 @@ services:
     volumes:
       - ${HOME}/.cloudflared:/etc/cloudflared:ro
     network_mode: host
-    profiles: ["tunnels"]
+    profiles: ['tunnels']

@@ -2,15 +2,15 @@
 title: Kafka (KRaft) — Single-Node to Multi-Broker Scale Path
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
-  - "https://kafka.apache.org/documentation/#kraft"
-  - "https://developer.confluent.io/learn/kraft/"
-  - "https://strimzi.io/docs/operators/latest/deploying.html"
-  - "https://strimzi.io/blog/2024/03/21/kraft-migration/"
-  - "https://kafka.apache.org/documentation/#configuration"
-  - "https://github.com/strimzi/strimzi-kafka-operator"
-  - "https://cwiki.apache.org/confluence/display/KAFKA/KIP-833%3A+Mark+KRaft+as+Production+Ready"
+  - 'https://kafka.apache.org/documentation/#kraft'
+  - 'https://developer.confluent.io/learn/kraft/'
+  - 'https://strimzi.io/docs/operators/latest/deploying.html'
+  - 'https://strimzi.io/blog/2024/03/21/kraft-migration/'
+  - 'https://kafka.apache.org/documentation/#configuration'
+  - 'https://github.com/strimzi/strimzi-kafka-operator'
+  - 'https://cwiki.apache.org/confluence/display/KAFKA/KIP-833%3A+Mark+KRaft+as+Production+Ready'
 ---
 
 # Kafka (KRaft) — Single-Node to Multi-Broker Scale Path
@@ -19,16 +19,18 @@ references:
 
 ZooKeeper has been removed from Apache Kafka 4.0 (Mar 2025). KRaft (Kafka Raft metadata mode) is the only supported metadata quorum going forward. The KRaft promotion to production-ready landed in [KIP-833](https://cwiki.apache.org/confluence/display/KAFKA/KIP-833%3A+Mark+KRaft+as+Production+Ready) and its removal of ZooKeeper was completed in [KIP-833 / KIP-866](https://kafka.apache.org/documentation/#kraft). For any deployment created in 2026, **never** stand up a ZooKeeper ensemble — there is no upgrade path forward, and the operational surface (3 ZK pods, ZK ACLs, ZK JMX, leader election) is gone.
 
-KRaft uses Raft consensus inside the broker process itself. Metadata (topics, configs, ACLs, partition assignments) lives in an internal compacted topic `__cluster_metadata` replicated across the *controllers* (a subset of nodes). For dev or smallest-prod this can be a single node that is both controller and broker (`process.roles=controller,broker`). For production it is at least 3 dedicated controllers + N brokers, or 3 combined nodes (combined mode is supported but not recommended above one-machine-dev — see the [Strimzi KRaft migration guide](https://strimzi.io/blog/2024/03/21/kraft-migration/)).
+KRaft uses Raft consensus inside the broker process itself. Metadata (topics, configs, ACLs, partition assignments) lives in an internal compacted topic `__cluster_metadata` replicated across the _controllers_ (a subset of nodes). For dev or smallest-prod this can be a single node that is both controller and broker (`process.roles=controller,broker`). For production it is at least 3 dedicated controllers + N brokers, or 3 combined nodes (combined mode is supported but not recommended above one-machine-dev — see the [Strimzi KRaft migration guide](https://strimzi.io/blog/2024/03/21/kraft-migration/)).
 
 ## Single-node KRaft for dev and smallest-prod
 
 A single-node KRaft cluster is acceptable for:
+
 - Local development (in `docker-compose`)
 - CI integration tests
 - Internal tooling clusters where data loss on node loss is tolerable
 
 It is **not** acceptable for any workload where:
+
 - The cluster is the source of truth for events that drive other systems (CDC, outbox).
 - Consumer commits must survive a single host failure.
 - `min.insync.replicas` > 1 is required by an SLO.
@@ -39,30 +41,30 @@ For all those, you need ≥ 3 brokers with `replication.factor=3` and `min.insyn
 
 Cluster-level (`server.properties` / Strimzi CR):
 
-| Setting | Single-node dev | Small prod (3 broker) | Large prod (5+) |
-|---|---|---|---|
-| `process.roles` | `controller,broker` | `controller,broker` x3 | `controller` x3, `broker` x5 |
-| `default.replication.factor` | 1 | 3 | 3 |
-| `min.insync.replicas` | 1 | 2 | 2 |
-| `offsets.topic.replication.factor` | 1 | 3 | 3 |
-| `transaction.state.log.replication.factor` | 1 | 3 | 3 |
-| `transaction.state.log.min.isr` | 1 | 2 | 2 |
-| `unclean.leader.election.enable` | false | false | false |
-| `log.retention.hours` | 168 (7d) | 168 | per-topic override |
-| `log.segment.bytes` | 1 GiB | 1 GiB | 1 GiB |
-| `auto.create.topics.enable` | false | false | false |
+| Setting                                    | Single-node dev     | Small prod (3 broker)  | Large prod (5+)              |
+| ------------------------------------------ | ------------------- | ---------------------- | ---------------------------- |
+| `process.roles`                            | `controller,broker` | `controller,broker` x3 | `controller` x3, `broker` x5 |
+| `default.replication.factor`               | 1                   | 3                      | 3                            |
+| `min.insync.replicas`                      | 1                   | 2                      | 2                            |
+| `offsets.topic.replication.factor`         | 1                   | 3                      | 3                            |
+| `transaction.state.log.replication.factor` | 1                   | 3                      | 3                            |
+| `transaction.state.log.min.isr`            | 1                   | 2                      | 2                            |
+| `unclean.leader.election.enable`           | false               | false                  | false                        |
+| `log.retention.hours`                      | 168 (7d)            | 168                    | per-topic override           |
+| `log.segment.bytes`                        | 1 GiB               | 1 GiB                  | 1 GiB                        |
+| `auto.create.topics.enable`                | false               | false                  | false                        |
 
 `auto.create.topics.enable=false` is non-negotiable in production. Auto-creation gives you topics with `replication.factor=1` and the default partition count, which silently violates your durability promises. Topics are managed via GitOps (Strimzi `KafkaTopic` CRs or a `kafka-topics.sh --create` script with explicit args).
 
 Per-topic class defaults (see `topic-management-runbooks.md` for the full naming standard):
 
-| Class | Partitions | Replication | Retention | Cleanup policy |
-|---|---|---|---|---|
-| Domain events (outbox-emitted) | 6 | 3 | 7 d | delete |
-| CDC streams (Debezium) | 6–12 | 3 | 3 d | delete |
-| Compacted state topics | 6 | 3 | infinite | compact |
-| Audit / immutable log | 12 | 3 | 90 d | delete |
-| DLQ | 3 | 3 | 14 d | delete |
+| Class                          | Partitions | Replication | Retention | Cleanup policy |
+| ------------------------------ | ---------- | ----------- | --------- | -------------- |
+| Domain events (outbox-emitted) | 6          | 3           | 7 d       | delete         |
+| CDC streams (Debezium)         | 6–12       | 3           | 3 d       | delete         |
+| Compacted state topics         | 6          | 3           | infinite  | compact        |
+| Audit / immutable log          | 12         | 3           | 90 d      | delete         |
+| DLQ                            | 3          | 3           | 14 d      | delete         |
 
 `log.compaction` requires tombstones (null-valued records) to delete keys. Compacted topics must always have a key set on the producer side; null-keyed records on a compacted topic cause Kafka to log warnings and never compact.
 
@@ -110,7 +112,7 @@ spec:
       min.insync.replicas: 1
       offsets.topic.replication.factor: 1
       transaction.state.log.replication.factor: 1
-      auto.create.topics.enable: "false"
+      auto.create.topics.enable: 'false'
 ```
 
 For 3-broker production, change `replicas: 3`, swap the listener `tls: true`, add `authorization: { type: simple }`, and bump every replication factor to 3. `KafkaTopic` CRs are then declarative:

@@ -2,7 +2,7 @@
 title: Frontend package architecture
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 ---
 
 # Frontend package architecture
@@ -11,17 +11,17 @@ Frontend shared code lives in `packages/<name>/`. Apps consume packages; package
 
 ## Packages
 
-| Package | Purpose | Consumers |
-|---|---|---|
-| `@pkg/ui` | Cross-platform UI primitives (Tamagui or NativeWind). Tokens, themes, primitives, patterns, icons. | `apps/web-app`, `apps/mobile-*`, `apps/marketing`, `apps/docs-public` |
-| `@pkg/forms` | RHF + Zod helpers, FormField primitives, Conform progressive-enhancement helpers. | `apps/web-app`, `apps/mobile-*`, `apps/marketing` |
-| `@pkg/tracking` | Unified `track(event, props)` API. Routes to Umami + CF Web Analytics. Consent-gated. | All apps |
-| `@pkg/consent` | vanilla-cookieconsent v3 wrapper. Category management, preference store. | `apps/marketing`, `apps/docs-public`, `apps/web-app` (web) |
-| `@pkg/auth-client` | Ory/Keycloak client. Web + RN variants. | `apps/web-app`, `apps/mobile-*` |
-| `@pkg/tenancy-client` | Tenant resolution: subdomain on web, deep link / profile on native. | `apps/web-app`, `apps/mobile-*` |
-| `@pkg/api-client` | Typed fetch wrapper. Reads tenancy + auth context. | All app-side surfaces |
-| `@pkg/cms-client` | Payload / Decap CMS fetch helpers + Astro Content Layer loader. | `apps/marketing`, `apps/docs-public` |
-| `@pkg/seo` | OpenGraph helpers, JSON-LD builders, sitemap helpers. | `apps/marketing`, `apps/docs-public` |
+| Package               | Purpose                                                                                            | Consumers                                                             |
+| --------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `@pkg/ui`             | Cross-platform UI primitives (Tamagui or NativeWind). Tokens, themes, primitives, patterns, icons. | `apps/web-app`, `apps/mobile-*`, `apps/marketing`, `apps/docs-public` |
+| `@pkg/forms`          | RHF + Zod helpers, FormField primitives, Conform progressive-enhancement helpers.                  | `apps/web-app`, `apps/mobile-*`, `apps/marketing`                     |
+| `@pkg/tracking`       | Unified `track(event, props)` API. Routes to Umami + CF Web Analytics. Consent-gated.              | All apps                                                              |
+| `@pkg/consent`        | vanilla-cookieconsent v3 wrapper. Category management, preference store.                           | `apps/marketing`, `apps/docs-public`, `apps/web-app` (web)            |
+| `@pkg/auth-client`    | Ory/Keycloak client. Web + RN variants.                                                            | `apps/web-app`, `apps/mobile-*`                                       |
+| `@pkg/tenancy-client` | Tenant resolution: subdomain on web, deep link / profile on native.                                | `apps/web-app`, `apps/mobile-*`                                       |
+| `@pkg/api-client`     | Typed fetch wrapper. Reads tenancy + auth context.                                                 | All app-side surfaces                                                 |
+| `@pkg/cms-client`     | Payload / Decap CMS fetch helpers + Astro Content Layer loader.                                    | `apps/marketing`, `apps/docs-public`                                  |
+| `@pkg/seo`            | OpenGraph helpers, JSON-LD builders, sitemap helpers.                                              | `apps/marketing`, `apps/docs-public`                                  |
 
 ## Dependency rules
 

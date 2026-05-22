@@ -60,17 +60,25 @@ export function createDbClient(options: DbClientOptions): DbClient {
 
   // Lazy load the pg driver so test/type environments don't need it installed.
   // In production each service depends on `pg` directly via the runtime catalog.
-   
-  interface PgPool { connect: () => Promise<{ release: () => void }>; end: () => Promise<void>; totalCount: number }
+
+  interface PgPool {
+    connect: () => Promise<{ release: () => void }>
+    end: () => Promise<void>
+    totalCount: number
+  }
 
   let pool: PgPool | undefined
   let closed = false
 
   const getPool = async (): Promise<PgPool> => {
     if (pool) return pool
-    const mod = (await import('pg').catch(() => null)) as null | { Pool?: new (cfg: unknown) => PgPool }
+    const mod = (await import('pg').catch(() => null)) as null | {
+      Pool?: new (cfg: unknown) => PgPool
+    }
     if (!mod?.Pool) {
-      throw new Error('createDbClient: `pg` driver is not installed. `pnpm add pg` in your service.')
+      throw new Error(
+        'createDbClient: `pg` driver is not installed. `pnpm add pg` in your service.',
+      )
     }
     pool = new mod.Pool({
       application_name: options.applicationName,

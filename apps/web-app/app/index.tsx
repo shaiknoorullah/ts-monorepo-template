@@ -9,9 +9,7 @@ export default function Home(): JSX.Element {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome</Text>
-      <Text style={styles.body}>
-        {slug ? `Tenant: ${slug}` : 'No tenant context.'}
-      </Text>
+      <Text style={styles.body}>{slug ? `Tenant: ${slug}` : 'No tenant context.'}</Text>
       <Link href="/sign-in" style={styles.link}>
         Sign in
       </Link>

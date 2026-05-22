@@ -17,7 +17,7 @@ const db = createDbClient({
   maxConnections: 20,
 })
 
-await db.ping()        // healthcheck
+await db.ping() // healthcheck
 // … later, on shutdown
 await db.close()
 ```

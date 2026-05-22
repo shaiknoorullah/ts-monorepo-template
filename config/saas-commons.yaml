@@ -14,7 +14,7 @@
 app:
   name: saas-commons
   env: dev
-  port: 0         # not an app — config bundle for the SaaS sidecar stack
+  port: 0 # not an app — config bundle for the SaaS sidecar stack
 
 # ---- Lago ----
 saas:

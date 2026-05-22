@@ -2,7 +2,7 @@
 title: SigNoz APM — OTel-native Tracing, Metrics, Logs on ClickHouse
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://signoz.io/docs/install/docker/
   - https://signoz.io/docs/instrumentation/nodejs/
@@ -81,12 +81,12 @@ services:
     image: bitnami/zookeeper:3.9.2
     restart: unless-stopped
     environment:
-      ALLOW_ANONYMOUS_LOGIN: "yes"
-      ZOO_AUTOPURGE_INTERVAL: "1"
+      ALLOW_ANONYMOUS_LOGIN: 'yes'
+      ZOO_AUTOPURGE_INTERVAL: '1'
     volumes: [zk-data:/bitnami/zookeeper]
     networks: [signoz]
     healthcheck:
-      test: ["CMD-SHELL", "echo ruok | nc -w 1 localhost 2181 | grep -q imok"]
+      test: ['CMD-SHELL', 'echo ruok | nc -w 1 localhost 2181 | grep -q imok']
       interval: 15s
       retries: 10
 
@@ -103,28 +103,28 @@ services:
       - ./signoz/clickhouse-config.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
     networks: [signoz]
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:8123/ping"]
+      test: ['CMD-SHELL', 'wget -q -O - http://localhost:8123/ping']
       interval: 15s
       retries: 10
     deploy:
       resources:
-        limits: { cpus: "2", memory: 4G }
+        limits: { cpus: '2', memory: 4G }
 
   signoz-otel-collector:
     image: signoz/signoz-otel-collector:0.110.0
     restart: unless-stopped
-    command: ["--config=/etc/otel-collector-config.yaml"]
+    command: ['--config=/etc/otel-collector-config.yaml']
     volumes:
       - ./signoz/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
     depends_on:
       clickhouse: { condition: service_healthy }
     ports:
-      - "4317:4317"  # OTLP gRPC
-      - "4318:4318"  # OTLP HTTP
+      - '4317:4317' # OTLP gRPC
+      - '4318:4318' # OTLP HTTP
     networks: [signoz, observability]
     deploy:
       resources:
-        limits: { cpus: "1", memory: 1G }
+        limits: { cpus: '1', memory: 1G }
 
   signoz-query:
     image: signoz/query-service:0.55.0
@@ -144,14 +144,14 @@ services:
     networks: [signoz]
     deploy:
       resources:
-        limits: { cpus: "1", memory: 1G }
+        limits: { cpus: '1', memory: 1G }
 
   signoz-frontend:
     image: signoz/frontend:0.55.0
     restart: unless-stopped
     environment:
       FRONTEND_API_ENDPOINT: http://signoz-query:8080
-    ports: ["3301:3301"]
+    ports: ['3301:3301']
     depends_on: [signoz-query]
     networks: [signoz, edge]
 
@@ -251,73 +251,71 @@ A single shared package every Node service imports as **the very first thing** i
 
 ```ts
 // packages/telemetry/src/index.ts
-import { NodeSDK } from "@opentelemetry/sdk-node";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
-import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-grpc";
-import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-grpc";
-import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
-import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
-import { resourceFromAttributes } from "@opentelemetry/resources";
+import { NodeSDK } from '@opentelemetry/sdk-node'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc'
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-grpc'
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
+import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs'
+import { resourceFromAttributes } from '@opentelemetry/resources'
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
   ATTR_DEPLOYMENT_ENVIRONMENT,
-} from "@opentelemetry/semantic-conventions";
-import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+} from '@opentelemetry/semantic-conventions'
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 
-const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? "http://localhost:4317";
-const serviceName = process.env.OTEL_SERVICE_NAME;
-if (!serviceName) throw new Error("OTEL_SERVICE_NAME is required");
+const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://localhost:4317'
+const serviceName = process.env.OTEL_SERVICE_NAME
+if (!serviceName) throw new Error('OTEL_SERVICE_NAME is required')
 
 export const sdk = new NodeSDK({
   resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: serviceName,
-    [ATTR_SERVICE_VERSION]: process.env.SERVICE_VERSION ?? "dev",
-    [ATTR_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV ?? "development",
-    "service.namespace": "tsm",
-    "service.instance.id": process.env.HOSTNAME ?? "unknown",
+    [ATTR_SERVICE_VERSION]: process.env.SERVICE_VERSION ?? 'dev',
+    [ATTR_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV ?? 'development',
+    'service.namespace': 'tsm',
+    'service.instance.id': process.env.HOSTNAME ?? 'unknown',
   }),
   traceExporter: new OTLPTraceExporter({ url: endpoint }),
   metricReader: new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporter({ url: endpoint }),
     exportIntervalMillis: 15_000,
   }),
-  logRecordProcessors: [
-    new BatchLogRecordProcessor(new OTLPLogExporter({ url: endpoint })),
-  ],
+  logRecordProcessors: [new BatchLogRecordProcessor(new OTLPLogExporter({ url: endpoint }))],
   instrumentations: [
     getNodeAutoInstrumentations({
-      "@opentelemetry/instrumentation-fs": { enabled: false },     // very noisy
-      "@opentelemetry/instrumentation-pg": {
+      '@opentelemetry/instrumentation-fs': { enabled: false }, // very noisy
+      '@opentelemetry/instrumentation-pg': {
         enhancedDatabaseReporting: true,
         requireParentSpan: true,
       },
-      "@opentelemetry/instrumentation-kafkajs": {},
-      "@opentelemetry/instrumentation-ioredis": {},
-      "@opentelemetry/instrumentation-fastify": {},
-      "@opentelemetry/instrumentation-http": {
-        ignoreIncomingRequestHook: (req) => req.url === "/healthz",
+      '@opentelemetry/instrumentation-kafkajs': {},
+      '@opentelemetry/instrumentation-ioredis': {},
+      '@opentelemetry/instrumentation-fastify': {},
+      '@opentelemetry/instrumentation-http': {
+        ignoreIncomingRequestHook: (req) => req.url === '/healthz',
       },
     }),
   ],
-});
+})
 
-sdk.start();
+sdk.start()
 
-process.on("SIGTERM", () => {
-  sdk.shutdown().finally(() => process.exit(0));
-});
+process.on('SIGTERM', () => {
+  sdk.shutdown().finally(() => process.exit(0))
+})
 ```
 
 Usage in a Fastify app:
 
 ```ts
 // apps/api/src/index.ts
-import "@pkg/telemetry"; // MUST be the first import
-import { buildApp } from "./app";
+import '@pkg/telemetry' // MUST be the first import
+import { buildApp } from './app'
 
-const app = await buildApp();
-await app.listen({ host: "0.0.0.0", port: 3000 });
+const app = await buildApp()
+await app.listen({ host: '0.0.0.0', port: 3000 })
 ```
 
 ### Why `@signoz/opentelemetry-node` is not chosen
@@ -330,18 +328,18 @@ The OTel SDK has a pluggable `TextMapPropagator`. We extend the default W3C Trac
 
 ```ts
 // packages/telemetry/src/tenant-propagator.ts
-import { context, trace, type Span } from "@opentelemetry/api";
+import { context, trace, type Span } from '@opentelemetry/api'
 
 export function spanWithTenant(span: Span, tenantId: string): void {
-  span.setAttribute("tenant.id", tenantId);
-  span.setAttribute("enduser.scope", `tenant:${tenantId}`);
+  span.setAttribute('tenant.id', tenantId)
+  span.setAttribute('enduser.scope', `tenant:${tenantId}`)
 }
 
 // In the Fastify onRequest hook:
-app.addHook("onRequest", async (req) => {
-  const span = trace.getSpan(context.active());
-  if (span && req.tenant) spanWithTenant(span, req.tenant.tenantId);
-});
+app.addHook('onRequest', async (req) => {
+  const span = trace.getSpan(context.active())
+  if (span && req.tenant) spanWithTenant(span, req.tenant.tenantId)
+})
 ```
 
 Now every span carries `tenant.id`. SigNoz dashboards filter by this attribute; alerts can fire per-tenant.
@@ -352,22 +350,22 @@ Pino is the chosen logger. We attach the active span's `trace_id` and `span_id` 
 
 ```ts
 // packages/telemetry/src/pino-otel.ts
-import pino, { type LoggerOptions } from "pino";
-import { context, trace } from "@opentelemetry/api";
+import pino, { type LoggerOptions } from 'pino'
+import { context, trace } from '@opentelemetry/api'
 
 export function buildLogger(opts: LoggerOptions = {}) {
   return pino({
     ...opts,
     mixin() {
-      const span = trace.getSpan(context.active());
-      if (!span) return {};
-      const c = span.spanContext();
-      return { trace_id: c.traceId, span_id: c.spanId, trace_flags: c.traceFlags };
+      const span = trace.getSpan(context.active())
+      if (!span) return {}
+      const c = span.spanContext()
+      return { trace_id: c.traceId, span_id: c.spanId, trace_flags: c.traceFlags }
     },
     formatters: {
       level: (label) => ({ level: label }),
     },
-  });
+  })
 }
 ```
 
@@ -398,8 +396,8 @@ for: 5m
 labels:
   severity: page
 annotations:
-  summary: "API error rate > 5% for 5m"
-  runbook_url: "https://docs.example.com/runbooks/api-error-rate"
+  summary: 'API error rate > 5% for 5m'
+  runbook_url: 'https://docs.example.com/runbooks/api-error-rate'
 ```
 
 ```yaml
@@ -412,7 +410,7 @@ for: 10m
 labels:
   severity: warn
 annotations:
-  summary: "Tenant {{ $labels.tenant_id }} p95 latency > 2s"
+  summary: 'Tenant {{ $labels.tenant_id }} p95 latency > 2s'
 ```
 
 The full alert list is captured in [the SigNoz alerts docs](https://signoz.io/docs/userguide/alerts/) format.
@@ -421,11 +419,11 @@ The full alert list is captured in [the SigNoz alerts docs](https://signoz.io/do
 
 ClickHouse TTL policy (in `clickhouse-config.xml`):
 
-| Signal | Retention | Reason |
-|---|---|---|
-| Traces | 15 days hot, 90 days cold (compressed) | Most debugging happens within 2 weeks |
-| Metrics | 90 days at 15 s, 1 year at 5 min | Capacity planning needs 1-year baselines |
-| Logs | 30 days | Compliance default; some tenants need 1 year — they pay for it |
+| Signal  | Retention                              | Reason                                                         |
+| ------- | -------------------------------------- | -------------------------------------------------------------- |
+| Traces  | 15 days hot, 90 days cold (compressed) | Most debugging happens within 2 weeks                          |
+| Metrics | 90 days at 15 s, 1 year at 5 min       | Capacity planning needs 1-year baselines                       |
+| Logs    | 30 days                                | Compliance default; some tenants need 1 year — they pay for it |
 
 At our scale (~10 services, ~1000 rps peak, 5% sampling) this is ~50 GiB of ClickHouse storage. Single-node ClickHouse is fine; we add a replica when we cross 200 GiB.
 

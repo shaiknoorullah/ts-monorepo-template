@@ -53,7 +53,28 @@ jobs:
       - name: Build packages
         run: pnpm exec nx run-many -t build
 
+      - name: Check for NPM_TOKEN
+        id: npm_token
+        run: |
+          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::NPM_TOKEN secret not configured — skipping publish step."
+          fi
+
+      - name: Create Release PR (no publish — NPM_TOKEN missing)
+        if: steps.npm_token.outputs.present == 'false'
+        uses: changesets/action@c8bada60c408975afd1a20b3db81d6eee6789308 # v1.4.9
+        with:
+          version: pnpm version-packages
+          commit: 'chore(release): version packages'
+          title: 'chore(release): version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Release PR or Publish
+        if: steps.npm_token.outputs.present == 'true'
         uses: changesets/action@c8bada60c408975afd1a20b3db81d6eee6789308 # v1.4.9
         with:
           publish: pnpm release

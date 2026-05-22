@@ -1,12 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignore": [
-    "docs/**",
-    ".nx/**",
-    "**/dist/**",
-    "internal/templates/**",
-    "**/node_modules/**"
-  ],
+  "ignore": ["docs/**", ".nx/**", "**/dist/**", "internal/templates/**", "**/node_modules/**"],
   "ignoreDependencies": [
     "cz-conventional-changelog",
     "commitizen",

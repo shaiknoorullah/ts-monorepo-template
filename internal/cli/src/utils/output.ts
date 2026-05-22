@@ -17,7 +17,6 @@ let JSON_MODE = false
 
 export function emit(payload: EmitPayload): void {
   if (JSON_MODE) {
-     
     console.log(JSON.stringify(payload, null, 2))
     return
   }
@@ -56,7 +55,7 @@ export function isJsonMode(): boolean {
 
 export function logRaw(text: string): void {
   if (JSON_MODE) return
-   
+
   console.log(text)
 }
 

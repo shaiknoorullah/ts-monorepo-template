@@ -63,16 +63,19 @@ with the S3-compat adapter. Local dev uses MinIO.
 ## Consequences
 
 **Positive**
+
 - Single source of truth for content + media + tenant theme.
 - Owns the schema, owns the data, no egress fees.
 
 **Negative**
+
 - One Next.js surface to keep patched.
 - Bundled Next.js version drives Node/React version constraints for
   this one app.
 - Migration to Kratos is documented but not automated.
 
 **Mitigations**
+
 - `apps/cms` lives in its own deployment unit (Docker compose +
   Kubernetes manifest). Patching is isolated.
 - Renovate auto-PRs on `payload` updates batch the bundled Next.js

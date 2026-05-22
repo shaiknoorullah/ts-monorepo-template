@@ -38,26 +38,29 @@ We considered three options:
 
 ## When to pick which
 
-| Picker | Pick |
-| --- | --- |
-| Heavy theming, many variants, perf-sensitive lists | `@pkg/ui` (Tamagui) |
-| Tailwind shop, no compile-time extraction wanted | `@pkg/ui-nativewind` |
-| Marketing / docs (web only) | Either; Tailwind is more idiomatic |
-| Mobile-first product app | Tamagui unless team prefers Tailwind |
+| Picker                                             | Pick                                 |
+| -------------------------------------------------- | ------------------------------------ |
+| Heavy theming, many variants, perf-sensitive lists | `@pkg/ui` (Tamagui)                  |
+| Tailwind shop, no compile-time extraction wanted   | `@pkg/ui-nativewind`                 |
+| Marketing / docs (web only)                        | Either; Tailwind is more idiomatic   |
+| Mobile-first product app                           | Tamagui unless team prefers Tailwind |
 
 ## Consequences
 
 **Positive**
+
 - Teams aren't forced into a styling engine they dislike.
 - Migration path either way: rewrite imports, not components.
 
 **Negative**
+
 - Two implementations of every primitive. Bug fixes happen twice.
 - Tokens duplicated in three files until codegen exists.
 - Bundle size if an app accidentally pulls both — guarded by a
   syncpack rule (TODO).
 
 **Mitigation**
+
 - AGENTS.md in each package requires PR authors to update both when
   a token or primitive changes.
 - A future ADR may pick a single winner if drift becomes painful.

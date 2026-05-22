@@ -12,9 +12,9 @@ services:
     volumes:
       - cms-pg:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - '5433:5432'
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "payload"]
+      test: ['CMD', 'pg_isready', '-U', 'payload']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -27,12 +27,12 @@ services:
       MINIO_ROOT_USER: payload
       MINIO_ROOT_PASSWORD: payload-minio
     ports:
-      - "9100:9000"
-      - "9101:9001"
+      - '9100:9000'
+      - '9101:9001'
     volumes:
       - cms-minio:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ['CMD', 'mc', 'ready', 'local']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -70,7 +70,7 @@ services:
       CORS_ORIGINS: http://localhost:4321,http://localhost:8081
       CSRF_ORIGINS: http://localhost:4321,http://localhost:8081
     ports:
-      - "3001:3000"
+      - '3001:3000'
 
 volumes:
   cms-pg:

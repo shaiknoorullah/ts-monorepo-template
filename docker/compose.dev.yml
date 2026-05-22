@@ -16,23 +16,23 @@ services:
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: dev
       POSTGRES_DB: app
-    ports: ["5432:5432"]
+    ports: ['5432:5432']
     volumes: [pg-dev:/var/lib/postgresql/data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dev"]
+      test: ['CMD-SHELL', 'pg_isready -U dev']
       interval: 5s
       retries: 10
 
   redis:
     image: redis:7.4-alpine
-    ports: ["6379:6379"]
-    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports: ['6379:6379']
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
 
   kafka:
     image: confluentinc/cp-kafka:7.7.1
     ports:
-      - "9092:9092"
-      - "29092:29092"
+      - '9092:9092'
+      - '29092:29092'
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -44,33 +44,33 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      CLUSTER_ID: "tsm-dev-kraft-000"
+      CLUSTER_ID: 'tsm-dev-kraft-000'
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      test: ['CMD', 'kafka-broker-api-versions', '--bootstrap-server', 'localhost:9092']
       interval: 15s
       retries: 10
 
   schema-registry:
     image: apicurio/apicurio-registry-mem:2.6.5.Final
-    ports: ["8080:8080"]
+    ports: ['8080:8080']
     depends_on:
       kafka: { condition: service_healthy }
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.110.0
-    command: ["--config=/etc/otelcol/config.yml"]
+    command: ['--config=/etc/otelcol/config.yml']
     volumes:
       - ./observability/otel-collector-dev.yml:/etc/otelcol/config.yml:ro
     ports:
-      - "4317:4317"
-      - "4318:4318"
+      - '4317:4317'
+      - '4318:4318'
 
   api:
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
       target: dev
-    command: ["pnpm", "--filter", "@app/api", "dev"]
+    command: ['pnpm', '--filter', '@app/api', 'dev']
     environment:
       NODE_ENV: development
       DATABASE_URL: postgres://dev:dev@postgres:5432/app
@@ -79,7 +79,7 @@ services:
       SCHEMA_REGISTRY_URL: http://schema-registry:8080
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       OTEL_SERVICE_NAME: api
-    ports: ["3000:3000"]
+    ports: ['3000:3000']
     volumes:
       - ../apps/api:/app/apps/api
       - ../packages:/app/packages

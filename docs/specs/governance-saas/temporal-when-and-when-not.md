@@ -2,7 +2,7 @@
 title: Temporal — When and When Not
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://docs.temporal.io/workflows
   - https://docs.temporal.io/encyclopedia/workflows#determinism
@@ -48,13 +48,13 @@ A workload qualifies for Temporal when **all** of these are true, or **any one**
 
 ## 2. Do NOT use Temporal when
 
-| Need | Use this instead | Why not Temporal |
-|---|---|---|
-| Synchronous request/response under 100 ms | tRPC, gRPC, HTTP | Workflow start + activity overhead is ~10–50 ms minimum; you will hate it |
-| High-throughput pub/sub between services | **Kafka** (KRaft, see `data-eventing/kafka-single-node-kraft.md`) | Temporal is not designed for >10k events/s/queue; Kafka is built for it |
-| Cross-team event-driven integration with replay | Kafka + schema registry | Kafka is the lingua franca; Temporal workflows are an implementation detail of one team |
-| Simple background jobs, single app, short-lived | **Kafka consumer** or, for legacy, BullMQ | Adding Temporal infra for "send a welcome email" is over-engineering |
-| Very low volume, simple "table as queue" | Postgres `SKIP LOCKED` (`brandur.org/job-drain`) | If you can fit it in a 50-line cron, do that |
+| Need                                            | Use this instead                                                  | Why not Temporal                                                                        |
+| ----------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Synchronous request/response under 100 ms       | tRPC, gRPC, HTTP                                                  | Workflow start + activity overhead is ~10–50 ms minimum; you will hate it               |
+| High-throughput pub/sub between services        | **Kafka** (KRaft, see `data-eventing/kafka-single-node-kraft.md`) | Temporal is not designed for >10k events/s/queue; Kafka is built for it                 |
+| Cross-team event-driven integration with replay | Kafka + schema registry                                           | Kafka is the lingua franca; Temporal workflows are an implementation detail of one team |
+| Simple background jobs, single app, short-lived | **Kafka consumer** or, for legacy, BullMQ                         | Adding Temporal infra for "send a welcome email" is over-engineering                    |
+| Very low volume, simple "table as queue"        | Postgres `SKIP LOCKED` (`brandur.org/job-drain`)                  | If you can fit it in a 50-line cron, do that                                            |
 
 Anti-patterns we have observed in the wild and forbid here:
 
@@ -102,8 +102,8 @@ Workflow code is **replayed from history** on every worker restart, deploy, or m
 // BAD — non-deterministic
 import { defineWorkflow } from '@temporalio/workflow'
 export async function badOnboarding(userId: string) {
-  const id = crypto.randomUUID()           // ← non-deterministic
-  const start = Date.now()                  // ← non-deterministic
+  const id = crypto.randomUUID() // ← non-deterministic
+  const start = Date.now() // ← non-deterministic
   const res = await fetch(`/users/${userId}`) // ← I/O in workflow
   // …
 }
@@ -195,7 +195,9 @@ test('onboarding sends day1 email after 24h', async () => {
       activities: { fetchUser: async () => ({ email: 'a@b.com' }), sendEmail: vi.fn() },
     })
     const handle = await env.client.workflow.start(onboarding, {
-      args: ['u1'], taskQueue: 'test', workflowId: 'wf-1',
+      args: ['u1'],
+      taskQueue: 'test',
+      workflowId: 'wf-1',
     })
     await worker.runUntil(handle.result())
     // time-skipping fast-forwards through workflow.sleep('24h')
@@ -213,10 +215,7 @@ import { readHistory } from './fixtures'
 
 test('replay 2026-Q1 histories without NonDeterminismError', async () => {
   const history = await readHistory('fixtures/onboarding-2026q1.json')
-  await Worker.runReplayHistory(
-    { workflowsPath: require.resolve('./workflows') },
-    history,
-  )
+  await Worker.runReplayHistory({ workflowsPath: require.resolve('./workflows') }, history)
 })
 ```
 

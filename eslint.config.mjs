@@ -122,10 +122,7 @@ export default tseslint.config(
       '@typescript-eslint/no-empty-interface': 'warn',
       '@typescript-eslint/no-unsafe-function-type': 'warn',
       // AGENT-TODO marker discipline
-      'no-warning-comments': [
-        'warn',
-        { terms: ['fixme', 'xxx'], location: 'start' },
-      ],
+      'no-warning-comments': ['warn', { terms: ['fixme', 'xxx'], location: 'start' }],
     },
   },
 

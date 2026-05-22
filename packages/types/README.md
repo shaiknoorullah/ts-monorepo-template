@@ -8,7 +8,7 @@ Shared TypeScript types. The leaf of the workspace dependency graph — this pac
 - **`Result<T, E>`** — explicit success/failure modelling instead of throwing.
 - **DTO interfaces** that cross service boundaries (`HealthCheck`, …).
 
-## What does *not* belong here
+## What does _not_ belong here
 
 - Runtime code with side effects (this package is `"sideEffects": false`).
 - Validation logic — use `@pkg/config` (zod) for that.

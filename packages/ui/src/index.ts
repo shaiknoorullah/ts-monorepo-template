@@ -4,11 +4,7 @@
 
 export { useColorScheme } from './hooks/useColorScheme'
 export { useToast } from './hooks/useToast'
-export {
-  TenantThemeProvider,
-  toTamaguiTheme,
-  useTenantTheme,
-} from './theme/tenant'
+export { TenantThemeProvider, toTamaguiTheme, useTenantTheme } from './theme/tenant'
 export type {
   ResolvedTenantTheme,
   TenantThemePayload,

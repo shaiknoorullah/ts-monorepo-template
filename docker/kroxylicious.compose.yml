@@ -1,7 +1,7 @@
 # Kroxylicious Kafka proxy in front of the kafka.compose.yml cluster.
 # Clients connect to kroxylicious:9192; the proxy forwards to kafka:9092.
 # Only the ApiLogging filter is enabled in this dev preset.
-version: "3.9"
+version: '3.9'
 
 services:
   kroxylicious:
@@ -12,11 +12,11 @@ services:
       kafka:
         condition: service_healthy
     ports:
-      - "9192:9192"   # client bootstrap
-      - "9193:9193"   # admin / prometheus
+      - '9192:9192' # client bootstrap
+      - '9193:9193' # admin / prometheus
     volumes:
       - ./kroxylicious/config.yaml:/opt/kroxylicious/config.yaml:ro
-    command: ["/opt/kroxylicious/bin/kroxylicious-start.sh", "-c", "/opt/kroxylicious/config.yaml"]
+    command: ['/opt/kroxylicious/bin/kroxylicious-start.sh', '-c', '/opt/kroxylicious/config.yaml']
     networks: [events]
 
 networks:

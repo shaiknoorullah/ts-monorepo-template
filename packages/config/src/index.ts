@@ -9,7 +9,7 @@ export class ConfigValidationError extends Error {
 
   public constructor(
     message: string,
-    public readonly issues: readonly { message: string; path: string; }[],
+    public readonly issues: readonly { message: string; path: string }[],
   ) {
     super(message)
   }
@@ -62,5 +62,4 @@ export const commonSchemas = {
 
 // Re-export zod so consumers don't need a separate dependency.
 
-
-export {z} from 'zod'
+export { z } from 'zod'

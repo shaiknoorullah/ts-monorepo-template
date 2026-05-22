@@ -2,7 +2,7 @@
 title: Governance & SaaS Commons — Index
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 ---
 
 # Governance & SaaS Commons
@@ -18,14 +18,14 @@ This directory holds the **rule-of-the-road** documents for the `ts-monorepo-tem
 
 ## Documents
 
-| Document | Purpose |
-|---|---|
-| [`repo-governance.md`](./repo-governance.md) | THE rulebook — naming, style, TypeScript, API, DB, logging, testing, security, docs, releases, PR & ADR processes |
-| [`temporal-when-and-when-not.md`](./temporal-when-and-when-not.md) | Decision rule for Temporal vs Kafka vs RPC vs cron; determinism + versioning + worker anatomy + test patterns |
-| [`saas-commons.md`](./saas-commons.md) | OSS defaults for billing, analytics, identity, flags, search, email, storage, CMS, docs, status, support, audit — with license caveats |
-| [`package-architecture-rules.md`](./package-architecture-rules.md) | What goes in `apps/*` vs `packages/*` vs `internal/*`; forbidden patterns; versioning |
-| [`multi-tenancy-isolation-rules.md`](./multi-tenancy-isolation-rules.md) | Tenant-context propagation, cross-tenant query rules, deletion + migration playbooks, fixtures, audit |
-| [`governance-process.md`](./governance-process.md) | How to amend the rules, ADR process, review cadence, onboarding |
+| Document                                                                 | Purpose                                                                                                                                |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [`repo-governance.md`](./repo-governance.md)                             | THE rulebook — naming, style, TypeScript, API, DB, logging, testing, security, docs, releases, PR & ADR processes                      |
+| [`temporal-when-and-when-not.md`](./temporal-when-and-when-not.md)       | Decision rule for Temporal vs Kafka vs RPC vs cron; determinism + versioning + worker anatomy + test patterns                          |
+| [`saas-commons.md`](./saas-commons.md)                                   | OSS defaults for billing, analytics, identity, flags, search, email, storage, CMS, docs, status, support, audit — with license caveats |
+| [`package-architecture-rules.md`](./package-architecture-rules.md)       | What goes in `apps/*` vs `packages/*` vs `internal/*`; forbidden patterns; versioning                                                  |
+| [`multi-tenancy-isolation-rules.md`](./multi-tenancy-isolation-rules.md) | Tenant-context propagation, cross-tenant query rules, deletion + migration playbooks, fixtures, audit                                  |
+| [`governance-process.md`](./governance-process.md)                       | How to amend the rules, ADR process, review cadence, onboarding                                                                        |
 
 ## Reading order
 

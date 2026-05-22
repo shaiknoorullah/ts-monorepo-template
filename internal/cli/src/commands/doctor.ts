@@ -114,7 +114,11 @@ export const doctorCommand = defineCommand({
           value: pkg.engines?.node ?? '<unset>',
         })
       } catch {
-        checks.push({ message: 'failed to parse package.json', name: 'engines.node', status: 'error' })
+        checks.push({
+          message: 'failed to parse package.json',
+          name: 'engines.node',
+          status: 'error',
+        })
       }
     }
 
@@ -130,7 +134,9 @@ export const doctorCommand = defineCommand({
     } else {
       for (const c of checks) {
         const icon = c.status === 'ok' ? 'OK ' : (c.status === 'warning' ? 'WARN' : 'ERR ')
-        info(`  [${icon}] ${c.name.padEnd(28)} ${c.value ?? ''} ${c.expected ? `(expected ${c.expected})` : ''}`)
+        info(
+          `  [${icon}] ${c.name.padEnd(28)} ${c.value ?? ''} ${c.expected ? `(expected ${c.expected})` : ''}`,
+        )
         if (c.message) info(`         -> ${c.message}`)
       }
       emit({

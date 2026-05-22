@@ -207,9 +207,7 @@ export function parseConfig(input: unknown): AppConfig {
   const result = AppConfigSchema.safeParse(input)
   if (!result.success) {
     const issues = result.error.issues
-      .map(
-        (i) => `  - ${i.path.map(String).join('.')}: ${i.message}`,
-      )
+      .map((i) => `  - ${i.path.map(String).join('.')}: ${i.message}`)
       .join('\n')
     throw new Error(`Config validation failed:\n${issues}`)
   }

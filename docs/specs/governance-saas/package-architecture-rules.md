@@ -2,7 +2,7 @@
 title: Package Architecture Rules
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://martinfowler.com/bliki/BoundedContext.html
   - https://github.com/changesets/changesets
@@ -60,7 +60,7 @@ Canonical contents:
 
 ## 2. What goes in `apps/<service>/src/` (per-service)
 
-The litmus test: **does this encode a business rule, a workflow, or a route of *this* service?** Then it belongs to the service.
+The litmus test: **does this encode a business rule, a workflow, or a route of _this_ service?** Then it belongs to the service.
 
 Canonical contents:
 
@@ -133,16 +133,16 @@ The reason for the coordinated-deploy rule: shared packages travel through CI as
 
 ## 6. Tooling enforcement
 
-| Rule | Enforced by |
-|---|---|
-| `apps/* → packages/*` only | Nx module boundaries (`nx.json` `enforceModuleBoundaries`) |
-| No publish from `apps/*`, `internal/*` | manypkg + changesets `ignore` |
-| No version drift across workspaces | syncpack (`pnpm deps`) |
-| Type exports correct | attw (`pnpm attw`) |
-| Publish-readiness | publint (`pnpm publint`) |
-| Dead exports, unused deps | knip (`pnpm dead`) |
-| Cycles | `import-x/no-cycle` |
-| Imports allowed | `import-x/no-restricted-paths` (configured in `@internal/eslint-config`) |
+| Rule                                   | Enforced by                                                              |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `apps/* → packages/*` only             | Nx module boundaries (`nx.json` `enforceModuleBoundaries`)               |
+| No publish from `apps/*`, `internal/*` | manypkg + changesets `ignore`                                            |
+| No version drift across workspaces     | syncpack (`pnpm deps`)                                                   |
+| Type exports correct                   | attw (`pnpm attw`)                                                       |
+| Publish-readiness                      | publint (`pnpm publint`)                                                 |
+| Dead exports, unused deps              | knip (`pnpm dead`)                                                       |
+| Cycles                                 | `import-x/no-cycle`                                                      |
+| Imports allowed                        | `import-x/no-restricted-paths` (configured in `@internal/eslint-config`) |
 
 All of these run in `pnpm doctor`. CI runs `pnpm doctor` on every PR.
 

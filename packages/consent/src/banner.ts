@@ -35,8 +35,7 @@ export function mountConsentBanner(opts: MountOptions): void {
           consentModal: {
             acceptAllBtn: 'Accept all',
             acceptNecessaryBtn: 'Reject all',
-            description:
-              'Necessary cookies keep the site working. Optional categories are opt-in.',
+            description: 'Necessary cookies keep the site working. Optional categories are opt-in.',
             showPreferencesBtn: 'Manage preferences',
             title: 'We use cookies',
           },

@@ -2,7 +2,7 @@
 title: UI package — shared components
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://tamagui.dev/
   - https://www.nativewind.dev/

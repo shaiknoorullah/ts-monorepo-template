@@ -5,12 +5,12 @@ different styling engine.
 
 ## When to pick which
 
-| Need | Pick |
-| --- | --- |
-| Maximum theming + style-extraction perf | `@pkg/ui` (Tamagui) |
-| Tailwind ergonomics, no JSX-time extraction | `@pkg/ui-nativewind` |
-| RSC / Astro web | Either |
-| Heavy variant trees (50+ variants per component) | `@pkg/ui` |
+| Need                                             | Pick                 |
+| ------------------------------------------------ | -------------------- |
+| Maximum theming + style-extraction perf          | `@pkg/ui` (Tamagui)  |
+| Tailwind ergonomics, no JSX-time extraction      | `@pkg/ui-nativewind` |
+| RSC / Astro web                                  | Either               |
+| Heavy variant trees (50+ variants per component) | `@pkg/ui`            |
 
 See `docs/adrs/0012-tamagui-vs-nativewind.md`.
 
@@ -35,10 +35,11 @@ Use the components:
 
 ```tsx
 import { Button, Card, Text } from '@pkg/ui-nativewind'
-
-<Card elevated>
+;<Card elevated>
   <Text variant="heading">Hello</Text>
-  <Button variant="primary" onPress={() => {}}>Click me</Button>
+  <Button variant="primary" onPress={() => {}}>
+    Click me
+  </Button>
 </Card>
 ```
 

@@ -61,7 +61,10 @@ describe('payloadLoader', () => {
     // The loader is intentionally fault-tolerant: a CMS hiccup must not break
     // `astro build` / `astro check`. Verify it (a) does NOT throw, (b) leaves
     // the store empty, and (c) emits a `logger.warn` with the HTTP code.
-    vi.stubGlobal('fetch', vi.fn(async () => new Response('boom', { status: 500 })))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('boom', { status: 500 })),
+    )
     const ctx = makeStore()
     const warnSpy = vi.spyOn(ctx.logger, 'warn')
     const loader = payloadLoader({ baseUrl: 'https://x', collection: 'posts' })

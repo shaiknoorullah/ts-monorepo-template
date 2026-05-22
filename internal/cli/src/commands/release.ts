@@ -7,7 +7,10 @@ import { run } from '../utils/run'
 import { newChangeset } from './new/changeset'
 
 const version = defineCommand({
-  meta: { description: 'Apply pending changesets (bumps versions, updates CHANGELOG).', name: 'version' },
+  meta: {
+    description: 'Apply pending changesets (bumps versions, updates CHANGELOG).',
+    name: 'version',
+  },
   async run() {
     const { exitCode } = await run('pnpm', ['changeset', 'version'])
     if (exitCode !== 0) fail('changeset version failed')

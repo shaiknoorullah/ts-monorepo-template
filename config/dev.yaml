@@ -13,7 +13,7 @@ app:
 database:
   host: localhost
   user: dev
-  password: dev               # raw value — allowed in dev only
+  password: dev # raw value — allowed in dev only
   database: app
 
 redis:

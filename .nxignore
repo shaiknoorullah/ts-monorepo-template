@@ -1,0 +1,3 @@
+# Template directories contain placeholder {{name}} markers and are NOT
+# real packages; exclude them from project graph discovery.
+internal/templates
