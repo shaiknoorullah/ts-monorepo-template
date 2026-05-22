@@ -19,6 +19,8 @@
     "MD032": false, // blanks around lists
     "MD022": false, // blanks around headings
     "MD012": false, // multiple consecutive blank lines
+    "MD038": false, // spaces in code spans
+    "MD042": false, // empty links
     "default": true,
   },
   "ignores": [
