@@ -1,0 +1,30 @@
+# config/test.yaml — CI / vitest runner / Testcontainers
+#
+# Hosts are typically swapped at runtime by Testcontainers; the values here are
+# the defaults when running tests against `docker compose -f docker/compose.dev.yml`.
+
+$extends: ./base.yaml
+
+app:
+  env: test
+  port: 0          # ephemeral port; tests should not hard-code
+  logLevel: warn
+
+database:
+  host: ${TEST_DB_HOST}
+  port: ${TEST_DB_PORT}
+  user: test
+  password: test
+  database: app_test
+
+redis:
+  host: ${TEST_REDIS_HOST}
+  port: ${TEST_REDIS_PORT}
+
+observability:
+  otel:
+    enabled: false
+    exporter: none
+
+tenancy:
+  defaultTenant: test

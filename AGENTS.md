@@ -255,13 +255,60 @@ If the rules here in `AGENTS.md` ever appear to disagree with the governance doc
 
 ---
 
-## 10. Useful references
+## 10. The `repo` CLI
+
+Everything a developer does in this repo **except writing business logic** runs through a single CLI: **`repo`**. It lives at `internal/cli/`, is built on [citty](https://github.com/unjs/citty), and is `private: true` (never published).
+
+### What it covers
+
+```
+repo new        app | package | adr | changeset | workflow | runbook
+repo env        render | validate | show
+repo dev        up | down | tools | logs | reset
+repo db         migrate | status | diff | seed | psql
+repo deps       check | sync | audit
+repo release    changeset | version | publish
+repo lint | format | test | build | type-check | ci | doctor | clean | version | completion
+```
+
+Every command accepts `--json` and emits `{ status, message, data? }` — agents can call it safely.
+
+### Common workflows
+
+```bash
+repo doctor                  # verify your local env (node/pnpm/docker/configs)
+repo dev up                  # bring up postgres / redis / kafka / temporal
+repo env render dev          # YAML hierarchy -> docker/.env.rendered
+repo new package timing      # scaffold packages/timing/ from template
+repo new adr "feature flags via OpenFeature"
+repo ci                      # mirror of the CI gate (run before pushing)
+```
+
+### Where templates live
+
+Scaffolding templates are at `internal/templates/<kind>/` — files with `{{placeholder}}` tokens. The renderer is a small regex-based copy (no Handlebars). See `internal/cli/AGENTS.md` for how to add a new command or template.
+
+### Adding a new subcommand (quick reference)
+
+1. Create `internal/cli/src/commands/<group>/<sub>.ts` exporting `defineCommand({...})`.
+2. Wire it into the parent group's `subCommands` map.
+3. If it's a top-level group, also add it to `cli.ts`.
+4. Update `TOP` / `SUBS` in `src/commands/completion.ts` for shell completion.
+5. Add a test under `internal/cli/src/__tests__/`.
+
+Full guide: [`internal/cli/AGENTS.md`](./internal/cli/AGENTS.md).
+
+---
+
+## 11. Useful references
 
 - [`docs/adrs/0001-tsdown-over-tsup.md`](./docs/adrs/0001-tsdown-over-tsup.md)
 - [`docs/adrs/0002-changesets-over-release-please.md`](./docs/adrs/0002-changesets-over-release-please.md)
 - [`docs/adrs/0003-eslint-over-biome.md`](./docs/adrs/0003-eslint-over-biome.md)
 - [`docs/adrs/0004-nx-over-turborepo.md`](./docs/adrs/0004-nx-over-turborepo.md)
 - [`docs/adrs/0005-sha-pinned-github-actions.md`](./docs/adrs/0005-sha-pinned-github-actions.md)
+- [`docs/adrs/0006-yaml-config-with-c12.md`](./docs/adrs/0006-yaml-config-with-c12.md)
+- [`docs/adrs/0007-repo-cli-as-dev-interface.md`](./docs/adrs/0007-repo-cli-as-dev-interface.md)
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 - [`SECURITY.md`](./SECURITY.md)
 - [`GOVERNANCE.md`](./GOVERNANCE.md)

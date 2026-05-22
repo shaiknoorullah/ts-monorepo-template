@@ -1,0 +1,38 @@
+{
+  "name": "@internal/cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The `repo` CLI — single entry point for every dev workflow in this monorepo except writing business logic.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "repo": "./dist/cli.mjs"
+  },
+  "main": "./dist/cli.mjs",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "type-check": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "c12": "^3.0.0",
+    "citty": "^0.1.6",
+    "consola": "^3.4.0",
+    "defu": "^6.1.4",
+    "execa": "^9.5.0",
+    "nypm": "^0.5.4",
+    "ohash": "^1.1.4",
+    "pathe": "^2.0.0",
+    "prompts": "^2.4.2",
+    "yaml": "^2.6.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/prompts": "^2.4.9",
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
