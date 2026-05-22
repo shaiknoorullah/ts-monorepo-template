@@ -1,0 +1,30 @@
+{
+  "name": "@app/worker",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Background-job worker — BullMQ consumer.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "type-check": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "@pkg/config": "workspace:*",
+    "@pkg/logger": "workspace:*",
+    "@pkg/types": "workspace:*",
+    "bullmq": "catalog:runtime",
+    "ioredis": "catalog:runtime",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

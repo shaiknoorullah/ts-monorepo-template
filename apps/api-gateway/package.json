@@ -1,0 +1,32 @@
+{
+  "name": "@app/api-gateway",
+  "version": "0.0.0",
+  "private": true,
+  "description": "HTTP API gateway — Fastify entry point for the monorepo.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "type-check": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "@fastify/cors": "catalog:runtime",
+    "@fastify/helmet": "catalog:runtime",
+    "@pkg/config": "workspace:*",
+    "@pkg/db-client": "workspace:*",
+    "@pkg/logger": "workspace:*",
+    "@pkg/types": "workspace:*",
+    "fastify": "catalog:runtime",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
