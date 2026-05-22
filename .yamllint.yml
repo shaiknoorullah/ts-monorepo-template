@@ -1,0 +1,26 @@
+---
+# yamllint config — keep CI green while still catching real YAML errors.
+# TODO: tighten line-length once existing GH workflows are normalized.
+extends: relaxed
+
+rules:
+  line-length: disable
+  document-start: disable
+  comments:
+    min-spaces-from-content: 1
+  truthy:
+    allowed-values: ['true', 'false', 'on', 'off']
+    check-keys: false
+
+ignore: |
+  node_modules/
+  dist/
+  .nx/
+  .next/
+  .astro/
+  .expo/
+  .wrangler/
+  coverage/
+  pnpm-lock.yaml
+  internal/templates/
+  docker/*.compose.yml
