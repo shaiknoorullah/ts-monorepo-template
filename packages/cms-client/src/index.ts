@@ -2,3 +2,7 @@
 
 export { createPayloadClient } from './payload'
 export type { PayloadConfig, CollectionResponse } from './payload'
+export { payloadLoader } from './loaders/payload'
+export type { PayloadLoaderOptions } from './loaders/payload'
+export { decapLoader } from './loaders/decap'
+export type { DecapLoaderOptions } from './loaders/decap'

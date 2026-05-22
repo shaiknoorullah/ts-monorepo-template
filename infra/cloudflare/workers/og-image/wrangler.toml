@@ -1,0 +1,17 @@
+name = "og-image"
+main = "src/index.ts"
+compatibility_date = "2026-05-22"
+
+# Inter font shipped alongside the Worker as a binary asset.
+# Generate via: curl -L 'https://github.com/rsms/inter/releases/.../Inter-Bold.otf' -o assets/Inter-Bold.otf
+[assets]
+directory = "./assets"
+binding = "ASSETS"
+
+# Bind once a route is desired:
+# routes = [
+#   { pattern = "og.example.com/*", zone_name = "example.com" }
+# ]
+
+[vars]
+DEFAULT_THEME = "dark"
