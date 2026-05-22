@@ -68,7 +68,7 @@
     "@stryker-mutator/vitest-runner": "^9.6.0",
     "@types/node": "^22.10.0",
     "@vitest/coverage-v8": "^4.0.0",
-    "@vitest/eslint-plugin": "^2.0.0",
+    "@vitest/eslint-plugin": "^1.6.0",
     "@vitest/ui": "^4.0.0",
     "@arethetypeswrong/cli": "^0.18.0",
     "commitizen": "^4.3.0",
@@ -104,7 +104,7 @@
     "typedoc-plugin-markdown": "^4.5.0",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.30.0",
-    "vitepress": "^2.0.0",
+    "vitepress": "^1.6.0",
     "vitest": "^4.0.0"
   },
   "config": {
