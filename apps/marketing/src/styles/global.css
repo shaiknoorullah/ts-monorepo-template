@@ -1,0 +1,135 @@
+/* apps/marketing/src/styles/global.css */
+
+:root {
+  --color-brand: #1f6feb;
+  --color-bg: #ffffff;
+  --color-text: #0d1117;
+  --color-text-muted: #57606a;
+  --color-border: #d0d7de;
+  --radius-md: 8px;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 4rem;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0d1117;
+    --color-text: #c9d1d9;
+    --color-text-muted: #8b949e;
+    --color-border: #30363d;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.6;
+}
+
+header nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+header nav ul {
+  display: flex;
+  gap: var(--space-md);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+header nav a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+header nav a:hover {
+  text-decoration: underline;
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+main {
+  max-width: 80ch;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  margin: 0 0 var(--space-md);
+}
+
+.lede {
+  font-size: 1.25rem;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-lg);
+}
+
+.cta-row {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.btn {
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary {
+  background: var(--color-brand);
+  color: white;
+}
+
+.btn-secondary {
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.features {
+  margin-top: var(--space-xl);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-lg);
+  list-style: none;
+  padding: 0;
+}
+
+.feature-grid li {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+.site-footer {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}

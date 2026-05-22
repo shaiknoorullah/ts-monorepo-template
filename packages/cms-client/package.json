@@ -1,0 +1,23 @@
+{
+  "name": "@pkg/cms-client",
+  "version": "0.0.0",
+  "description": "CMS helpers — Payload (default) or Decap. Astro Content Layer loader.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "type-check": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

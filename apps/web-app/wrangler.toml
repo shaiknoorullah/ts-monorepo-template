@@ -1,0 +1,6 @@
+# apps/web-app/wrangler.toml
+# Cloudflare Pages project for the Expo web export.
+
+name = "web-app"
+compatibility_date = "2026-05-22"
+pages_build_output_dir = "./dist"

@@ -114,6 +114,25 @@ config/
 | Docs                | VitePress + TypeDoc                                                   | Site + API docs, both fast.                                                  |
 | Agent compatibility | `AGENTS.md` + `CLAUDE.md` symlink                                     | Universal spec across Claude / Codex / Cursor / Aider / Devin / Copilot.     |
 
+## Frontend stack
+
+The template ships a full frontend tier alongside the backend microservices. **Next.js is intentionally not used** — see [ADR-0010](./docs/adrs/0010-eliminating-or-limiting-nextjs.md).
+
+| Surface | Framework | Deploy target |
+|---|---|---|
+| Marketing + landing pages (`www.*`) | **Astro 5** | Cloudflare Pages |
+| Customer docs (`docs.*`) | **Astro Starlight** | Cloudflare Pages |
+| Multi-tenant SaaS web app (`*.app.*`) | **Expo + react-native-web + expo-router 4** | Cloudflare Pages |
+| Customer mobile (iOS + Android) | **Expo + expo-router 4** | EAS Build → App / Play Store |
+| Admin mobile (iOS + Android) | **Expo + expo-router 4** | EAS Build → App / Play Store |
+| Edge endpoints (Workers) | **Hono** | Cloudflare Workers |
+
+Shared frontend packages: `@pkg/ui` (Tamagui-based), `@pkg/forms` (RHF + Zod), `@pkg/consent` (vanilla-cookieconsent), `@pkg/tracking` (Umami + CF Web Analytics, consent-gated), `@pkg/auth-client` (Ory / Keycloak), `@pkg/tenancy-client`, `@pkg/api-client`, `@pkg/cms-client` (Payload / Decap), `@pkg/seo`.
+
+Cloudflare is the default deploy target — Pages, Workers, R2, D1, KV, Turnstile, Web Analytics, Tunnels — all on the free tier. See [ADR-0011](./docs/adrs/0011-cloudflare-edge-deployment.md) and [`docs/specs/frontend/cloudflare-deployment.md`](./docs/specs/frontend/cloudflare-deployment.md).
+
+Full architecture documented under [`docs/specs/frontend/`](./docs/specs/frontend/) (7 specs covering framework choices, mobile + cross-platform, marketing, docs, Cloudflare, UI package, package architecture).
+
 ## Architecture
 
 ```mermaid

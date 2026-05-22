@@ -1,0 +1,46 @@
+# docker/compose.frontend-dev.yml
+#
+# Local services that the frontend tier consumes during development.
+# Merge with compose.dev.yml:
+#   docker compose -f docker/compose.dev.yml -f docker/compose.frontend-dev.yml up -d
+#
+# Provides:
+# - Payload CMS (default CMS choice; @pkg/cms-client)
+# - Umami analytics (the primary tracker; @pkg/tracking)
+# - cloudflared tunnel (local dev exposure)
+#
+# Postgres + Redis are expected from compose.dev.yml.
+
+services:
+  payload:
+    image: ghcr.io/payloadcms/payload-cms:3.0.0
+    restart: unless-stopped
+    depends_on: [postgres]
+    environment:
+      DATABASE_URI: postgres://postgres:postgres@postgres:5432/payload
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:-dev-secret-change-me}
+      PAYLOAD_PUBLIC_SERVER_URL: http://localhost:3001
+    ports:
+      - "3001:3000"
+    profiles: ["frontend", "cms"]
+
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-v2.15.0
+    restart: unless-stopped
+    depends_on: [postgres]
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET:-dev-secret-change-me}
+    ports:
+      - "3002:3000"
+    profiles: ["frontend", "analytics"]
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ${HOME}/.cloudflared:/etc/cloudflared:ro
+    network_mode: host
+    profiles: ["tunnels"]

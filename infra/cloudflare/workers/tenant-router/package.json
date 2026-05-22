@@ -1,0 +1,21 @@
+{
+  "name": "@infra/cf-tenant-router",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Cloudflare Worker that rewrites *.app.example.com → web-app with x-tenant header.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pkg/tenancy-client": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250101.0",
+    "typescript": "catalog:",
+    "wrangler": "^3.80.0"
+  }
+}

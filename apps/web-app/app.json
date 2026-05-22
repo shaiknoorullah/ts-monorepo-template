@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Example Web App",
+    "slug": "example-web-app",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "scheme": "examplewebapp",
+    "userInterfaceStyle": "automatic",
+    "runtimeVersion": { "policy": "appVersion" },
+    "platforms": ["web", "ios", "android"],
+    "ios": {
+      "bundleIdentifier": "com.example.webapp",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.example.webapp"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png",
+      "output": "static"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "tsconfigPaths": true
+    }
+  }
+}

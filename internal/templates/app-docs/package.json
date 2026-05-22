@@ -1,0 +1,27 @@
+{
+  "name": "{{scope}}/{{name}}",
+  "version": "0.0.0",
+  "private": true,
+  "description": "{{name}} — Astro Starlight documentation",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "type-check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^11.0.0",
+    "@astrojs/starlight": "^0.30.0",
+    "astro": "^5.0.0",
+    "sharp": "^0.33.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "^3.80.0"
+  }
+}

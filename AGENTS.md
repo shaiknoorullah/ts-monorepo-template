@@ -300,7 +300,62 @@ Full guide: [`internal/cli/AGENTS.md`](./internal/cli/AGENTS.md).
 
 ---
 
-## 11. Useful references
+## 11. Frontend tier
+
+The repo ships a frontend stack alongside the backend microservices. **Next.js is intentionally not in the toolbox** — see ADR-0010.
+
+### Matrix
+
+| Surface | Framework | Path |
+|---|---|---|
+| Marketing + landing pages | **Astro 5** | `apps/marketing` |
+| Customer-facing docs | **Astro Starlight** | `apps/docs-public` |
+| Internal docs / ADRs | VitePress (existing) | `docs/` |
+| Multi-tenant SaaS web app (`*.app.example.com`) | **Expo + react-native-web + expo-router 4** | `apps/web-app` |
+| Customer mobile (iOS + Android) | **Expo + expo-router 4** | `apps/mobile-customer` |
+| Admin mobile (iOS + Android) | **Expo + expo-router 4** | `apps/mobile-admin` |
+| Edge endpoints (Cloudflare Workers) | **Hono** | `infra/cloudflare/workers/*` |
+| Heavy-interaction web NOT shared with mobile (reserved) | TanStack Start | (no app yet) |
+
+### Shared frontend packages
+
+`packages/ui`, `packages/forms`, `packages/tracking`, `packages/consent`, `packages/auth-client`, `packages/tenancy-client`, `packages/api-client`, `packages/cms-client`, `packages/seo`.
+
+See `docs/specs/frontend/` for the full architecture (7 specs).
+
+### Scaffolding
+
+```bash
+repo new app marketing my-campaign       # Astro
+repo new app docs ops-runbook            # Starlight
+repo new app web internal-tool           # Expo + react-native-web
+repo new app mobile partner              # Expo native
+repo new app api orders                  # Fastify (existing pattern)
+repo new app worker temporal-orders      # Temporal worker (existing pattern)
+```
+
+Templates under `internal/templates/app-{web,mobile,marketing,docs}/`.
+
+---
+
+## 12. Cloudflare deployment
+
+All public surfaces deploy to **Cloudflare** free tier:
+
+- `apps/marketing`, `apps/docs-public`, `apps/web-app` (web build) → **Pages**
+- Edge logic (tenant routing, webhook receivers) → **Workers** (Hono)
+- Static assets, CMS media → **R2** (S3-compatible, zero egress)
+- Marketing forms data → **D1** (SQLite at edge)
+- Edge config, feature flags → **KV**
+- CAPTCHA → **Turnstile**
+- Page-view analytics → **Cloudflare Web Analytics** (alongside Umami)
+- Local-dev tunnels → **cloudflared** (`repo dev tunnels`)
+
+Wrangler is the only IaC tool — see `infra/cloudflare/`. ADR-0011 documents the rationale; `docs/specs/frontend/cloudflare-deployment.md` documents the configuration.
+
+---
+
+## 13. Useful references
 
 - [`docs/adrs/0001-tsdown-over-tsup.md`](./docs/adrs/0001-tsdown-over-tsup.md)
 - [`docs/adrs/0002-changesets-over-release-please.md`](./docs/adrs/0002-changesets-over-release-please.md)
@@ -309,6 +364,10 @@ Full guide: [`internal/cli/AGENTS.md`](./internal/cli/AGENTS.md).
 - [`docs/adrs/0005-sha-pinned-github-actions.md`](./docs/adrs/0005-sha-pinned-github-actions.md)
 - [`docs/adrs/0006-yaml-config-with-c12.md`](./docs/adrs/0006-yaml-config-with-c12.md)
 - [`docs/adrs/0007-repo-cli-as-dev-interface.md`](./docs/adrs/0007-repo-cli-as-dev-interface.md)
+- [`docs/adrs/0008-astro-for-content-sites.md`](./docs/adrs/0008-astro-for-content-sites.md)
+- [`docs/adrs/0009-expo-for-mobile-and-web-app.md`](./docs/adrs/0009-expo-for-mobile-and-web-app.md)
+- [`docs/adrs/0010-eliminating-or-limiting-nextjs.md`](./docs/adrs/0010-eliminating-or-limiting-nextjs.md)
+- [`docs/adrs/0011-cloudflare-edge-deployment.md`](./docs/adrs/0011-cloudflare-edge-deployment.md)
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 - [`SECURITY.md`](./SECURITY.md)
 - [`GOVERNANCE.md`](./GOVERNANCE.md)

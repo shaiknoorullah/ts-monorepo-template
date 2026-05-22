@@ -1,0 +1,23 @@
+{
+  "name": "@pkg/tenancy-client",
+  "version": "0.0.0",
+  "description": "Tenant resolution: subdomain on web, deep link / profile on native. Sets a React context.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "type-check": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -284,7 +284,28 @@ See [ADR-0007](../../adrs/0007-repo-cli-as-dev-interface.md). TL;DR: composition
 
 ---
 
-## 14. Where this document fits
+## 14. Frontend conventions
+
+Authoritative source: [`docs/specs/frontend/`](../frontend/). The rules condensed:
+
+- **Framework choice is dictated by surface, not preference.** See [framework-choices.md](../frontend/framework-choices.md). Astro for content; Expo for app + mobile; Hono for edge endpoints. Next.js is out (ADR-0010).
+- **Routing.**
+  - Astro: file-system in `src/pages/`. Use Astro Actions for typed server functions.
+  - Expo: `app/` directory with `expo-router` typed routes (`experiments.typedRoutes: true`).
+- **Accessibility baseline: WCAG 2.2 AA.** Verified via `axe-core` in CI on every Pages preview deploy.
+- **Performance budgets (marketing, docs):** Lighthouse Performance ≥ 95; LCP < 1.5 s; initial JS < 50 KB gzipped.
+- **Performance budgets (web-app):** LCP < 3 s on 4G; initial-route JS < 350 KB gzipped; TTI < 4 s mid-range mobile.
+- **Performance budgets (native):** TTI < 2.5 s on mid-range Android; JS bundle < 1.5 MB gzipped per app.
+- **No client-side JS without a reason** on marketing/docs pages. Islands are opt-in.
+- **All tracking is consent-gated** via `@pkg/consent`. `@pkg/tracking` refuses to fire without the relevant category granted. No third-party tracker SDKs (GTM, Segment, etc.).
+- **All forms go through `@pkg/forms`.** RHF + Zod for interactive; Conform for SSR/progressive-enhancement.
+- **Cross-platform divergence** lives in `.web.ts` / `.native.ts` file variants inside `packages/*`. No `Platform.OS` branches in apps.
+- **Deploy target: Cloudflare.** Pages for static + SSR; Workers for edge logic; R2/D1/KV for storage; Turnstile for CAPTCHA. See ADR-0011 and [cloudflare-deployment.md](../frontend/cloudflare-deployment.md).
+- **OpenAPI types** flow into `@pkg/api-client` (generated via `openapi-typescript`). No hand-rolled request/response types.
+
+---
+
+## 15. Where this document fits
 
 - `AGENTS.md` is the **lighthouse** for AI agents. It points here for the rules.
 - `CONTRIBUTING.md` is the **lighthouse** for human contributors. It points here for the rules.

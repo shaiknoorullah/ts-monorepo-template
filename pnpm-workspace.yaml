@@ -3,6 +3,7 @@ packages:
   - "apps/*"
   - "packages/*"
   - "internal/*"
+  - "infra/cloudflare/workers/*"
   - "docs"
 
 # Catalog: cluster-wide version pinning.

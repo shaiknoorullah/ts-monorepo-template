@@ -1,0 +1,24 @@
+---
+interface Feature {
+  title: string
+  body: string
+}
+
+interface Props {
+  features: Feature[]
+}
+
+const { features } = Astro.props
+---
+
+<section class="features" aria-labelledby="features-title">
+  <h2 id="features-title">What you get</h2>
+  <ul role="list" class="feature-grid">
+    {features.map((f) => (
+      <li>
+        <h3>{f.title}</h3>
+        <p>{f.body}</p>
+      </li>
+    ))}
+  </ul>
+</section>
