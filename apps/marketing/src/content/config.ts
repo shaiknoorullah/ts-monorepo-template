@@ -8,37 +8,39 @@
 // The loaders live in `@pkg/cms-client/loaders/{payload,decap}` and only
 // require `tinyglobby` + `gray-matter` to be installed in this app.
 
+import { decapLoader, payloadLoader } from '@pkg/cms-client'
 import { defineCollection, z } from 'astro:content'
-import { payloadLoader } from '@pkg/cms-client/loaders/payload'
-import { decapLoader } from '@pkg/cms-client/loaders/decap'
 
+ 
+// `Loader` type still references zod 3's `ZodType<any, ZodTypeDef, any>` shape;
+// our loaders type-check against zod 4. Cast at the call-site to bridge.
 const posts = defineCollection({
   loader: payloadLoader({
+    apiKey: import.meta.env.PAYLOAD_API_KEY,
     baseUrl: import.meta.env.PAYLOAD_URL ?? 'http://localhost:3000',
     collection: 'posts',
-    apiKey: import.meta.env.PAYLOAD_API_KEY,
-    where: { status: { equals: 'published' } },
     depth: 1,
-  }),
+    where: { status: { equals: 'published' } },
+  }) as any,
   schema: z.object({
-    id: z.string(),
-    title: z.string(),
-    slug: z.string(),
     excerpt: z.string().optional(),
+    id: z.string(),
     publishedAt: z.coerce.date().optional(),
+    slug: z.string(),
+    title: z.string(),
   }),
 })
 
 const pages = defineCollection({
   loader: decapLoader({
-    pattern: 'src/content/pages/**/*.{md,mdx}',
     base: process.cwd(),
-  }),
+    pattern: 'src/content/pages/**/*.{md,mdx}',
+  }) as any,
   schema: z.object({
-    title: z.string(),
     description: z.string().optional(),
     draft: z.boolean().optional(),
+    title: z.string(),
   }),
 })
 
-export const collections = { posts, pages }
+export const collections = { pages, posts }

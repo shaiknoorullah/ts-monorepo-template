@@ -11,7 +11,7 @@
     "dev": "tsx watch src/main.ts",
     "start": "node dist/main.js",
     "test": "vitest run",
-    "type-check": "tsc -b --noEmit"
+    "type-check": "tsc -b"
   },
   "dependencies": {
     "@pkg/config": "workspace:*",

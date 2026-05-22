@@ -57,6 +57,7 @@ Thumbs.db
 .parcel-cache/
 .next/
 .svelte-kit/
+.astro/
 
 # OS
 .DS_Store

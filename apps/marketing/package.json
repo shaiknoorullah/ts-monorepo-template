@@ -6,11 +6,11 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "astro dev --port 4321",
     "build": "astro build",
+    "check": "astro check",
+    "dev": "astro dev --port 4321",
     "preview": "astro preview",
     "start": "astro dev",
-    "check": "astro check",
     "test": "vitest run",
     "type-check": "astro check"
   },
@@ -19,6 +19,7 @@
     "@astrojs/mdx": "^4.0.0",
     "@astrojs/rss": "^4.0.0",
     "@astrojs/sitemap": "^3.0.0",
+    "@pkg/cms-client": "workspace:*",
     "@pkg/consent": "workspace:*",
     "@pkg/forms": "workspace:*",
     "@pkg/seo": "workspace:*",

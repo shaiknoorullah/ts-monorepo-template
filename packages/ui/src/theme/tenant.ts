@@ -13,6 +13,8 @@
 //     into `TamaguiProvider`. Apps without Tamagui can ignore the native
 //     branch and just consume `useTenantTheme()` for raw colors.
 
+import type { ReactNode } from 'react'
+
 import {
   createContext,
   createElement,
@@ -23,35 +25,36 @@ import {
   useRef,
   useState,
 } from 'react'
-import type { ReactNode } from 'react'
-import { darkTheme, lightTheme } from '../tokens'
+
 import type { Theme } from '../types'
 
-/** Theme payload returned by the backend. All colors optional — falls back. */
-export interface TenantThemePayload {
-  brand?: string
-  surface?: string
-  surfaceMuted?: string
-  border?: string
-  text?: string
-  textMuted?: string
-  success?: string
-  warning?: string
-  danger?: string
-  info?: string
-  logoUrl?: string
-}
+import { darkTheme, lightTheme } from '../tokens'
 
 export interface ResolvedTenantTheme extends Theme {
   logoUrl?: string
   tenantSlug: string
 }
 
+/** Theme payload returned by the backend. All colors optional — falls back. */
+export interface TenantThemePayload {
+  border?: string
+  brand?: string
+  danger?: string
+  info?: string
+  logoUrl?: string
+  success?: string
+  surface?: string
+  surfaceMuted?: string
+  text?: string
+  textMuted?: string
+  warning?: string
+}
+
 interface TenantThemeContextValue {
-  theme: ResolvedTenantTheme
-  loading: boolean
   error: Error | null
+  loading: boolean
   refetch: () => Promise<void>
+  theme: ResolvedTenantTheme
 }
 
 const ONE_HOUR_MS = 60 * 60 * 1000
@@ -59,7 +62,7 @@ const CACHE_PREFIX = 'pkg-ui:tenant-theme:'
 
 /** Storage adapter — abstracted so RN can pass SecureStore. */
 export interface TenantThemeStorage {
-  getItem: (key: string) => Promise<string | null> | string | null
+  getItem: (key: string) => null | Promise<null | string> | string
   setItem: (key: string, value: string) => Promise<void> | void
 }
 
@@ -72,6 +75,17 @@ const memoryStorage: TenantThemeStorage = (() => {
     },
   }
 })()
+
+function applyCssVars(theme: Theme): void {
+  if (typeof globalThis === 'undefined') return
+  const doc = (globalThis as { document?: { documentElement: { style: CSSStyleDeclaration } } })
+    .document
+  if (!doc) return
+  const s = doc.documentElement.style
+  for (const [k, v] of Object.entries(theme.colors)) {
+    s.setProperty(`--${k.replaceAll(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}`, v)
+  }
+}
 
 function defaultStorage(): TenantThemeStorage {
   if (typeof globalThis !== 'undefined') {
@@ -90,65 +104,54 @@ function defaultStorage(): TenantThemeStorage {
 
 function mergeTheme(base: Theme, override: TenantThemePayload): Theme {
   return {
-    name: base.name,
     colors: {
-      brand: override.brand ?? base.colors.brand,
-      surface: override.surface ?? base.colors.surface,
-      surfaceMuted: override.surfaceMuted ?? base.colors.surfaceMuted,
       border: override.border ?? base.colors.border,
-      text: override.text ?? base.colors.text,
-      textMuted: override.textMuted ?? base.colors.textMuted,
-      success: override.success ?? base.colors.success,
-      warning: override.warning ?? base.colors.warning,
+      brand: override.brand ?? base.colors.brand,
       danger: override.danger ?? base.colors.danger,
       info: override.info ?? base.colors.info,
+      success: override.success ?? base.colors.success,
+      surface: override.surface ?? base.colors.surface,
+      surfaceMuted: override.surfaceMuted ?? base.colors.surfaceMuted,
+      text: override.text ?? base.colors.text,
+      textMuted: override.textMuted ?? base.colors.textMuted,
+      warning: override.warning ?? base.colors.warning,
     },
+    name: base.name,
   }
 }
 
-function applyCssVars(theme: Theme): void {
-  if (typeof globalThis === 'undefined') return
-  const doc = (globalThis as { document?: { documentElement: { style: CSSStyleDeclaration } } })
-    .document
-  if (!doc) return
-  const s = doc.documentElement.style
-  for (const [k, v] of Object.entries(theme.colors)) {
-    s.setProperty(`--${k.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}`, v)
-  }
-}
-
-const TenantThemeContext = createContext<TenantThemeContextValue | null>(null)
+const TenantThemeContext = createContext<null | TenantThemeContextValue>(null)
 
 export interface TenantThemeProviderProps {
-  /** Tenant slug — resolves the theme. */
-  slug: string
   /** API base URL. Default `''` (same-origin). */
   baseUrl?: string
+  children: ReactNode
   /** Color scheme for the base theme (light/dark). Default `light`. */
-  colorScheme?: 'light' | 'dark'
-  /** Storage adapter. Default: localStorage on web, in-memory elsewhere. */
-  storage?: TenantThemeStorage
+  colorScheme?: 'dark' | 'light'
   /** Optional fetch override (e.g. for testing or auth headers). */
   fetcher?: typeof fetch
+  /** Tenant slug — resolves the theme. */
+  slug: string
+  /** Storage adapter. Default: localStorage on web, in-memory elsewhere. */
+  storage?: TenantThemeStorage
   /** TTL in ms. Default 1h. */
   ttl?: number
-  children: ReactNode
 }
 
 export function TenantThemeProvider({
-  slug,
   baseUrl = '',
-  colorScheme = 'light',
-  storage = defaultStorage(),
-  fetcher,
-  ttl = ONE_HOUR_MS,
   children,
+  colorScheme = 'light',
+  fetcher,
+  slug,
+  storage = defaultStorage(),
+  ttl = ONE_HOUR_MS,
 }: TenantThemeProviderProps): ReactNode {
   const base = colorScheme === 'dark' ? darkTheme : lightTheme
-  const [payload, setPayload] = useState<TenantThemePayload | null>(null)
+  const [payload, setPayload] = useState<null | TenantThemePayload>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  const inflight = useRef<Promise<void> | null>(null)
+  const inflight = useRef<null | Promise<void>>(null)
 
   const cacheKey = `${CACHE_PREFIX}${slug}`
   const doFetch = useCallback(async () => {
@@ -159,12 +162,9 @@ export function TenantThemeProvider({
       const data = (await res.json()) as TenantThemePayload
       setPayload(data)
       setError(null)
-      await storage.setItem(
-        cacheKey,
-        JSON.stringify({ data, fetchedAt: Date.now() }),
-      )
-    } catch (e) {
-      setError(e as Error)
+      await storage.setItem(cacheKey, JSON.stringify({ data, fetchedAt: Date.now() }))
+    } catch (error_) {
+      setError(error_ as Error)
     } finally {
       setLoading(false)
     }
@@ -196,7 +196,10 @@ export function TenantThemeProvider({
 
   const theme = useMemo<ResolvedTenantTheme>(() => {
     const merged = payload ? mergeTheme(base, payload) : base
-    return { ...merged, logoUrl: payload?.logoUrl, tenantSlug: slug }
+    const logoUrl = payload?.logoUrl
+    return logoUrl === undefined
+      ? { ...merged, tenantSlug: slug }
+      : { ...merged, logoUrl, tenantSlug: slug }
   }, [base, payload, slug])
 
   // Apply CSS vars on every theme change (web only — no-op on RN).
@@ -205,22 +208,12 @@ export function TenantThemeProvider({
   }, [theme])
 
   const value: TenantThemeContextValue = useMemo(
-    () => ({ theme, loading, error, refetch: doFetch }),
+    () => ({ error, loading, refetch: doFetch, theme }),
     [theme, loading, error, doFetch],
   )
 
   return createElement(TenantThemeContext.Provider, { value }, children)
 }
-
-export function useTenantTheme(): TenantThemeContextValue {
-  const ctx = useContext(TenantThemeContext)
-  if (!ctx) {
-    throw new Error('useTenantTheme: missing <TenantThemeProvider>')
-  }
-  return ctx
-}
-
-/* ------------------ Tamagui adapter (optional, RN) ------------------- */
 
 /**
  * Build a Tamagui-compatible theme object from a resolved tenant theme.
@@ -232,12 +225,22 @@ export function toTamaguiTheme(theme: ResolvedTenantTheme): Record<string, strin
     background: theme.colors.surface,
     backgroundHover: theme.colors.surfaceMuted,
     borderColor: theme.colors.border,
+    brand: theme.colors.brand,
     color: theme.colors.text,
     colorMuted: theme.colors.textMuted,
-    brand: theme.colors.brand,
-    success: theme.colors.success,
-    warning: theme.colors.warning,
     danger: theme.colors.danger,
     info: theme.colors.info,
+    success: theme.colors.success,
+    warning: theme.colors.warning,
   }
+}
+
+/* ------------------ Tamagui adapter (optional, RN) ------------------- */
+
+export function useTenantTheme(): TenantThemeContextValue {
+  const ctx = useContext(TenantThemeContext)
+  if (!ctx) {
+    throw new Error('useTenantTheme: missing <TenantThemeProvider>')
+  }
+  return ctx
 }

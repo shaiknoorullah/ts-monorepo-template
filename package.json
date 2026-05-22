@@ -2,56 +2,57 @@
   "name": "ts-monorepo-template",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "description": "Production-grade TypeScript microservice monorepo template — Nx + pnpm + changesets + Vitest + Vitepress + AGENTS.md",
   "homepage": "https://github.com/shaiknoorullah/ts-monorepo-template#readme",
+  "bugs": {
+    "url": "https://github.com/shaiknoorullah/ts-monorepo-template/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shaiknoorullah/ts-monorepo-template.git"
   },
-  "bugs": {
-    "url": "https://github.com/shaiknoorullah/ts-monorepo-template/issues"
-  },
   "license": "MIT",
   "author": "Shaik Noorullah",
-  "packageManager": "pnpm@10.15.0",
-  "engines": {
-    "node": ">=22.0.0",
-    "pnpm": ">=10.15.0"
-  },
+  "type": "module",
   "bin": {
     "repo": "./internal/cli/dist/cli.mjs"
   },
   "scripts": {
+    "attw": "nx run-many -t attw",
     "build": "nx run-many -t build",
-    "test": "nx run-many -t test",
-    "test:affected": "nx affected -t test --base=origin/main",
-    "test:coverage": "vitest run --coverage",
-    "lint": "nx run-many -t lint",
-    "lint:fix": "nx run-many -t lint -- --fix",
-    "type-check": "nx run-many -t type-check",
-    "type-coverage": "type-coverage",
-    "dev": "nx run-many -t dev --parallel=10",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "changeset": "changeset",
+    "ci": "pnpm lint && pnpm type-check && pnpm test && pnpm build && pnpm dead && pnpm deps && pnpm manypkg",
     "dead": "knip",
     "deps": "syncpack lint",
     "deps:fix": "syncpack fix-mismatches && syncpack format",
-    "sync": "syncpack fix-mismatches && syncpack format",
-    "manypkg": "manypkg check",
-    "attw": "nx run-many -t attw",
-    "publint": "nx run-many -t publint",
-    "doctor": "pnpm manypkg && pnpm deps && pnpm dead && pnpm type-check",
-    "docs:dev": "vitepress dev docs",
+    "dev": "nx run-many -t dev --parallel=10",
     "docs:build": "vitepress build docs",
+    "docs:dev": "vitepress dev docs",
     "docs:preview": "vitepress preview docs",
-    "changeset": "changeset",
-    "version-packages": "changeset version && pnpm install --lockfile-only && pnpm sync",
+    "doctor": "pnpm manypkg && pnpm deps && pnpm dead && pnpm type-check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "nx run-many -t lint",
+    "lint:fix": "nx run-many -t lint -- --fix",
+    "manypkg": "manypkg check",
+    "prepare": "lefthook install",
+    "publint": "nx run-many -t publint",
     "release": "pnpm build && changeset publish",
-    "ci": "pnpm lint && pnpm type-check && pnpm test && pnpm build && pnpm dead && pnpm deps && pnpm manypkg",
-    "prepare": "lefthook install"
+    "sync": "syncpack fix-mismatches && syncpack format",
+    "test": "nx run-many -t test",
+    "test:affected": "nx affected -t test --base=origin/main",
+    "test:coverage": "vitest run --coverage",
+    "type-check": "nx run-many -t type-check",
+    "type-coverage": "type-coverage",
+    "version-packages": "changeset version && pnpm install --lockfile-only && pnpm sync"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.0",
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.0",
     "@commitlint/cli": "^19.0.0",
@@ -63,6 +64,7 @@
     "@nx/js": "^21.0.0",
     "@nx/vite": "^21.0.0",
     "@playwright/test": "^1.50.0",
+    "@size-limit/preset-small-lib": "^11.0.0",
     "@stryker-mutator/core": "^9.6.0",
     "@stryker-mutator/typescript-checker": "^9.6.0",
     "@stryker-mutator/vitest-runner": "^9.6.0",
@@ -70,7 +72,6 @@
     "@vitest/coverage-v8": "^4.0.0",
     "@vitest/eslint-plugin": "^1.6.0",
     "@vitest/ui": "^4.0.0",
-    "@arethetypeswrong/cli": "^0.18.0",
     "commitizen": "^4.3.0",
     "cspell": "^9.0.0",
     "cz-conventional-changelog": "^3.3.0",
@@ -93,10 +94,9 @@
     "prettier-plugin-packagejson": "^2.5.0",
     "publint": "^0.3.0",
     "size-limit": "^11.0.0",
-    "@size-limit/preset-small-lib": "^11.0.0",
     "syncpack": "^14.0.0",
     "tsd": "^0.32.0",
-    "tsdown": "^0.6.0",
+    "tsdown": "catalog:",
     "tsx": "^4.20.0",
     "type-coverage": "^2.29.0",
     "typedoc": "^0.28.0",
@@ -104,13 +104,14 @@
     "typedoc-plugin-markdown": "^4.5.0",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.30.0",
+    "unrun": "^0.3.0",
     "vitepress": "^1.6.0",
     "vitest": "^4.0.0"
   },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
+  "packageManager": "pnpm@10.15.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.15.0"
   },
   "typeCoverage": {
     "atLeast": 95,

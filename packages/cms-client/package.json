@@ -4,29 +4,21 @@
   "description": "CMS helpers — Payload (default) or Decap. Astro Content Layer loader.",
   "license": "MIT",
   "type": "module",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./loaders/payload": "./src/loaders/payload.ts",
     "./loaders/decap": "./src/loaders/decap.ts"
   },
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
-    "type-check": "tsc -b --noEmit"
+    "type-check": "tsc -b"
   },
   "dependencies": {
     "zod": "catalog:"
-  },
-  "peerDependencies": {
-    "gray-matter": "^4.0.3",
-    "tinyglobby": "^0.2.10"
-  },
-  "peerDependenciesMeta": {
-    "gray-matter": { "optional": true },
-    "tinyglobby": { "optional": true }
   },
   "devDependencies": {
     "gray-matter": "^4.0.3",
@@ -34,5 +26,17 @@
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "gray-matter": "^4.0.3",
+    "tinyglobby": "^0.2.10"
+  },
+  "peerDependenciesMeta": {
+    "gray-matter": {
+      "optional": true
+    },
+    "tinyglobby": {
+      "optional": true
+    }
   }
 }

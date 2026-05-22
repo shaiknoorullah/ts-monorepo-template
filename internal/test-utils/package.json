@@ -4,8 +4,8 @@
   "private": true,
   "description": "Internal test helpers — never published. Shared across packages and apps.",
   "license": "MIT",
-  "type": "module",
   "sideEffects": false,
+  "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -13,7 +13,7 @@
   "types": "./src/index.ts",
   "scripts": {
     "test": "vitest run",
-    "type-check": "tsc -b --noEmit"
+    "type-check": "tsc -b"
   },
   "dependencies": {
     "@pkg/types": "workspace:*"

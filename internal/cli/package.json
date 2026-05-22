@@ -5,15 +5,15 @@
   "description": "The `repo` CLI — single entry point for every dev workflow in this monorepo except writing business logic.",
   "license": "MIT",
   "type": "module",
+  "main": "./dist/cli.mjs",
   "bin": {
     "repo": "./dist/cli.mjs"
   },
-  "main": "./dist/cli.mjs",
   "scripts": {
     "build": "tsdown",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
-    "type-check": "tsc -b --noEmit"
+    "type-check": "tsc -b"
   },
   "dependencies": {
     "c12": "^3.0.0",

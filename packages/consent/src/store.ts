@@ -2,6 +2,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+
 import type { ConsentCategory, ConsentState } from './types'
 
 interface Store extends ConsentState {
@@ -11,9 +12,11 @@ interface Store extends ConsentState {
 export const useConsent = create<Store>()(
   persist(
     (set) => ({
-      granted: ['necessary'],
       decided: false,
-      setGranted: (categories): void => set({ granted: categories, decided: true }),
+      granted: ['necessary'],
+      setGranted: (categories) => {
+        set({ decided: true, granted: categories })
+      },
     }),
     { name: 'pkg-consent' },
   ),
