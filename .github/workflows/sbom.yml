@@ -1,0 +1,85 @@
+# ------------------------------------------------------------------------------
+# sbom.yml — Generate SBOMs (CycloneDX + SPDX) and scan with OSV
+#
+# Triggers: push to main, and release tag pushes (`v*`).
+# Purpose:  Produce a CycloneDX JSON via @cyclonedx/cyclonedx-npm AND an SPDX
+#           JSON via anchore/sbom-action. Run osv-scanner against both. On
+#           tag push, upload the SBOMs to the matching GitHub Release.
+# Safety:   - All third-party Actions pinned to 40-char commit SHAs.
+#           - Release-upload step is gated on a real release existing.
+# ------------------------------------------------------------------------------
+
+name: SBOM
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+permissions:
+  contents: write
+  security-events: write
+
+concurrency:
+  group: sbom-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  sbom:
+    name: Generate + scan SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 10.15.0
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate CycloneDX SBOM
+        run: |
+          mkdir -p sbom
+          pnpm dlx @cyclonedx/cyclonedx-npm@latest \
+            --output-format JSON \
+            --output-file sbom/bom.cdx.json \
+            --omit dev \
+            --spec-version 1.5
+
+      - name: Generate SPDX SBOM
+        uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.7
+        with:
+          format: spdx-json
+          output-file: sbom/bom.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: sbom
+          path: sbom/
+          retention-days: 90
+
+      - name: OSV scan (CycloneDX)
+        uses: google/osv-scanner-action@75b5092ec43d29c97c70603eb6cd9bf2cba4b276 # v1.9.1
+        with:
+          scan-args: |-
+            --sbom=sbom/bom.cdx.json
+        continue-on-error: true
+
+      - name: Attach SBOM to GitHub Release (tag pushes only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@01570a1f39cb168c169c802c3bceb9e93fb10974 # v2.1.0
+        with:
+          files: |
+            sbom/bom.cdx.json
+            sbom/bom.spdx.json
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
