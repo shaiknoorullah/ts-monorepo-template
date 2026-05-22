@@ -24,7 +24,7 @@ export function workspaceAliases() {
       }
       const indexTs = resolve(pkgDir, 'src/index.ts')
       const indexTsx = resolve(pkgDir, 'src/index.tsx')
-      const target = existsSync(indexTs) ? indexTs : (existsSync(indexTsx) ? indexTsx : null)
+      const target = existsSync(indexTs) ? indexTs : existsSync(indexTsx) ? indexTsx : null
       if (!target) continue
       out.push({ find: `${scope}/${name}`, replacement: target })
     }

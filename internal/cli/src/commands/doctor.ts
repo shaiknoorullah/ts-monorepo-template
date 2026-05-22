@@ -129,11 +129,11 @@ export const doctorCommand = defineCommand({
       emit({
         data: { checks },
         message: `${checks.length} checks: ${errors} error / ${warns} warning`,
-        status: errors > 0 ? 'error' : (warns > 0 ? 'warning' : 'ok'),
+        status: errors > 0 ? 'error' : warns > 0 ? 'warning' : 'ok',
       })
     } else {
       for (const c of checks) {
-        const icon = c.status === 'ok' ? 'OK ' : (c.status === 'warning' ? 'WARN' : 'ERR ')
+        const icon = c.status === 'ok' ? 'OK ' : c.status === 'warning' ? 'WARN' : 'ERR '
         info(
           `  [${icon}] ${c.name.padEnd(28)} ${c.value ?? ''} ${c.expected ? `(expected ${c.expected})` : ''}`,
         )
@@ -141,7 +141,7 @@ export const doctorCommand = defineCommand({
       }
       emit({
         message: `${checks.length} checks · ${errors} error · ${warns} warning`,
-        status: errors > 0 ? 'error' : (warns > 0 ? 'warning' : 'ok'),
+        status: errors > 0 ? 'error' : warns > 0 ? 'warning' : 'ok',
       })
     }
     if (errors > 0) process.exit(1)
