@@ -1,0 +1,45 @@
+{
+  "name": "@pkg/db-client",
+  "version": "0.0.0",
+  "description": "Postgres client wrapper (drizzle-orm) with connection-pool lifecycle helpers.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "type-check": "tsc -b --noEmit",
+    "attw": "attw --pack . --profile esm-only",
+    "publint": "publint"
+  },
+  "dependencies": {
+    "@pkg/types": "workspace:*",
+    "drizzle-orm": "catalog:runtime"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "typeCoverage": {
+    "atLeast": 95,
+    "strict": true,
+    "detail": true,
+    "ignoreCatch": true
+  }
+}

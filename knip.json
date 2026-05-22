@@ -1,0 +1,30 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["internal/scripts/**/*.{ts,mjs}"],
+      "project": ["internal/scripts/**/*.{ts,mjs}"],
+      "ignore": ["docs/**", ".nx/**", "**/dist/**"],
+      "ignoreDependencies": [
+        "cz-conventional-changelog",
+        "commitizen",
+        "@stryker-mutator/*",
+        "@size-limit/*",
+        "size-limit",
+        "playwright"
+      ]
+    },
+    "apps/*": {
+      "entry": ["src/main.ts!", "src/index.ts!"],
+      "project": ["src/**/*.ts!"]
+    },
+    "packages/*": {
+      "entry": ["src/index.ts!"],
+      "project": ["src/**/*.ts!"]
+    },
+    "internal/*": {
+      "entry": ["src/index.ts!", "scripts/**/*.ts"],
+      "project": ["src/**/*.ts!", "scripts/**/*.ts"]
+    }
+  }
+}

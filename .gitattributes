@@ -1,0 +1,16 @@
+# Auto-detect text files, ensure LF line endings
+* text=auto eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.lockb binary
+
+# Lockfiles — show as text in diffs but mark as generated
+pnpm-lock.yaml linguist-generated=true -diff

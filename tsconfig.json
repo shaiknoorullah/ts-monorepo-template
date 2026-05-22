@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/types" },
+    { "path": "./packages/config" },
+    { "path": "./packages/logger" },
+    { "path": "./packages/db-client" },
+    { "path": "./apps/api-gateway" },
+    { "path": "./apps/worker" },
+    { "path": "./internal/test-utils" }
+  ]
+}
