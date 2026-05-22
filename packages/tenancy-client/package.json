@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
-    "type-check": "tsc -b --noEmit"
+    "type-check": "tsc -b"
   },
   "dependencies": {
     "zod": "catalog:"

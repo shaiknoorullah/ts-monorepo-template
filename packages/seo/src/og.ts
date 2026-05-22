@@ -12,64 +12,64 @@
 // @resvg/resvg-wasm are dynamically imported so apps that only need the
 // tag-builder don't pay the WASM cost.
 
-export interface OpenGraphInput {
+export interface OgImageProps {
+  /**
+   * Font data for satori. Supply at least one Inter weight.
+   * Edge-safe: pass `ArrayBuffer` loaded from a binding or fetched once.
+   */
+  fonts?: {
+    data: ArrayBuffer | Uint8Array
+    name: string
+    style?: 'italic' | 'normal'
+    weight?: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
+  }[]
+  /** CSS gradient applied as the background. Default depends on theme. */
+  gradient?: string
+  /** Height, default 630. */
+  height?: number
+  logoUrl?: string
+  subtitle?: string
+  theme?: 'dark' | 'light'
   title: string
-  description: string
-  url: string
-  image?: string
-  type?: 'website' | 'article' | 'product'
-  siteName?: string
+  /** Width, default 1200. */
+  width?: number
 }
+
+export interface OpenGraphInput {
+  description: string
+  image?: string
+  siteName?: string
+  title: string
+  type?: 'article' | 'product' | 'website'
+  url: string
+}
+
+/* --------------------------- image generator --------------------------- */
 
 export function buildOpenGraph(input: OpenGraphInput): Record<string, string> {
   const tags: Record<string, string> = {
-    'og:title': input.title,
     'og:description': input.description,
-    'og:url': input.url,
+    'og:title': input.title,
     'og:type': input.type ?? 'website',
+    'og:url': input.url,
   }
   if (input.image) tags['og:image'] = input.image
   if (input.siteName) tags['og:site_name'] = input.siteName
   return tags
 }
 
-/* --------------------------- image generator --------------------------- */
-
-export interface OgImageProps {
-  title: string
-  subtitle?: string
-  theme?: 'light' | 'dark'
-  logoUrl?: string
-  /** CSS gradient applied as the background. Default depends on theme. */
-  gradient?: string
-  /** Width, default 1200. */
-  width?: number
-  /** Height, default 630. */
-  height?: number
-  /**
-   * Font data for satori. Supply at least one Inter weight.
-   * Edge-safe: pass `ArrayBuffer` loaded from a binding or fetched once.
-   */
-  fonts?: Array<{
-    name: string
-    data: ArrayBuffer | Uint8Array
-    weight?: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
-    style?: 'normal' | 'italic'
-  }>
-}
-
 const PRESETS = {
-  light: {
-    bg: 'linear-gradient(135deg, #ffffff 0%, #f6f8fa 100%)',
-    fg: '#0d1117',
-    accent: '#1f6feb',
-    muted: '#57606a',
-  },
   dark: {
+    accent: '#58a6ff',
     bg: 'linear-gradient(135deg, #0d1117 0%, #161b22 100%)',
     fg: '#c9d1d9',
-    accent: '#58a6ff',
     muted: '#8b949e',
+  },
+  light: {
+    accent: '#1f6feb',
+    bg: 'linear-gradient(135deg, #ffffff 0%, #f6f8fa 100%)',
+    fg: '#0d1117',
+    muted: '#57606a',
   },
 } as const
 
@@ -83,74 +83,74 @@ export function buildOgImageVDOM(props: OgImageProps): unknown {
   const height = props.height ?? 630
 
   return {
-    type: 'div',
     props: {
-      style: {
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        width,
-        height,
-        padding: 64,
-        background: props.gradient ?? theme.bg,
-        fontFamily: 'Inter, sans-serif',
-        color: theme.fg,
-      },
       children: [
         // Top row: logo
         props.logoUrl
           ? {
-              type: 'div',
               props: {
-                style: { display: 'flex', alignItems: 'center', height: 64 },
                 children: [
                   {
+                    props: { height: 64, src: props.logoUrl, width: 64 },
                     type: 'img',
-                    props: { src: props.logoUrl, width: 64, height: 64 },
                   },
                 ],
+                style: { alignItems: 'center', display: 'flex', height: 64 },
               },
+              type: 'div',
             }
-          : { type: 'div', props: { style: { height: 64 } } },
+          : { props: { style: { height: 64 } }, type: 'div' },
         // Main: title + subtitle
         {
-          type: 'div',
           props: {
-            style: { display: 'flex', flexDirection: 'column', gap: 24 },
             children: [
               {
-                type: 'div',
                 props: {
+                  children: props.title,
                   style: {
                     fontSize: 72,
                     fontWeight: 700,
-                    lineHeight: 1.1,
                     letterSpacing: '-0.02em',
+                    lineHeight: 1.1,
                   },
-                  children: props.title,
                 },
+                type: 'div',
               },
               props.subtitle
                 ? {
-                    type: 'div',
                     props: {
-                      style: { fontSize: 32, color: theme.muted, lineHeight: 1.4 },
                       children: props.subtitle,
+                      style: { color: theme.muted, fontSize: 32, lineHeight: 1.4 },
                     },
+                    type: 'div',
                   }
                 : null,
             ].filter(Boolean),
+            style: { display: 'flex', flexDirection: 'column', gap: 24 },
           },
+          type: 'div',
         },
         // Footer accent bar
         {
-          type: 'div',
           props: {
-            style: { display: 'flex', height: 8, background: theme.accent, borderRadius: 4 },
+            style: { background: theme.accent, borderRadius: 4, display: 'flex', height: 8 },
           },
+          type: 'div',
         },
       ],
+      style: {
+        background: props.gradient ?? theme.bg,
+        color: theme.fg,
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: 'Inter, sans-serif',
+        height,
+        justifyContent: 'space-between',
+        padding: 64,
+        width,
+      },
     },
+    type: 'div',
   }
 }
 
@@ -164,11 +164,12 @@ export function buildOgImageVDOM(props: OgImageProps): unknown {
 export async function generateOgImage(props: OgImageProps): Promise<Response> {
   const { default: satori } = await import('satori')
   const resvgMod = await import('@resvg/resvg-wasm')
-  const Resvg = (resvgMod as { Resvg: new (svg: string) => { render: () => { asPng: () => Uint8Array } } })
-    .Resvg
+  const Resvg = (
+    resvgMod as { Resvg: new (svg: string) => { render: () => { asPng: () => Uint8Array } } }
+  ).Resvg
 
   const fonts = props.fonts ?? []
-  if (!fonts.length) {
+  if (fonts.length === 0) {
     throw new Error(
       'generateOgImage: at least one font must be provided in `props.fonts`. ' +
         'Load Inter from /assets at boot and pass it in.',
@@ -180,23 +181,23 @@ export async function generateOgImage(props: OgImageProps): Promise<Response> {
   const vdom = buildOgImageVDOM(props)
 
   const svg = await satori(vdom as never, {
-    width,
-    height,
     fonts: fonts.map((f) => ({
-      name: f.name,
       data: f.data,
-      weight: f.weight ?? 700,
+      name: f.name,
       style: f.style ?? 'normal',
-    })),
+      weight: f.weight ?? 700,
+    })) as never,
+    height,
+    width,
   })
 
   const png = new Resvg(svg).render().asPng()
   return new Response(png, {
-    status: 200,
     headers: {
-      'content-type': 'image/png',
       'cache-control': 'public, max-age=31536000, immutable',
+      'content-type': 'image/png',
     },
+    status: 200,
   })
 }
 
@@ -211,13 +212,13 @@ export async function generateOgImageSvg(
   const width = props.width ?? 1200
   const height = props.height ?? 630
   return satori(buildOgImageVDOM(props) as never, {
-    width,
-    height,
     fonts: props.fonts.map((f) => ({
-      name: f.name,
       data: f.data,
-      weight: f.weight ?? 700,
+      name: f.name,
       style: f.style ?? 'normal',
-    })),
+      weight: f.weight ?? 700,
+    })) as never,
+    height,
+    width,
   })
 }

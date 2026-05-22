@@ -3,9 +3,8 @@
   "version": "0.0.0",
   "description": "Postgres client wrapper (drizzle-orm) with connection-pool lifecycle helpers.",
   "license": "MIT",
-  "type": "module",
   "sideEffects": false,
-  "files": ["dist"],
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -16,12 +15,15 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsdown",
-    "test": "vitest run",
-    "type-check": "tsc -b --noEmit",
     "attw": "attw --pack . --profile esm-only",
-    "publint": "publint"
+    "build": "tsdown",
+    "publint": "publint",
+    "test": "vitest run",
+    "type-check": "tsc -b"
   },
   "dependencies": {
     "@pkg/types": "workspace:*",

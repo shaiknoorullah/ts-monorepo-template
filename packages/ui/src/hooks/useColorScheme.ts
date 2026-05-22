@@ -4,6 +4,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+
 import type { ColorScheme } from '../types'
 
 interface SchemeState {
@@ -15,7 +16,9 @@ export const useColorScheme = create<SchemeState>()(
   persist(
     (set) => ({
       scheme: 'system',
-      setScheme: (scheme): void => set({ scheme }),
+      setScheme: (scheme) => {
+        set({ scheme })
+      },
     }),
     { name: 'pkg-ui-color-scheme' },
   ),

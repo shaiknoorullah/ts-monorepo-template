@@ -67,7 +67,7 @@ jobs:
           retention-days: 90
 
       - name: OSV scan (CycloneDX)
-        uses: google/osv-scanner-action@75b5092ec43d29c97c70603eb6cd9bf2cba4b276 # v1.9.1
+        uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
         with:
           scan-args: |-
             --sbom=sbom/bom.cdx.json

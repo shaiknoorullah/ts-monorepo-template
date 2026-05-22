@@ -1,6 +1,6 @@
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
-import { type Logger, createLogger } from '@pkg/logger'
+import { createLogger, type Logger } from '@pkg/logger'
 import { type HealthCheck, toIsoDateTime } from '@pkg/types'
 import Fastify, { type FastifyInstance } from 'fastify'
 
@@ -22,27 +22,30 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   const startedAt = Date.now()
 
   const app = Fastify({
-    loggerInstance: logger,
-    disableRequestLogging: false,
-    trustProxy: true,
     bodyLimit: 1 * 1024 * 1024,
+    disableRequestLogging: false,
+    loggerInstance: logger,
+    trustProxy: true,
   })
 
   await app.register(helmet, { global: true })
-  await app.register(cors, { origin: options.config.CORS_ORIGIN, credentials: true })
+  await app.register(cors, { credentials: true, origin: options.config.CORS_ORIGIN })
 
-  app.get('/health', async (): Promise<HealthCheck> => ({
-    status: 'ok',
-    service: options.config.SERVICE_NAME,
-    version: options.config.SERVICE_VERSION,
-    uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
-    checkedAt: toIsoDateTime(new Date()),
-  }))
+  app.get(
+    '/health',
+    async (): Promise<HealthCheck> => ({
+      checkedAt: toIsoDateTime(new Date()),
+      service: options.config.SERVICE_NAME,
+      status: 'ok',
+      uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
+      version: options.config.SERVICE_VERSION,
+    }),
+  )
 
   app.get('/ready', async (_req, reply): Promise<{ ready: true }> => {
     reply.statusCode = 200
     return { ready: true }
   })
 
-  return app
+  return app as unknown as FastifyInstance
 }

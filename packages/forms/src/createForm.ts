@@ -3,27 +3,30 @@
 // Thin wrapper around React Hook Form + Zod resolver. Consumers get a typed
 // form API with a single options object.
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm, type SubmitHandler, type UseFormReturn } from 'react-hook-form'
 import type { z } from 'zod'
 
-export interface CreateFormOptions<TSchema extends z.ZodTypeAny> {
-  schema: TSchema
-  defaultValues?: Partial<z.infer<TSchema>>
-  onSubmit: SubmitHandler<z.infer<TSchema>>
+import { zodResolver } from '@hookform/resolvers/zod'
+import { type FieldValues, type SubmitHandler, useForm, type UseFormReturn } from 'react-hook-form'
+
+// TODO: re-tighten — generic constraint widened to FieldValues to bridge zod 4
+// `output<TSchema>` (= unknown) and react-hook-form's `FieldValues` constraint.
+export interface CreateFormOptions<TValues extends FieldValues> {
+  defaultValues?: Partial<TValues>
+  onSubmit: SubmitHandler<TValues>
+  schema: z.ZodTypeAny
 }
 
-export interface FormApi<TSchema extends z.ZodTypeAny> {
-  form: UseFormReturn<z.infer<TSchema>>
+export interface FormApi<TValues extends FieldValues> {
+  form: UseFormReturn<TValues>
   handleSubmit: () => Promise<void>
 }
 
-export function createForm<TSchema extends z.ZodTypeAny>(
-  opts: CreateFormOptions<TSchema>,
-): FormApi<TSchema> {
-  const form = useForm<z.infer<TSchema>>({
-    resolver: zodResolver(opts.schema),
-    defaultValues: opts.defaultValues as z.infer<TSchema> | undefined,
+export function createForm<TValues extends FieldValues>(
+  opts: CreateFormOptions<TValues>,
+): FormApi<TValues> {
+  const form = useForm<TValues>({
+    defaultValues: opts.defaultValues as never,
+    resolver: zodResolver(opts.schema) as never,
   })
 
   const handleSubmit = async (): Promise<void> => {

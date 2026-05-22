@@ -16,32 +16,34 @@
 //     }),
 //   }
 
+import matterImport from 'gray-matter'
 import { readFile } from 'node:fs/promises'
 import { basename, extname, relative, resolve } from 'node:path'
+import { glob } from 'tinyglobby'
 
 export interface DecapLoaderOptions {
+  /** Base directory the glob is evaluated against. Default `process.cwd()`. */
+  base?: string
   /**
    * Glob pattern (relative to `base`) matching the content files.
    * Defaults to `**\/*.{md,mdx}`.
    */
   pattern?: string
-  /** Base directory the glob is evaluated against. Default `process.cwd()`. */
-  base?: string
   /** Use the file path as the entry id rather than the basename. */
   useRelativePathAsId?: boolean
 }
 
-interface AstroLoaderContext {
-  store: {
-    set: (entry: { id: string; data: Record<string, unknown>; body?: string }) => void
-    clear: () => void
-  }
-  logger?: { info: (msg: string) => void; warn: (msg: string) => void }
+interface AstroLoader {
+  load: (ctx: AstroLoaderContext) => Promise<void>
+  name: string
 }
 
-interface AstroLoader {
-  name: string
-  load: (ctx: AstroLoaderContext) => Promise<void>
+interface AstroLoaderContext {
+  logger?: { info: (msg: string) => void; warn: (msg: string) => void }
+  store: {
+    clear: () => void
+    set: (entry: { body?: string; data: Record<string, unknown>; id: string; }) => void
+  }
 }
 
 export function decapLoader(options: DecapLoaderOptions = {}): AstroLoader {
@@ -49,32 +51,29 @@ export function decapLoader(options: DecapLoaderOptions = {}): AstroLoader {
   const base = resolve(options.base ?? process.cwd())
 
   return {
-    name: 'decap:git',
-    async load({ store, logger }) {
-      // Dynamic imports — these are runtime-only dependencies so the package
-      // itself doesn't pull them when only the Payload loader is used.
-      const { glob } = await import('tinyglobby')
-      const matterMod = await import('gray-matter')
-      const matter = (matterMod.default ?? matterMod) as (
-        s: string,
-      ) => { data: Record<string, unknown>; content: string }
+    async load({ logger, store }) {
+      const matter = matterImport as unknown as (s: string) => {
+        content: string
+        data: Record<string, unknown>
+      }
 
       store.clear()
 
-      const files = await glob(pattern, { cwd: base, absolute: true })
+      const files = await glob(pattern, { absolute: true, cwd: base })
       let count = 0
 
       for (const file of files) {
         const raw = await readFile(file, 'utf8')
-        const { data, content } = matter(raw)
+        const { content, data } = matter(raw)
         const id = options.useRelativePathAsId
-          ? relative(base, file).replace(/\\/g, '/')
+          ? relative(base, file).replaceAll('\\', '/')
           : basename(file, extname(file))
-        store.set({ id, data, body: content })
+        store.set({ body: content, data, id })
         count++
       }
 
       logger?.info(`decapLoader: loaded ${count} entries from ${pattern}`)
     },
+    name: 'decap:git',
   }
 }

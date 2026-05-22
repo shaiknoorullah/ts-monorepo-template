@@ -4,32 +4,36 @@
   "description": "SEO helpers — OpenGraph, JSON-LD (schema.org), sitemap, robots.",
   "license": "MIT",
   "type": "module",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./jsonld": "./src/jsonld.ts"
   },
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
-    "type-check": "tsc -b --noEmit"
+    "type-check": "tsc -b"
   },
   "dependencies": {
     "schema-dts": "^1.1.5"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@resvg/resvg-wasm": "^2.6.0",
     "satori": "^0.12.0"
   },
   "peerDependenciesMeta": {
-    "@resvg/resvg-wasm": { "optional": true },
-    "satori": { "optional": true }
-  },
-  "devDependencies": {
-    "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "@resvg/resvg-wasm": {
+      "optional": true
+    },
+    "satori": {
+      "optional": true
+    }
   }
 }

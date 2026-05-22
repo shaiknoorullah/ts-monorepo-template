@@ -4,8 +4,9 @@
     "jsx": "react-jsx",
     "rootDir": "src",
     "outDir": "dist",
-    "moduleResolution": "Bundler"
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "tailwind.config.ts"],
-  "exclude": ["dist", "node_modules"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["dist", "node_modules", "tailwind.config.ts"]
 }
