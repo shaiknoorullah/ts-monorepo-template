@@ -909,16 +909,16 @@ importers:
 
   packages/seo:
     dependencies:
+      schema-dts:
+        specifier: ^1.1.5
+        version: 1.1.5
+    devDependencies:
       '@resvg/resvg-wasm':
         specifier: ^2.6.0
         version: 2.6.2
       satori:
         specifier: ^0.12.0
         version: 0.12.2
-      schema-dts:
-        specifier: ^1.1.5
-        version: 1.1.5
-    devDependencies:
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@arethetypeswrong/core@0.18.2)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(publint@0.3.21)(tsx@4.22.3)(typescript@5.9.3)(unrun@0.3.0)
@@ -981,12 +981,6 @@ importers:
       lucide-react-native:
         specifier: ^0.460.0
         version: 0.460.0(react-native-svg@15.15.5(react-native@0.76.0(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@types/react@18.3.29)(encoding@0.1.13)(react@18.3.1))(react@18.3.1))(react-native@0.76.0(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@types/react@18.3.29)(encoding@0.1.13)(react@18.3.1))(react@18.3.1)
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-native:
-        specifier: ^0.76.0
-        version: 0.76.0(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@types/react@18.3.29)(encoding@0.1.13)(react@18.3.1)
       sonner:
         specifier: ^1.7.0
         version: 1.7.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -997,6 +991,12 @@ importers:
       '@types/react':
         specifier: ^18.3.0
         version: 18.3.29
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-native:
+        specifier: ^0.76.0
+        version: 0.76.0(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@types/react@18.3.29)(encoding@0.1.13)(react@18.3.1)
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@arethetypeswrong/core@0.18.2)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(publint@0.3.21)(tsx@4.22.3)(typescript@5.9.3)(unrun@0.3.0)
@@ -1012,12 +1012,6 @@ importers:
       nativewind:
         specifier: ^4.1.0
         version: 4.2.4(react-native-reanimated@4.3.1(react-native-worklets@0.8.3(@babel/core@7.29.0)(@react-native/metro-config@0.85.3(@babel/core@7.29.0))(react-native@0.76.0(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@types/react@18.3.29)(encoding@0.1.13)(react@18.3.1))(react@18.3.1))(react-native@0.76.0(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@types/react@18.3.29)(encoding@0.1.13)(react@18.3.1))(react@18.3.1))(react-native@0.76.0(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@types/react@18.3.29)(encoding@0.1.13)(react@18.3.1))(react@18.3.1)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.9.0))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-native:
-        specifier: ^0.76.0
-        version: 0.76.0(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@types/react@18.3.29)(encoding@0.1.13)(react@18.3.1)
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19(tsx@4.22.3)(yaml@2.9.0)
@@ -1028,6 +1022,12 @@ importers:
       '@types/react':
         specifier: ^18.3.0
         version: 18.3.29
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-native:
+        specifier: ^0.76.0
+        version: 0.76.0(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@types/react@18.3.29)(encoding@0.1.13)(react@18.3.1)
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@arethetypeswrong/core@0.18.2)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(publint@0.3.21)(tsx@4.22.3)(typescript@5.9.3)(unrun@0.3.0)
@@ -16035,7 +16035,7 @@ snapshots:
 
   '@ctrl/tinycolor@4.2.0': {}
 
-  '@cyclonedx/cyclonedx-library@10.0.0(ajv-formats-draft2019@1.6.1(ajv@8.20.0))(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(libxmljs2@0.37.0)(packageurl-js@2.0.1)(spdx-expression-parse@4.0.0)(xmlbuilder2@4.0.3)':
+  '@cyclonedx/cyclonedx-library@10.0.0(ajv-formats-draft2019@1.6.1(ajv@8.18.0))(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(libxmljs2@0.37.0)(packageurl-js@2.0.1)(spdx-expression-parse@4.0.0)(xmlbuilder2@4.0.3)':
     optionalDependencies:
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
@@ -16047,7 +16047,7 @@ snapshots:
 
   '@cyclonedx/cyclonedx-npm@4.2.1':
     dependencies:
-      '@cyclonedx/cyclonedx-library': 10.0.0(ajv-formats-draft2019@1.6.1(ajv@8.20.0))(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(libxmljs2@0.37.0)(packageurl-js@2.0.1)(spdx-expression-parse@4.0.0)(xmlbuilder2@4.0.3)
+      '@cyclonedx/cyclonedx-library': 10.0.0(ajv-formats-draft2019@1.6.1(ajv@8.18.0))(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(libxmljs2@0.37.0)(packageurl-js@2.0.1)(spdx-expression-parse@4.0.0)(xmlbuilder2@4.0.3)
       commander: 14.0.3
       normalize-package-data: 8.0.0
       packageurl-js: 2.0.1

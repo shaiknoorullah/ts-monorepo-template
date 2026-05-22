@@ -56,6 +56,7 @@ export default tseslint.config(
       'unicorn/filename-case': 'off', // TODO: enforce kebab-case once existing PascalCase files are renamed
       'unicorn/text-encoding-identifier-case': 'off', // TODO: re-enable
       'unicorn/no-process-exit': 'off', // CLI tooling needs it
+      'unicorn/no-nested-ternary': 'off', // conflicts with prettier's auto-reformatting
       'sonarjs/no-duplicate-string': ['warn', { threshold: 5 }],
       'sonarjs/cognitive-complexity': ['warn', 15],
       'sonarjs/deprecation': 'warn', // TODO: surface as warning until migration is done
