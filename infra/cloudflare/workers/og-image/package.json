@@ -1,0 +1,24 @@
+{
+  "name": "@infra/cf-og-image",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Cloudflare Worker that renders OG images on demand via satori + resvg-wasm.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pkg/seo": "workspace:*",
+    "@resvg/resvg-wasm": "^2.6.0",
+    "hono": "^4.6.0",
+    "satori": "^0.12.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250101.0",
+    "typescript": "catalog:",
+    "wrangler": "^3.80.0"
+  }
+}
