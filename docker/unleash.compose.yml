@@ -12,7 +12,7 @@
 #       Client Secret: <from Keycloak client config>
 #       Auto-create users: on
 #   The container can reach Keycloak via the shared saas-commons network.
-version: "3.9"
+version: '3.9'
 
 x-restart: &restart
   restart: unless-stopped
@@ -30,13 +30,13 @@ services:
       - unleash-postgres-data:/var/lib/postgresql/data
     networks: [saas-commons]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${UNLEASH_POSTGRES_USER:-unleash}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${UNLEASH_POSTGRES_USER:-unleash}']
       interval: 5s
       timeout: 3s
       retries: 20
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 512M }
+        limits: { cpus: '0.5', memory: 512M }
 
   unleash:
     image: unleashorg/unleash-server:6.4
@@ -45,23 +45,23 @@ services:
     depends_on:
       unleash-db: { condition: service_healthy }
     environment:
-      DATABASE_URL: "postgres://${UNLEASH_POSTGRES_USER:-unleash}:${UNLEASH_POSTGRES_PASSWORD:-changeme}@unleash-db:5432/${UNLEASH_POSTGRES_DB:-unleash}"
-      DATABASE_SSL: "false"
+      DATABASE_URL: 'postgres://${UNLEASH_POSTGRES_USER:-unleash}:${UNLEASH_POSTGRES_PASSWORD:-changeme}@unleash-db:5432/${UNLEASH_POSTGRES_DB:-unleash}'
+      DATABASE_SSL: 'false'
       LOG_LEVEL: ${UNLEASH_LOG_LEVEL:-info}
-      INIT_ADMIN_API_TOKENS: "${UNLEASH_INIT_ADMIN_API_TOKENS:-}"
-      INIT_CLIENT_API_TOKENS:  "${UNLEASH_INIT_CLIENT_API_TOKENS:-}"
-      INIT_FRONTEND_API_TOKENS: "${UNLEASH_INIT_FRONTEND_API_TOKENS:-}"
+      INIT_ADMIN_API_TOKENS: '${UNLEASH_INIT_ADMIN_API_TOKENS:-}'
+      INIT_CLIENT_API_TOKENS: '${UNLEASH_INIT_CLIENT_API_TOKENS:-}'
+      INIT_FRONTEND_API_TOKENS: '${UNLEASH_INIT_FRONTEND_API_TOKENS:-}'
     ports:
-      - "${UNLEASH_PORT:-4242}:4242"
+      - '${UNLEASH_PORT:-4242}:4242'
     networks: [saas-commons, obs]
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:4242/health >/dev/null || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:4242/health >/dev/null || exit 1']
       interval: 15s
       timeout: 5s
       retries: 10
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 512M }
+        limits: { cpus: '0.5', memory: 512M }
 
 volumes:
   unleash-postgres-data:

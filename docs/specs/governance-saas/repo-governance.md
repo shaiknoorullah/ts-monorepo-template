@@ -2,15 +2,15 @@
 title: Repository Governance — Single Source of Truth
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://www.conventionalcommits.org/en/v1.0.0/
   - https://semver.org/
   - https://github.com/changesets/changesets
   - https://eslint.org/docs/latest/use/configure/configuration-files
   - https://typescript-eslint.io/users/configs/#strict-type-checked
-  - https://www.rfc-editor.org/rfc/rfc9562  # UUIDv7
-  - https://www.rfc-editor.org/rfc/rfc7807  # Problem Details for HTTP APIs
+  - https://www.rfc-editor.org/rfc/rfc9562 # UUIDv7
+  - https://www.rfc-editor.org/rfc/rfc7807 # Problem Details for HTTP APIs
   - https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header
   - https://cloudevents.io/
   - https://spec.openapis.org/oas/v3.1.0
@@ -142,7 +142,7 @@ A bare `eslint-disable` without that trailer fails CI (custom rule in `@internal
 - **No `any`** without `// eslint-disable-next-line @typescript-eslint/no-explicit-any -- <reason> (ORG-xxx)`.
 - Prefer **`unknown`** as the boundary type; narrow with Zod / type guards.
 - **Avoid `string` where a literal union or branded type works**. Tenant IDs, user IDs, money are branded types (`type TenantId = string & { readonly __brand: 'TenantId' }`).
-- **Result types over throwing** for *expected* failures (validation, business-rule rejection, "not found" with non-404 semantics). Use `neverthrow`'s `Result<T, E>` or a project equivalent. Throwing is reserved for **bugs and infrastructure faults**.
+- **Result types over throwing** for _expected_ failures (validation, business-rule rejection, "not found" with non-404 semantics). Use `neverthrow`'s `Result<T, E>` or a project equivalent. Throwing is reserved for **bugs and infrastructure faults**.
 - `type-coverage` ≥ 95% across the repo (`pnpm type-coverage`).
 - `@arethetypeswrong/cli` clean for every published package (`pnpm attw`).
 

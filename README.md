@@ -118,14 +118,14 @@ config/
 
 The template ships a full frontend tier alongside the backend microservices. **Next.js is intentionally not used** — see [ADR-0010](./docs/adrs/0010-eliminating-or-limiting-nextjs.md).
 
-| Surface | Framework | Deploy target |
-|---|---|---|
-| Marketing + landing pages (`www.*`) | **Astro 5** | Cloudflare Pages |
-| Customer docs (`docs.*`) | **Astro Starlight** | Cloudflare Pages |
-| Multi-tenant SaaS web app (`*.app.*`) | **Expo + react-native-web + expo-router 4** | Cloudflare Pages |
-| Customer mobile (iOS + Android) | **Expo + expo-router 4** | EAS Build → App / Play Store |
-| Admin mobile (iOS + Android) | **Expo + expo-router 4** | EAS Build → App / Play Store |
-| Edge endpoints (Workers) | **Hono** | Cloudflare Workers |
+| Surface                               | Framework                                   | Deploy target                |
+| ------------------------------------- | ------------------------------------------- | ---------------------------- |
+| Marketing + landing pages (`www.*`)   | **Astro 5**                                 | Cloudflare Pages             |
+| Customer docs (`docs.*`)              | **Astro Starlight**                         | Cloudflare Pages             |
+| Multi-tenant SaaS web app (`*.app.*`) | **Expo + react-native-web + expo-router 4** | Cloudflare Pages             |
+| Customer mobile (iOS + Android)       | **Expo + expo-router 4**                    | EAS Build → App / Play Store |
+| Admin mobile (iOS + Android)          | **Expo + expo-router 4**                    | EAS Build → App / Play Store |
+| Edge endpoints (Workers)              | **Hono**                                    | Cloudflare Workers           |
 
 Shared frontend packages: `@pkg/ui` (Tamagui-based), `@pkg/forms` (RHF + Zod), `@pkg/consent` (vanilla-cookieconsent), `@pkg/tracking` (Umami + CF Web Analytics, consent-gated), `@pkg/auth-client` (Ory / Keycloak), `@pkg/tenancy-client`, `@pkg/api-client`, `@pkg/cms-client` (Payload / Decap), `@pkg/seo`.
 
@@ -185,16 +185,16 @@ The full research and rationale is in [docs/architecture/research-summary.md](do
 
 ## Recipes
 
-| Task                       | Command / Link                                                     |
-| -------------------------- | ------------------------------------------------------------------ |
+| Task                       | Command / Link                                                       |
+| -------------------------- | -------------------------------------------------------------------- |
 | Add a new microservice     | [docs/recipes/add-microservice.md](docs/recipes/add-microservice.md) |
-| Add a new shared package   | [docs/recipes/add-package.md](docs/recipes/add-package.md)         |
-| Release a new version      | `pnpm changeset` → commit → push (CI does the rest)                |
-| Run tests for affected     | `pnpm test:affected`                                               |
-| Cut a snapshot/preview     | Open a PR; `pkg-pr-new` posts an install URL as a comment.         |
-| Update all deps (managed)  | Renovate opens grouped PRs; merge from the Dependency Dashboard.   |
-| Generate API docs          | `pnpm typedoc && pnpm docs:build`                                  |
-| Check the workspace health | `pnpm doctor`                                                      |
+| Add a new shared package   | [docs/recipes/add-package.md](docs/recipes/add-package.md)           |
+| Release a new version      | `pnpm changeset` → commit → push (CI does the rest)                  |
+| Run tests for affected     | `pnpm test:affected`                                                 |
+| Cut a snapshot/preview     | Open a PR; `pkg-pr-new` posts an install URL as a comment.           |
+| Update all deps (managed)  | Renovate opens grouped PRs; merge from the Dependency Dashboard.     |
+| Generate API docs          | `pnpm typedoc && pnpm docs:build`                                    |
+| Check the workspace health | `pnpm doctor`                                                        |
 
 ## Repository structure
 

@@ -4,15 +4,15 @@ This file is the **top-level pointer** to repo governance. The actual rules live
 
 ## Where the rules live
 
-| Area | Document |
-|---|---|
-| Conventions (naming, style, TS, API, DB, logging, testing, security, docs, releases, PR/ADR) | [`docs/specs/governance-saas/repo-governance.md`](./docs/specs/governance-saas/repo-governance.md) |
-| Temporal — when to use it, when not, determinism & versioning | [`docs/specs/governance-saas/temporal-when-and-when-not.md`](./docs/specs/governance-saas/temporal-when-and-when-not.md) |
-| OSS defaults (billing, analytics, identity, flags, search, email, storage, CMS, docs, status, support, audit) | [`docs/specs/governance-saas/saas-commons.md`](./docs/specs/governance-saas/saas-commons.md) |
-| Workspace architecture (apps / packages / internal) | [`docs/specs/governance-saas/package-architecture-rules.md`](./docs/specs/governance-saas/package-architecture-rules.md) |
-| Multi-tenancy isolation rules | [`docs/specs/governance-saas/multi-tenancy-isolation-rules.md`](./docs/specs/governance-saas/multi-tenancy-isolation-rules.md) |
-| How these rules evolve | [`docs/specs/governance-saas/governance-process.md`](./docs/specs/governance-saas/governance-process.md) |
-| Numbered decision records | [`docs/adrs/`](./docs/adrs/) |
+| Area                                                                                                          | Document                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Conventions (naming, style, TS, API, DB, logging, testing, security, docs, releases, PR/ADR)                  | [`docs/specs/governance-saas/repo-governance.md`](./docs/specs/governance-saas/repo-governance.md)                             |
+| Temporal — when to use it, when not, determinism & versioning                                                 | [`docs/specs/governance-saas/temporal-when-and-when-not.md`](./docs/specs/governance-saas/temporal-when-and-when-not.md)       |
+| OSS defaults (billing, analytics, identity, flags, search, email, storage, CMS, docs, status, support, audit) | [`docs/specs/governance-saas/saas-commons.md`](./docs/specs/governance-saas/saas-commons.md)                                   |
+| Workspace architecture (apps / packages / internal)                                                           | [`docs/specs/governance-saas/package-architecture-rules.md`](./docs/specs/governance-saas/package-architecture-rules.md)       |
+| Multi-tenancy isolation rules                                                                                 | [`docs/specs/governance-saas/multi-tenancy-isolation-rules.md`](./docs/specs/governance-saas/multi-tenancy-isolation-rules.md) |
+| How these rules evolve                                                                                        | [`docs/specs/governance-saas/governance-process.md`](./docs/specs/governance-saas/governance-process.md)                       |
+| Numbered decision records                                                                                     | [`docs/adrs/`](./docs/adrs/)                                                                                                   |
 
 ## Authority
 

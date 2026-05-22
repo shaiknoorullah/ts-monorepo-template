@@ -2,7 +2,7 @@
 title: Documentation sites
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://starlight.astro.build/
   - https://vitepress.dev/
@@ -14,10 +14,10 @@ references:
 
 Two documentation surfaces. Different audiences, different tools.
 
-| Surface | Tool | Path | Audience |
-|---|---|---|---|
-| Customer-facing docs | **Astro Starlight** | `apps/docs-public` | End-users of the product |
-| Internal docs (architecture, ADRs, runbooks, governance) | **VitePress** (already in repo) | `docs/` | Engineers and operators |
+| Surface                                                  | Tool                            | Path               | Audience                 |
+| -------------------------------------------------------- | ------------------------------- | ------------------ | ------------------------ |
+| Customer-facing docs                                     | **Astro Starlight**             | `apps/docs-public` | End-users of the product |
+| Internal docs (architecture, ADRs, runbooks, governance) | **VitePress** (already in repo) | `docs/`            | Engineers and operators  |
 
 ## Why two
 

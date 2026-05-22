@@ -2,7 +2,7 @@
 title: Marketing and landing pages
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://docs.astro.build/
   - https://astro.build/blog/astro-5/

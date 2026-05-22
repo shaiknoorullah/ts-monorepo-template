@@ -12,7 +12,14 @@ module.exports = {
     },
     {
       label: 'Pin runtime deps from pnpm catalog',
-      dependencies: ['fastify', '@fastify/cors', '@fastify/helmet', 'drizzle-orm', 'bullmq', 'ioredis'],
+      dependencies: [
+        'fastify',
+        '@fastify/cors',
+        '@fastify/helmet',
+        'drizzle-orm',
+        'bullmq',
+        'ioredis',
+      ],
       pinVersion: 'catalog:runtime',
     },
     {
@@ -53,5 +60,10 @@ module.exports = {
     'peerDependencies',
   ],
   sortAz: ['contributors', 'dependencies', 'devDependencies', 'peerDependencies', 'keywords'],
-  source: ['package.json', 'apps/*/package.json', 'packages/*/package.json', 'internal/*/package.json'],
+  source: [
+    'package.json',
+    'apps/*/package.json',
+    'packages/*/package.json',
+    'internal/*/package.json',
+  ],
 }

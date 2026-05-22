@@ -2,15 +2,15 @@
 title: CloudEvents 1.0 + Apicurio Schema Registry
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
-  - "https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md"
-  - "https://www.apicur.io/registry/docs/apicurio-registry/3.x/index.html"
-  - "https://debezium.io/documentation/reference/stable/integrations/cloudevents.html"
-  - "https://github.com/Aiven-Open/karapace"
-  - "https://docs.confluent.io/platform/current/schema-registry/index.html"
-  - "https://www.apicur.io/registry/docs/apicurio-registry/3.x/getting-started/assembly-running-the-registry.html"
-  - "https://github.com/cloudevents/sdk-javascript"
+  - 'https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md'
+  - 'https://www.apicur.io/registry/docs/apicurio-registry/3.x/index.html'
+  - 'https://debezium.io/documentation/reference/stable/integrations/cloudevents.html'
+  - 'https://github.com/Aiven-Open/karapace'
+  - 'https://docs.confluent.io/platform/current/schema-registry/index.html'
+  - 'https://www.apicur.io/registry/docs/apicurio-registry/3.x/getting-started/assembly-running-the-registry.html'
+  - 'https://github.com/cloudevents/sdk-javascript'
 ---
 
 # CloudEvents 1.0 + Apicurio Schema Registry
@@ -26,17 +26,17 @@ The payoff is mechanical:
 - Cross-protocol portability: the same event can travel over Kafka, NATS, HTTP webhook, or AWS EventBridge with a defined binding spec for each.
 - Future-proof: when a new transport joins the stack, the envelope already exists; only the binding changes.
 
-Refusing to standardize on CloudEvents leaves every team to invent its own envelope, which guarantees fragmentation between bounded contexts. The cost of adopting CloudEvents is small (a struct shape) and the cost of *not* adopting is paid every time a new consumer needs to special-case a producer.
+Refusing to standardize on CloudEvents leaves every team to invent its own envelope, which guarantees fragmentation between bounded contexts. The cost of adopting CloudEvents is small (a struct shape) and the cost of _not_ adopting is paid every time a new consumer needs to special-case a producer.
 
 ## Schema registry choice — Apicurio
 
 Three serious options:
 
-| Registry | License | Backing storage | Kafka-native serializers | Notes |
-|---|---|---|---|---|
-| Apicurio Registry | Apache 2.0 | Postgres / Kafka / in-mem | Yes | Operator-managed on K8s, multi-format (Avro, JSON Schema, Protobuf, OpenAPI, AsyncAPI). |
-| Karapace (Aiven) | Apache 2.0 | Kafka log | Yes (Confluent-API compatible) | Single binary in Python. Lighter than Apicurio. |
-| Confluent Schema Registry | Confluent CL (source-available, not OSS) | Kafka log | Yes | Reference implementation. Licence is a problem for many shops. |
+| Registry                  | License                                  | Backing storage           | Kafka-native serializers       | Notes                                                                                   |
+| ------------------------- | ---------------------------------------- | ------------------------- | ------------------------------ | --------------------------------------------------------------------------------------- |
+| Apicurio Registry         | Apache 2.0                               | Postgres / Kafka / in-mem | Yes                            | Operator-managed on K8s, multi-format (Avro, JSON Schema, Protobuf, OpenAPI, AsyncAPI). |
+| Karapace (Aiven)          | Apache 2.0                               | Kafka log                 | Yes (Confluent-API compatible) | Single binary in Python. Lighter than Apicurio.                                         |
+| Confluent Schema Registry | Confluent CL (source-available, not OSS) | Kafka log                 | Yes                            | Reference implementation. Licence is a problem for many shops.                          |
 
 For this template, **Apicurio Registry 3.x** is the recommendation:
 
@@ -49,14 +49,14 @@ Karapace is a valid second choice if you specifically want a Confluent-API-compa
 
 ## Compatibility modes
 
-| Mode | Producer can | Consumer must |
-|---|---|---|
-| **BACKWARD** | add optional fields, delete fields with defaults | use new schema to read old data |
-| **FORWARD** | delete fields, change defaults | use old schema to read new data |
-| **FULL** | only changes that are both backward and forward compatible | either |
-| **NONE** | anything | rebuild |
+| Mode         | Producer can                                               | Consumer must                   |
+| ------------ | ---------------------------------------------------------- | ------------------------------- |
+| **BACKWARD** | add optional fields, delete fields with defaults           | use new schema to read old data |
+| **FORWARD**  | delete fields, change defaults                             | use old schema to read new data |
+| **FULL**     | only changes that are both backward and forward compatible | either                          |
+| **NONE**     | anything                                                   | rebuild                         |
 
-Default to **BACKWARD** for domain events. Reason: consumers are typically upgraded *after* producers in a rolling deploy; BACKWARD allows the new producer's events to be read by the still-old consumer because old fields are preserved. Use **FULL** for high-stakes contracts (cross-team boundaries).
+Default to **BACKWARD** for domain events. Reason: consumers are typically upgraded _after_ producers in a rolling deploy; BACKWARD allows the new producer's events to be read by the still-old consumer because old fields are preserved. Use **FULL** for high-stakes contracts (cross-team boundaries).
 
 Document the compatibility mode per topic in `topic-management-runbooks.md`. Changing compatibility mode is itself a breaking change.
 
@@ -81,10 +81,10 @@ Example: `cloud.pnats.orders.order.created`. The `tld.org` prefix is optional fo
   "type": "object",
   "required": ["id", "customer_id", "total", "currency", "items"],
   "properties": {
-    "id":          { "type": "string", "format": "uuid" },
+    "id": { "type": "string", "format": "uuid" },
     "customer_id": { "type": "string", "format": "uuid" },
-    "total":       { "type": "string", "pattern": "^\\d+\\.\\d{2}$" },
-    "currency":    { "type": "string", "minLength": 3, "maxLength": 3 },
+    "total": { "type": "string", "pattern": "^\\d+\\.\\d{2}$" },
+    "currency": { "type": "string", "minLength": 3, "maxLength": 3 },
     "items": {
       "type": "array",
       "minItems": 1,
@@ -92,9 +92,9 @@ Example: `cloud.pnats.orders.order.created`. The `tld.org` prefix is optional fo
         "type": "object",
         "required": ["sku", "quantity", "unit_price"],
         "properties": {
-          "sku":         { "type": "string" },
-          "quantity":    { "type": "integer", "minimum": 1 },
-          "unit_price":  { "type": "string", "pattern": "^\\d+\\.\\d{2}$" }
+          "sku": { "type": "string" },
+          "quantity": { "type": "integer", "minimum": 1 },
+          "unit_price": { "type": "string", "pattern": "^\\d+\\.\\d{2}$" }
         }
       }
     }
@@ -127,11 +127,11 @@ Value: { ... JSON body ... }
   "type": "object",
   "required": ["id", "fulfilled_at", "fulfilment_id"],
   "properties": {
-    "id":             { "type": "string", "format": "uuid" },
-    "fulfilled_at":   { "type": "string", "format": "date-time" },
-    "fulfilment_id":  { "type": "string", "format": "uuid" },
-    "carrier":        { "type": "string" },
-    "tracking_url":   { "type": "string", "format": "uri" }
+    "id": { "type": "string", "format": "uuid" },
+    "fulfilled_at": { "type": "string", "format": "date-time" },
+    "fulfilment_id": { "type": "string", "format": "uuid" },
+    "carrier": { "type": "string" },
+    "tracking_url": { "type": "string", "format": "uri" }
   },
   "additionalProperties": false
 }
@@ -157,7 +157,7 @@ The converter looks up the schema in Apicurio by `ce_type` (or by a configured s
 
 ## Versioning operational rules
 
-1. New schema version is published *before* any code that produces it.
+1. New schema version is published _before_ any code that produces it.
 2. Consumers that have an SLO on the new version subscribe to the schema-changed webhook from Apicurio and re-validate on the next deploy.
 3. Removing a schema is forbidden — schemas are append-only. Use a new `vN+1` and let `vN` rot.
 4. The CloudEvents `dataschema` header MUST be present on every published event. Consumers MAY fail-closed if it's missing.

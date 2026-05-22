@@ -2,7 +2,7 @@
 title: Mobile and cross-platform
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://docs.expo.dev/
   - https://docs.expo.dev/router/introduction/
@@ -19,11 +19,11 @@ Three Expo apps, one shared package layer.
 
 ## Apps
 
-| App | Targets | Persona |
-|---|---|---|
-| `apps/web-app` | iOS, Android, **Web** (react-native-web) | All tenants — multi-tenant SaaS surface |
-| `apps/mobile-customer` | iOS, Android | Customer / end user |
-| `apps/mobile-admin` | iOS, Android | Tenant admin / staff |
+| App                    | Targets                                  | Persona                                 |
+| ---------------------- | ---------------------------------------- | --------------------------------------- |
+| `apps/web-app`         | iOS, Android, **Web** (react-native-web) | All tenants — multi-tenant SaaS surface |
+| `apps/mobile-customer` | iOS, Android                             | Customer / end user                     |
+| `apps/mobile-admin`    | iOS, Android                             | Tenant admin / staff                    |
 
 `apps/web-app` is the only one that ships a web build; the persona-specific mobile apps are native-only. This lets the persona apps install native modules (biometrics, secure-enclave hardware key, kiosk-mode) without polluting the web target.
 

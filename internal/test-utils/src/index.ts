@@ -25,7 +25,7 @@ export function fixtureId(prefix: string, n = 8): string {
  */
 export async function waitFor(
   predicate: () => boolean | Promise<boolean>,
-  options: { intervalMs?: number; timeoutMs?: number; } = {},
+  options: { intervalMs?: number; timeoutMs?: number } = {},
 ): Promise<void> {
   const timeoutMs = options.timeoutMs ?? 2000
   const intervalMs = options.intervalMs ?? 10

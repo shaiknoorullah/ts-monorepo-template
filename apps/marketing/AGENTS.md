@@ -13,6 +13,7 @@ This is the public marketing site. Rules an agent must follow:
 9. **CMS content** comes via the Astro Content Layer + `@pkg/cms-client`. Don't fetch CMS in components.
 
 Reading list before editing:
+
 - `docs/specs/frontend/framework-choices.md`
 - `docs/specs/frontend/marketing-and-landing-pages.md`
 - `docs/specs/frontend/cloudflare-deployment.md`

@@ -28,7 +28,7 @@ pnpm -F @app/worker build
    ```ts
    const jobPayloadSchema = z.discriminatedUnion('type', [
      z.object({ type: z.literal('send-email'), payload: emailPayload }),
-     z.object({ type: z.literal('reindex'),   payload: reindexPayload }),
+     z.object({ type: z.literal('reindex'), payload: reindexPayload }),
    ])
    ```
 2. Route within `processJob` based on `job.type`.

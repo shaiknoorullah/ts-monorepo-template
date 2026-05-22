@@ -2,7 +2,7 @@
 title: Governance Process — How the Rules Evolve
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://adr.github.io/
   - https://martinfowler.com/articles/dont-decentralize-architecture.html
@@ -36,7 +36,7 @@ Rules of precedence:
 
 1. **`repo-governance.md`** is the authoritative rulebook for repo conventions.
 2. **Topic-specific governance docs** (Temporal, multi-tenancy, packages, SaaS commons) are authoritative within their topic.
-3. **ADRs in `docs/adrs/`** capture *decisions* — they are point-in-time. When an ADR's outcome is "we now require X", `repo-governance.md` (or the relevant topic doc) is updated **in the same PR** as the ADR. The ADR alone is not a rule.
+3. **ADRs in `docs/adrs/`** capture _decisions_ — they are point-in-time. When an ADR's outcome is "we now require X", `repo-governance.md` (or the relevant topic doc) is updated **in the same PR** as the ADR. The ADR alone is not a rule.
 4. **`AGENTS.md`** is the lighthouse for AI coding assistants — it points at the governance docs. It does not duplicate them.
 5. **`CONTRIBUTING.md`** is the lighthouse for human contributors — same role.
 6. **Per-package `AGENTS.md`** can **tighten** rules (e.g., raise coverage to 90%) but never loosen.
@@ -69,18 +69,23 @@ Format (four sections, ≤ 2 pages):
 # ADR-NNNN: <Title>
 
 ## Status
+
 Proposed | Accepted | Superseded by ADR-MMMM | Deprecated
 
 ## Context
+
 What is the problem? What forces are at play?
 
 ## Decision
+
 What did we decide? Be specific.
 
 ## Consequences
+
 Positive, negative, neutral. The trade-offs.
 
 ## References
+
 Links to docs, PRs, tickets.
 ```
 
@@ -151,7 +156,7 @@ Per the AGENTS.md convention (see `agents.md`):
 - **No governance committee.** The committers are the governance body, ad hoc per change.
 - **No bikeshed-prone style debates.** Prettier config is immutable (`repo-governance.md` §2). Disagreement → ADR-or-drop.
 - **No retroactive enforcement.** A new rule applies going forward. Existing violations are tracked in `TODO.md` with an owner and (if material) a migration plan.
-- **No "this is how Google does it" arguments.** Cite the trade-off as it applies to *this* repo's constraints.
+- **No "this is how Google does it" arguments.** Cite the trade-off as it applies to _this_ repo's constraints.
 
 ---
 

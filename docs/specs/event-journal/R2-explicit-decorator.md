@@ -35,7 +35,7 @@ await journal.record({
   summary: 'Created company "Acme Corp"',
   diff: { name: { from: null, to: 'Acme Corp' } },
   idempotency_key: `${userId}:company.created:${companyId}`,
-});
+})
 
 // V2 capture (this design)
 await journal.capture({
@@ -44,7 +44,7 @@ await journal.capture({
   event_type: 'http.outbound',
   payload: { method: 'POST', url: '...', body: '...', response: '...' },
   trace_context: { trace_id, span_id },
-});
+})
 ```
 
 Both APIs route through one `@pnats/journal-client` package. Cross-language equivalent in Python (see §13 for the cross-language killer-question research).
@@ -53,7 +53,7 @@ Both APIs route through one `@pnats/journal-client` package. Cross-language equi
 
 ## 1. Problem statement (unchanged from R1)
 
-Today, reconstructing what a service did during a request means hand-joining three independent log surfaces: Pino service logs, OTel traces (no bodies), Kafka topic dumps. None alone answers questions like *"this `POST /publish` failed — what SQL queries did we run, what did Apollo return, what did we emit to Kafka?"* or *"reproduce this customer's bug locally with the recorded request payload"*.
+Today, reconstructing what a service did during a request means hand-joining three independent log surfaces: Pino service logs, OTel traces (no bodies), Kafka topic dumps. None alone answers questions like _"this `POST /publish` failed — what SQL queries did we run, what did Apollo return, what did we emit to Kafka?"_ or _"reproduce this customer's bug locally with the recorded request payload"_.
 
 OTel doesn't capture bodies by design. The journal does, with explicit PII redaction + size caps + S3 spill.
 
@@ -63,17 +63,18 @@ OTel doesn't capture bodies by design. The journal does, with explicit PII redac
 
 V1 audit log is ~100k/day → 25 GB/year (per Faizan's §2). The capture half is heavier because every outbound boundary call gets a row.
 
-| Producer | Captures/req (avg) | Captures/day | Notes |
-|---|---|---|---|
-| `kaarbaaz` POST /publish | ~12 (1 inbound + 2 SQL + 6 Apollo + 3 Kafka) | ~150k/day | Highest-fan-out endpoint |
-| `mailer` send-email | ~6 (1 inbound + 3 MS Graph + 2 SQL) | ~50k/day | |
-| Other NestJS services | ~4 avg | ~80k/day combined | |
-| Python (FastAPI) services | ~4 avg | ~40k/day combined | |
-| **Total day-1** | | **~320k captures/day** | 3× the audit log |
+| Producer                  | Captures/req (avg)                           | Captures/day           | Notes                    |
+| ------------------------- | -------------------------------------------- | ---------------------- | ------------------------ |
+| `kaarbaaz` POST /publish  | ~12 (1 inbound + 2 SQL + 6 Apollo + 3 Kafka) | ~150k/day              | Highest-fan-out endpoint |
+| `mailer` send-email       | ~6 (1 inbound + 3 MS Graph + 2 SQL)          | ~50k/day               |                          |
+| Other NestJS services     | ~4 avg                                       | ~80k/day combined      |                          |
+| Python (FastAPI) services | ~4 avg                                       | ~40k/day combined      |                          |
+| **Total day-1**           |                                              | **~320k captures/day** | 3× the audit log         |
 
 Row size: **~2 KB metadata + payload (256 KB inline cap or S3-spilled)**. At 90% inline / 10% spill, average row in PG ≈ 50 KB; total PG growth ≈ **15 GB/day → 105 GB/week → ~5.5 TB/year** at the V2 capture half alone.
 
 **This is why captures need different retention than audit:**
+
 - 30 days for `http.outbound`, `kafka.emit`, `mcp.call`
 - 7 days for `sql.query` (highest volume, lowest forensic value per row)
 - 24h for `internal.boundary` (debugging only)
@@ -281,14 +282,14 @@ Query pattern: `SELECT * FROM journal.request_full WHERE correlation_id = $1 OR 
 
 Capture-specific additions:
 
-| Capture source | Natural key |
-|---|---|
-| `http.inbound` | `tenant_id:request_id` (one per request) |
+| Capture source  | Natural key                                                                   |
+| --------------- | ----------------------------------------------------------------------------- |
+| `http.inbound`  | `tenant_id:request_id` (one per request)                                      |
 | `http.outbound` | `request_id:capture_kind:sequence` (sequence = monotonic per-request counter) |
-| `sql.query` | `request_id:sql.query:hash(sql + params)` |
-| `kafka.emit` | `topic:partition:offset` (uniquely identifies a produced message) |
-| `kafka.consume` | `topic:partition:offset` (uniquely identifies a consumed message) |
-| `mcp.call` | `request_id:server:tool:sequence` |
+| `sql.query`     | `request_id:sql.query:hash(sql + params)`                                     |
+| `kafka.emit`    | `topic:partition:offset` (uniquely identifies a produced message)             |
+| `kafka.consume` | `topic:partition:offset` (uniquely identifies a consumed message)             |
+| `mcp.call`      | `request_id:server:tool:sequence`                                             |
 
 If a producer fails mid-request and retries, captures already written are no-ops. Same correctness guarantee as Faizan's V1.
 
@@ -307,18 +308,21 @@ V1's actor model is correct. V2 reuses it verbatim.
 Faizan's V1 says "not a payload archive" — this is correct **for events**. V2's captures table is the payload archive, but it's a separate table with separate retention. V1's discipline is preserved for the events table.
 
 ### 7.1 Inline cap + spill (256 KB threshold)
+
 - Payloads ≤ 256 KB stored inline as JSONB in `payload` column.
 - Payloads > 256 KB written to S3/R2/Azure Blob, URI stored in `payload_spilled_to`, JSONB column NULL.
 - Spilled payloads gzip-compressed; bucket lifecycle policy mirrors per-capture-kind TTL.
 - `payload_content_hash` (SHA-256 of canonical JSON) enables dedup: same SQL string sent 1000× stores one blob, references it 1000×.
 
 ### 7.2 PII redaction registry
+
 - Default-deny on field names: `password`, `token`, `secret`, `authorization`, `cookie`, `api_key`, `bearer`, credit-card patterns (regex).
 - Per-`capture_kind` + per-`tenant_id` overrides.
 - Redaction happens **before** writing — the journal never sees raw secrets.
 - Registry shape: YAML (decided per Faizan's enum discipline — single SoT, version-controlled).
 
 ### 7.3 Allow-listed headers
+
 - Default-deny on headers — only allow-listed entries go to the journal.
 - Allow-list: `User-Agent`, `Content-Type`, `X-Request-Id`, `X-Tenant-Id`, `X-Correlation-Id`, `Idempotency-Key`.
 - Authorization-family headers (`Authorization`, `Cookie`, `Proxy-Authorization`) are categorically blocked.
@@ -327,12 +331,13 @@ Faizan's V1 says "not a payload archive" — this is correct **for events**. V2'
 
 ## 8. Retention — hybrid (audit forever + captures TTL)
 
-| Table | Policy | Mechanism |
-|---|---|---|
-| `journal.events` | Soft-delete after 18 months, **never hard-delete** | Faizan's nightly job; partial indexes |
-| `journal.captures` | TTL per `capture_kind`, **partition drop** | `pg_partman` weekly partitions, retention varies by kind |
+| Table              | Policy                                             | Mechanism                                                |
+| ------------------ | -------------------------------------------------- | -------------------------------------------------------- |
+| `journal.events`   | Soft-delete after 18 months, **never hard-delete** | Faizan's nightly job; partial indexes                    |
+| `journal.captures` | TTL per `capture_kind`, **partition drop**         | `pg_partman` weekly partitions, retention varies by kind |
 
 Per-capture-kind retention:
+
 - `http.inbound`: 30 days
 - `http.outbound`: 30 days
 - `sql.query`: 7 days
@@ -387,17 +392,17 @@ Replay determinism: AsyncLocalStorage-scoped "replay context" intercepts `crypto
 
 Faizan's V1 = "events shipped, mailer adopting." V2 phases build on top:
 
-| Phase | Scope | Build on |
-|---|---|---|
-| **A — Substrate** | `journal.captures` table, partition scaffold, twin packages (`@pnats/journal` + `pnats-journal`) generated from `pnats-journal-schemas` repo, JCS conformance CI green, kaarbaaz-only inbound capture | V1's `journal_client.record()` already exists |
-| **B — Outbound capture** | undici/axios wrapper + httpx wrapper, Kysely wrapper + SQLAlchemy wrapper, kafkajs + aiokafka instrumentation, inline payloads only | A |
-| **C — PII + spill + envelope** | Field redaction registry (§7.2), S3 spill, per-capture-kind TTL (§8), synthetic user envelope (§18) — production-ready | B |
-| **D — Query layer + observability piping** | REST endpoints (events + captures unified via `journal.request_full` view), live tail, Scalar-mounted trace browser, Pino mixin + OTel SpanProcessor + error-handler hooks (§19) | C |
-| **E — Replay Mode A (cassette)** | Replay engine + AsyncLocalStorage replay context + UUID/Date/RNG interception, CLI `journal rerun --mode cassette`, `journal repro` (§21) | D |
-| **F — Replay Modes B + C** | Diff renderer, checkpoint-based partial replay, `journal compare`, state-snapshot seeding (§20) | E |
-| **G — Test-fixture export** | `journal export <request_id> --as vitest\|pytest\|playwright` CLI; `journal bundle` ZIP | E or F |
-| **H — Cross-service correlation** | `originating_request_id` propagation across HTTP/Kafka/Temporal headers; unified cross-service tree query via `journal flow` and `journal follow` (§21) | D |
-| **I — Governance + UI polish** | RBAC scopes (§21.4), post-hoc `journal redact` + `journal soft-delete` + `journal restore`, `journal retention` + `journal preflight`, full Scalar-mounted browser polish | H |
+| Phase                                      | Scope                                                                                                                                                                                                 | Build on                                      |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| **A — Substrate**                          | `journal.captures` table, partition scaffold, twin packages (`@pnats/journal` + `pnats-journal`) generated from `pnats-journal-schemas` repo, JCS conformance CI green, kaarbaaz-only inbound capture | V1's `journal_client.record()` already exists |
+| **B — Outbound capture**                   | undici/axios wrapper + httpx wrapper, Kysely wrapper + SQLAlchemy wrapper, kafkajs + aiokafka instrumentation, inline payloads only                                                                   | A                                             |
+| **C — PII + spill + envelope**             | Field redaction registry (§7.2), S3 spill, per-capture-kind TTL (§8), synthetic user envelope (§18) — production-ready                                                                                | B                                             |
+| **D — Query layer + observability piping** | REST endpoints (events + captures unified via `journal.request_full` view), live tail, Scalar-mounted trace browser, Pino mixin + OTel SpanProcessor + error-handler hooks (§19)                      | C                                             |
+| **E — Replay Mode A (cassette)**           | Replay engine + AsyncLocalStorage replay context + UUID/Date/RNG interception, CLI `journal rerun --mode cassette`, `journal repro` (§21)                                                             | D                                             |
+| **F — Replay Modes B + C**                 | Diff renderer, checkpoint-based partial replay, `journal compare`, state-snapshot seeding (§20)                                                                                                       | E                                             |
+| **G — Test-fixture export**                | `journal export <request_id> --as vitest\|pytest\|playwright` CLI; `journal bundle` ZIP                                                                                                               | E or F                                        |
+| **H — Cross-service correlation**          | `originating_request_id` propagation across HTTP/Kafka/Temporal headers; unified cross-service tree query via `journal flow` and `journal follow` (§21)                                               | D                                             |
+| **I — Governance + UI polish**             | RBAC scopes (§21.4), post-hoc `journal redact` + `journal soft-delete` + `journal restore`, `journal retention` + `journal preflight`, full Scalar-mounted browser polish                             | H                                             |
 
 Each phase independently shippable. A-C are production-ready capture half; D is observability piping + query UX; E-G are replay; H-I are cross-service + governance.
 
@@ -409,15 +414,15 @@ V1 client is TypeScript-only. V2 must work for both NestJS (TS) AND FastAPI/Pyth
 
 ### 13.1 The shareable kernel — carve carefully
 
-| Component | Cross-language behavior required? |
-|---|---|
-| Schema definitions (event types, capture kinds, envelope shape) | NO — declarative; codegens from JSON Schema |
-| Validation rules | NO — declarative; codegens to Zod (TS) + Pydantic (Python) |
-| Allow/deny redaction registry | NO — declarative YAML |
-| **Canonical JSON serializer (JCS RFC 8785)** | **YES** — bit-identical output across languages required for idempotency-key stability |
-| **SHA-256 idempotency-key generation** | **YES** — same input → same key, regardless of language |
+| Component                                                       | Cross-language behavior required?                                                      |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Schema definitions (event types, capture kinds, envelope shape) | NO — declarative; codegens from JSON Schema                                            |
+| Validation rules                                                | NO — declarative; codegens to Zod (TS) + Pydantic (Python)                             |
+| Allow/deny redaction registry                                   | NO — declarative YAML                                                                  |
+| **Canonical JSON serializer (JCS RFC 8785)**                    | **YES** — bit-identical output across languages required for idempotency-key stability |
+| **SHA-256 idempotency-key generation**                          | **YES** — same input → same key, regardless of language                                |
 
-Only TWO components demand shared *behavior*. Everything else is declarative.
+Only TWO components demand shared _behavior_. Everything else is declarative.
 
 ### 13.2 The verdict — Tier E + A4 hybrid
 
@@ -464,6 +469,7 @@ pnats-journal (PyPI)               ← Python client (FastAPI adapter)
 Without this, the twin-package approach is unsafe (silent idempotency-key drift = duplicate journal rows on cross-language retry = real production bug).
 
 A CI job runs on every PR to either client lib:
+
 1. Load 100+ canonical inputs (RFC 8785 test vectors + 30 pnats-specific)
 2. Run JCS canonicalization in TS impl → bytes A
 3. Run JCS canonicalization in Python impl → bytes B
@@ -474,20 +480,20 @@ The conformance suite is the contract.
 
 ### 13.4 Why NOT the seductive alternatives
 
-| Rejected approach | Why |
-|---|---|
+| Rejected approach                                          | Why                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **napi-rs + PyO3 hybrid** (Rust core, two native bindings) | Polars (the canonical citation) is **not** a single annotated crate — has separate `py-polars` (PyO3) and `nodejs-polars` (napi-rs) crates with idiomatic per-language code. Bindings are written TWICE. ~14 binary artifacts per release. Earns its keep at 50k+ LOC of perf-critical compute; our kernel is ~200 LOC. Toolchain tax > maintenance saving. |
-| **WASM core** | Marshalling overhead for sub-10 KB JSON inputs exceeds compute time (per Fermyon / Bytecode Alliance benchmarks). Wrong tool for small hot-path functions. |
-| **uniffi (Mozilla)** | No first-class Node.js binding — only WASM or React Native paths. Disqualified. |
-| **TypeSpec → codegen** | Strong schema lang but no JCS+SHA-256 behavior — still needs separate behavior libs. JSON Schema is industry-default and equivalent for declarative shape. |
-| **Connect-RPC / Protobuf** | Heavier, requires runtime codecs, less idiomatic for declarative event envelopes. JSON Schema simpler for our use case. |
-| **Stainless / Speakeasy SDK gen** | Best-in-class for client SDKs from OpenAPI; our journal isn't a public API. Overkill. |
+| **WASM core**                                              | Marshalling overhead for sub-10 KB JSON inputs exceeds compute time (per Fermyon / Bytecode Alliance benchmarks). Wrong tool for small hot-path functions.                                                                                                                                                                                                  |
+| **uniffi (Mozilla)**                                       | No first-class Node.js binding — only WASM or React Native paths. Disqualified.                                                                                                                                                                                                                                                                             |
+| **TypeSpec → codegen**                                     | Strong schema lang but no JCS+SHA-256 behavior — still needs separate behavior libs. JSON Schema is industry-default and equivalent for declarative shape.                                                                                                                                                                                                  |
+| **Connect-RPC / Protobuf**                                 | Heavier, requires runtime codecs, less idiomatic for declarative event envelopes. JSON Schema simpler for our use case.                                                                                                                                                                                                                                     |
+| **Stainless / Speakeasy SDK gen**                          | Best-in-class for client SDKs from OpenAPI; our journal isn't a public API. Overkill.                                                                                                                                                                                                                                                                       |
 
 ### 13.5 Industry validation
 
 - **Sentry** (`sentry-data-schemas` repo) operates this exact pattern at production scale — JSON Schema SoT consumed via git submodule + Dependabot + `json-schema-to-typescript` + `datamodel-code-generator`.
 - **Stripe / OpenAI / Anthropic** ship N parallel client packages from one OpenAPI spec via **Stainless** (which Anthropic acquired May 2026). Different mechanism (OpenAPI codegen vs JSON Schema codegen) but same principle: one schema, N idiomatic clients.
-- **No major polyglot SDK** uses napi-rs + PyO3 dual bindings for cross-language *behavior* sharing.
+- **No major polyglot SDK** uses napi-rs + PyO3 dual bindings for cross-language _behavior_ sharing.
 
 ### 13.6 Counter-recommendation
 
@@ -498,6 +504,7 @@ Our roadmap has 6+ Python consumers (audit-api-service + audit-activity-timeline
 ### 13.7 Concrete next-step for Phase A
 
 Build pipeline in CI:
+
 ```bash
 # In pnats-journal-schemas repo on push:
 npm run validate-schemas       # ajv-cli against schema metaschema
@@ -555,20 +562,20 @@ All deferred to plan-writing. Note: §13.7 builds, §18 envelope, §19 piping, �
 
 ## 15a. Build-vs-adopt summary (from Feynman research teams 1+2+3)
 
-| Component | Verdict | Source |
-|---|---|---|
-| `journal.events` table + writer + actor enum + retention | **BUILD** (no candidate fits 14-col shape; all framework-coupled or copyleft) | Team 1 |
-| `journal.captures` table + writer | **BUILD** (no OSS has captures shape at all) | Team 1+2 |
-| HTTP capture (interceptor + cassette) | **ADOPT** MSW (TS) + VCRpy (Python) | Team 2 |
-| Clock determinism | **ADOPT** `@sinonjs/fake-timers` + Python `time-machine` | Team 2 |
-| UUID/RNG/SQL replay | **BUILD** (~20 LoC monkey-patch; cross-I/O orchestrator is novel IP) | Team 2 |
-| SQL/Kafka/MCP capture | **BUILD** (no OSS extends VCR to these — only `snowflake-vcrpy` proof-of-concept for one DB driver) | Team 2 |
-| Cross-language schema + JCS+SHA-256 | **TWIN PACKAGES** generated from one JSON Schema repo + CI conformance | Team 3 |
-| JCS implementations | **ADOPT** `canonicalize` (npm) + `rfc8785` (PyPI, Trail of Bits) | Team 3 |
-| Type generation | **ADOPT** `json-schema-to-typescript` + `datamodel-code-generator` (Pydantic) | Team 3 |
-| Partition manager | **ADOPT** `pg_partman` (already in cluster) | Faizan §5 |
-| OTel link | **ADOPT** `@opentelemetry/api` (already in `@pnats/telemetry`) | §19 |
-| Replay model | **ADAPT** Polly.js's mode-state-machine (record/replay/passthrough/recordIfMissing) — borrow design, don't take dep (12mo stale) | Team 2 |
+| Component                                                | Verdict                                                                                                                          | Source    |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `journal.events` table + writer + actor enum + retention | **BUILD** (no candidate fits 14-col shape; all framework-coupled or copyleft)                                                    | Team 1    |
+| `journal.captures` table + writer                        | **BUILD** (no OSS has captures shape at all)                                                                                     | Team 1+2  |
+| HTTP capture (interceptor + cassette)                    | **ADOPT** MSW (TS) + VCRpy (Python)                                                                                              | Team 2    |
+| Clock determinism                                        | **ADOPT** `@sinonjs/fake-timers` + Python `time-machine`                                                                         | Team 2    |
+| UUID/RNG/SQL replay                                      | **BUILD** (~20 LoC monkey-patch; cross-I/O orchestrator is novel IP)                                                             | Team 2    |
+| SQL/Kafka/MCP capture                                    | **BUILD** (no OSS extends VCR to these — only `snowflake-vcrpy` proof-of-concept for one DB driver)                              | Team 2    |
+| Cross-language schema + JCS+SHA-256                      | **TWIN PACKAGES** generated from one JSON Schema repo + CI conformance                                                           | Team 3    |
+| JCS implementations                                      | **ADOPT** `canonicalize` (npm) + `rfc8785` (PyPI, Trail of Bits)                                                                 | Team 3    |
+| Type generation                                          | **ADOPT** `json-schema-to-typescript` + `datamodel-code-generator` (Pydantic)                                                    | Team 3    |
+| Partition manager                                        | **ADOPT** `pg_partman` (already in cluster)                                                                                      | Faizan §5 |
+| OTel link                                                | **ADOPT** `@opentelemetry/api` (already in `@pnats/telemetry`)                                                                   | §19       |
+| Replay model                                             | **ADAPT** Polly.js's mode-state-machine (record/replay/passthrough/recordIfMissing) — borrow design, don't take dep (12mo stale) | Team 2    |
 
 License watch-list rejected (do NOT depend on these): GoReplay (LGPL-3.0), Tracetest (NOASSERTION), OpenReplay (Elastic 2.0), Emmett (planned AGPL/SSPL), django-easy-audit (GPL-3.0), django-reversion-compare (GPL-3.0).
 
@@ -590,6 +597,7 @@ Rough split: **~30% adopt, ~70% build of novel IP.** The novel parts are the dif
 ## 17. Next step
 
 When ready:
+
 1. Invoke `superpowers:writing-plans` against this design doc.
 2. Output: `docs/superpowers/plans/<date>-event-journal-phase-a.md` (just Phase A; subsequent phases get their own plans).
 3. Execute via `superpowers:subagent-driven-development` in a dedicated worktree (`.worktrees/EVENT-JOURNAL-A`).
@@ -605,24 +613,24 @@ To reproduce a bug exactly, we need the user's environment — NOT the user's id
 
 ### 18.1 What's IN the envelope
 
-| Field | Source | Use in repro |
-|---|---|---|
-| `client.kind` | parsed UA | `browser` / `mobile-ios` / `mobile-android` / `server-curl` |
-| `client.browser_family` | parsed UA | `chrome` / `safari` / `firefox` (no version unless > 1 major behind current) |
-| `client.os_family` | parsed UA | `macos` / `windows` / `linux` / `ios` / `android` |
-| `client.device_kind` | UA + viewport | `desktop` / `mobile` / `tablet` |
-| `client.viewport_bucket` | viewport rounded to bucket | `1920×1080` → `desktop-large`; `390×844` → `mobile-medium` |
-| `client.locale` | `Accept-Language` first 2 chars | `en` / `hi` / `ar` (NOT `en-US-CA` — too specific) |
-| `client.tz_offset_min` | client-set `X-Timezone-Offset` header | `-300` / `+330` |
-| `client.network_rtt_bucket` | Server Timing / synthetic ping | `fast` (<50ms) / `normal` (50-200ms) / `slow` (>200ms) |
-| `auth.scopes` | JWT `scope` claim | `["read:companies", "write:tasks"]` — required for permission-bug repro |
-| `auth.role` | JWT `role` claim | `admin` / `tenant_owner` / `member` (NO user id) |
-| `auth.tenant_id` | JWT `tenant_id` claim | UUID — multi-tenant gate |
-| `auth.subject_hash` | sha256(user_id + tenant_id + daily_salt) | Stable per-user-per-day; can correlate same-user actions in a 24h window WITHOUT storing user_id |
-| `feature_flags` | Unleash + OpenFeature snapshot | exact flag set this user saw |
-| `ab_buckets` | experimentation framework | `{ pricing_v2: "B", onboarding_v3: "control" }` |
-| `request.idempotency_key` | client header | already in spec §5 |
-| `request.causation_chain` | upstream `X-Request-Id`s | how this request was triggered |
+| Field                       | Source                                   | Use in repro                                                                                     |
+| --------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `client.kind`               | parsed UA                                | `browser` / `mobile-ios` / `mobile-android` / `server-curl`                                      |
+| `client.browser_family`     | parsed UA                                | `chrome` / `safari` / `firefox` (no version unless > 1 major behind current)                     |
+| `client.os_family`          | parsed UA                                | `macos` / `windows` / `linux` / `ios` / `android`                                                |
+| `client.device_kind`        | UA + viewport                            | `desktop` / `mobile` / `tablet`                                                                  |
+| `client.viewport_bucket`    | viewport rounded to bucket               | `1920×1080` → `desktop-large`; `390×844` → `mobile-medium`                                       |
+| `client.locale`             | `Accept-Language` first 2 chars          | `en` / `hi` / `ar` (NOT `en-US-CA` — too specific)                                               |
+| `client.tz_offset_min`      | client-set `X-Timezone-Offset` header    | `-300` / `+330`                                                                                  |
+| `client.network_rtt_bucket` | Server Timing / synthetic ping           | `fast` (<50ms) / `normal` (50-200ms) / `slow` (>200ms)                                           |
+| `auth.scopes`               | JWT `scope` claim                        | `["read:companies", "write:tasks"]` — required for permission-bug repro                          |
+| `auth.role`                 | JWT `role` claim                         | `admin` / `tenant_owner` / `member` (NO user id)                                                 |
+| `auth.tenant_id`            | JWT `tenant_id` claim                    | UUID — multi-tenant gate                                                                         |
+| `auth.subject_hash`         | sha256(user_id + tenant_id + daily_salt) | Stable per-user-per-day; can correlate same-user actions in a 24h window WITHOUT storing user_id |
+| `feature_flags`             | Unleash + OpenFeature snapshot           | exact flag set this user saw                                                                     |
+| `ab_buckets`                | experimentation framework                | `{ pricing_v2: "B", onboarding_v3: "control" }`                                                  |
+| `request.idempotency_key`   | client header                            | already in spec §5                                                                               |
+| `request.causation_chain`   | upstream `X-Request-Id`s                 | how this request was triggered                                                                   |
 
 ### 18.2 What's explicitly NOT in the envelope
 
@@ -667,10 +675,10 @@ The journal isn't a separate silo. It LINKS BIDIRECTIONALLY with the existing ob
 
 ```ts
 // Every Pino log line auto-injects request_id + capture_id from AsyncLocalStorage
-import { logger } from '@pnats/logger';
+import { logger } from '@pnats/logger'
 
 // inside a journal-instrumented request
-logger.info({ companyId }, 'created company');
+logger.info({ companyId }, 'created company')
 // → JSON line includes: request_id, capture_id, trace_id, span_id, tenant_id
 ```
 
@@ -682,12 +690,12 @@ Implementation: a Pino mixin that reads from `@pnats/journal-client`'s `AsyncLoc
 
 ```ts
 // Every OTel span auto-adds attributes from journal context
-import { tracer } from '@pnats/telemetry';
+import { tracer } from '@pnats/telemetry'
 
 tracer.startActiveSpan('compute-discount', (span) => {
   // span automatically has: journal.request_id, journal.capture_id, journal.actor_kind
   // ...
-});
+})
 ```
 
 Implementation: a SpanProcessor in `@pnats/telemetry` that, on every span start, copies the current `AsyncLocalStorage`'s journal context into span attributes. Bidirectional:
@@ -709,7 +717,7 @@ export class JournalExceptionFilter implements ExceptionFilter {
       payload: { name, message, stack: redactedStack },
       status: 'failed',
       error: { type, code, message },
-    });
+    })
     // ...continue with normal NestJS error handling
   }
 }
@@ -724,6 +732,7 @@ SigNoz error events (from OTel exception spans) carry the journal's `request_id`
 ### 19.5 Kafka headers ⇄ Journal
 
 Every Kafka message produced inside a journaled request carries:
+
 - `x-request-id: <uuid>` — journal's request_id
 - `x-causation-id: <uuid>` — journal's parent capture_id
 - `x-tenant-id: <uuid>` — multi-tenant
@@ -772,6 +781,7 @@ For cassette-mode replay to truly reproduce a bug, we need to recreate the DB st
 Kysely + SQLAlchemy plugins decorate every `SELECT` with a comment containing the `capture_id`. A background process reads `pg_stat_statements` (or logical replication slot for richer data) and joins to journal captures.
 
 For HEAVIER snapshotting (entire row pre-state for forensic reproducibility):
+
 - Kysely middleware: before SELECT, fetch the row's full state (with `SELECT * FROM <table> WHERE id IN (...)`) and store as a separate `capture_kind = 'db.read.snapshot'` row.
 - Opt-in per query via `db.selectFrom(t).withSnapshot().where(...).execute()` — NOT default (would 2x query cost).
 - For UPDATE/DELETE: use Postgres `OLD.*` triggers OR Debezium CDC to capture before-state.
@@ -785,6 +795,7 @@ Content-hash dedup is critical here: the same row read 1000× per day stores ONE
 ### 20.4 Replay mode integration
 
 Cassette mode (per §9 Mode A) seeds a local Postgres from snapshots before re-executing. Steps:
+
 1. Spin up local PG (via `repo dev up` from opsbench's CLI? Or testcontainers).
 2. Restore from snapshots in `db.read.snapshot` / `db.write.snapshot` captures.
 3. Replay request handler with HTTP/SQL/Kafka/MCP cassettes wired.
@@ -938,12 +949,12 @@ Scopes are JWT claims. The journal client checks them before serving any endpoin
 
 These actions split across the phases in §12:
 
-| Verb family | Phase |
-|---|---|
-| list, show, tree, search, types, services, actors | **Phase D** (Query layer + UI) |
-| logs, trace, errors | **Phase D'** (Observability piping — requires §19 hooks) |
-| rerun (cassette), repro | **Phase E** (Replay Mode A) |
-| rerun (passthrough, partial), compare, diff | **Phase F** (Modes B + C) |
-| export, bundle | **Phase G** (Test-fixture export) |
-| flow, follow (cross-service) | **Phase H** (Cross-service correlation) |
-| preflight, redaction, retention | **Phase I** (Governance + UI polish) |
+| Verb family                                       | Phase                                                    |
+| ------------------------------------------------- | -------------------------------------------------------- |
+| list, show, tree, search, types, services, actors | **Phase D** (Query layer + UI)                           |
+| logs, trace, errors                               | **Phase D'** (Observability piping — requires §19 hooks) |
+| rerun (cassette), repro                           | **Phase E** (Replay Mode A)                              |
+| rerun (passthrough, partial), compare, diff       | **Phase F** (Modes B + C)                                |
+| export, bundle                                    | **Phase G** (Test-fixture export)                        |
+| flow, follow (cross-service)                      | **Phase H** (Cross-service correlation)                  |
+| preflight, redaction, retention                   | **Phase I** (Governance + UI polish)                     |

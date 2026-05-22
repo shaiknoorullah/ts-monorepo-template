@@ -2,7 +2,7 @@
 title: Multi-Tenancy Isolation Rules
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://www.postgresql.org/docs/current/ddl-schemas.html
   - https://www.postgresql.org/docs/current/ddl-rowsecurity.html
@@ -14,7 +14,7 @@ references:
 
 # Multi-Tenancy Isolation Rules
 
-The architecture spec (`docs/specs/.../multi-tenancy.md`, TBD) describes the *shape*: schema-per-tenant for tenant data, shared schema for platform metadata. This document describes the **rules** every developer in this repo must follow when writing or reviewing code that touches tenant data.
+The architecture spec (`docs/specs/.../multi-tenancy.md`, TBD) describes the _shape_: schema-per-tenant for tenant data, shared schema for platform metadata. This document describes the **rules** every developer in this repo must follow when writing or reviewing code that touches tenant data.
 
 Violating these rules creates the most expensive kind of bug in a SaaS: **cross-tenant data leakage**. We treat them with the same gravity as auth bypass.
 

@@ -6,7 +6,7 @@
 #
 # Dedicated Postgres because Umami owns its schema with Prisma migrations.
 # Sharing the app DB is technically possible but creates schema-ownership conflicts.
-version: "3.9"
+version: '3.9'
 
 x-restart: &restart
   restart: unless-stopped
@@ -24,13 +24,13 @@ services:
       - umami-postgres-data:/var/lib/postgresql/data
     networks: [saas-commons]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${UMAMI_POSTGRES_USER:-umami}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${UMAMI_POSTGRES_USER:-umami}']
       interval: 5s
       timeout: 3s
       retries: 20
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 512M }
+        limits: { cpus: '0.5', memory: 512M }
 
   umami:
     image: ghcr.io/umami-software/umami:postgresql-v2.13.0
@@ -39,21 +39,21 @@ services:
     depends_on:
       umami-db: { condition: service_healthy }
     environment:
-      DATABASE_URL: "postgresql://${UMAMI_POSTGRES_USER:-umami}:${UMAMI_POSTGRES_PASSWORD:-changeme}@umami-db:5432/${UMAMI_POSTGRES_DB:-umami}"
+      DATABASE_URL: 'postgresql://${UMAMI_POSTGRES_USER:-umami}:${UMAMI_POSTGRES_PASSWORD:-changeme}@umami-db:5432/${UMAMI_POSTGRES_DB:-umami}'
       DATABASE_TYPE: postgresql
-      APP_SECRET: "${UMAMI_APP_SECRET:?UMAMI_APP_SECRET is required (>=64 chars)}"
-      DISABLE_TELEMETRY: "1"
+      APP_SECRET: '${UMAMI_APP_SECRET:?UMAMI_APP_SECRET is required (>=64 chars)}'
+      DISABLE_TELEMETRY: '1'
     ports:
-      - "${UMAMI_PORT:-8103}:3000"
+      - '${UMAMI_PORT:-8103}:3000'
     networks: [saas-commons]
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/heartbeat >/dev/null || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/heartbeat >/dev/null || exit 1']
       interval: 15s
       timeout: 5s
       retries: 10
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 512M }
+        limits: { cpus: '0.5', memory: 512M }
 
 volumes:
   umami-postgres-data:

@@ -12,18 +12,18 @@
 
 ## 0. R2 vs R3 — which to pick
 
-| Axis | R2 (explicit) | R3 (OTel-native) |
-|---|---|---|
-| Total project LoC | ~5,000+ | **~470** |
-| Engineer-weeks to production | 6-12 months | **2-3 weeks** |
-| Cross-language schema discipline | Twin packages + JSON Schema repo + JCS conformance CI | **OTel semconv with `journal.*` namespace** |
-| Capture storage | `journal.captures` PG table (26 cols) | **OTel Logs Bridge → ClickHouse/SigNoz** |
-| Audit storage | `journal.events` PG table (Faizan's V1) | **Same** — kept verbatim, with `pg_logical_emit_message` outbox |
-| Per-language SDK | Hand-written client lib per language | **40-LoC shim per language** (attaches `journal.*` to active span) |
-| MCP/SQL/Kafka capture | Hand-written wrapper per language | **Beyla eBPF auto-captures all** (with ~150 LoC Go contributed upstream for MCP gap) |
-| Event-type accuracy | 100% (app declares) | 100% (decorator OR shim declares) |
-| Replay mode (cassette/passthrough/partial) | Same engine | Same engine (reads from SigNoz API + PG) |
-| When to pick this | App teams want full control + explicit types; budget for the long build | We trust OTel + Beyla + ClickHouse + want production fast |
+| Axis                                       | R2 (explicit)                                                           | R3 (OTel-native)                                                                     |
+| ------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Total project LoC                          | ~5,000+                                                                 | **~470**                                                                             |
+| Engineer-weeks to production               | 6-12 months                                                             | **2-3 weeks**                                                                        |
+| Cross-language schema discipline           | Twin packages + JSON Schema repo + JCS conformance CI                   | **OTel semconv with `journal.*` namespace**                                          |
+| Capture storage                            | `journal.captures` PG table (26 cols)                                   | **OTel Logs Bridge → ClickHouse/SigNoz**                                             |
+| Audit storage                              | `journal.events` PG table (Faizan's V1)                                 | **Same** — kept verbatim, with `pg_logical_emit_message` outbox                      |
+| Per-language SDK                           | Hand-written client lib per language                                    | **40-LoC shim per language** (attaches `journal.*` to active span)                   |
+| MCP/SQL/Kafka capture                      | Hand-written wrapper per language                                       | **Beyla eBPF auto-captures all** (with ~150 LoC Go contributed upstream for MCP gap) |
+| Event-type accuracy                        | 100% (app declares)                                                     | 100% (decorator OR shim declares)                                                    |
+| Replay mode (cassette/passthrough/partial) | Same engine                                                             | Same engine (reads from SigNoz API + PG)                                             |
+| When to pick this                          | App teams want full control + explicit types; budget for the long build | We trust OTel + Beyla + ClickHouse + want production fast                            |
 
 **Recommendation:** ship R3. R2 stays as the fallback if any of the OTel/Beyla assumptions break in production.
 
@@ -31,7 +31,7 @@
 
 ## 1. Problem statement (UNCHANGED from R2)
 
-Today, reconstructing what a service did during a request means hand-joining three independent log surfaces: Pino service logs, OTel traces (no bodies), Kafka topic dumps. None alone answers questions like *"this `POST /publish` failed — what SQL queries did we run, what did Apollo return, what did we emit to Kafka?"* or *"reproduce this customer's bug locally with the recorded request payload."*
+Today, reconstructing what a service did during a request means hand-joining three independent log surfaces: Pino service logs, OTel traces (no bodies), Kafka topic dumps. None alone answers questions like _"this `POST /publish` failed — what SQL queries did we run, what did Apollo return, what did we emit to Kafka?"_ or _"reproduce this customer's bug locally with the recorded request payload."_
 
 OTel doesn't capture bodies by default. The journal does, with explicit PII redaction + size caps + S3 spill — but **R3 captures bodies via OTel Logs Bridge API (not span events — deprecated 2026)**, stored in ClickHouse/SigNoz, not a custom PG table.
 
@@ -74,12 +74,13 @@ CREATE TABLE journal.events (...)
   "timestamp": "...",
   "trace_id": "...",
   "span_id": "...",
-  "event": { "name": "http.outbound" },          // was capture_kind
-  "body": {                                       // was payload
+  "event": { "name": "http.outbound" }, // was capture_kind
+  "body": {
+    // was payload
     "method": "POST",
     "url": "...",
     "request_body": "...",
-    "response": "..."
+    "response": "...",
   },
   "attributes": {
     "journal.tenant_id": "...",
@@ -89,14 +90,14 @@ CREATE TABLE journal.events (...)
     "journal.parent_capture_id": null,
     "journal.idempotency_key": "...",
     "journal.payload_size_bytes": 4096,
-    "journal.payload_spilled_to": null,  // or "s3://..." URI
+    "journal.payload_spilled_to": null, // or "s3://..." URI
     "journal.payload_content_hash": "sha256:...",
     "journal.service": "kaarbaaz",
     "journal.status": "completed",
-    "messaging.destination.name": "...",    // OTel semconv (auto)
-    "db.statement": "SELECT ...",            // OTel semconv (auto)
-    "http.request.method": "POST"            // OTel semconv (auto)
-  }
+    "messaging.destination.name": "...", // OTel semconv (auto)
+    "db.statement": "SELECT ...", // OTel semconv (auto)
+    "http.request.method": "POST", // OTel semconv (auto)
+  },
 }
 ```
 
@@ -110,9 +111,9 @@ Per Team Delta's hybrid recommendation, R3 adopts ONE element of the rejected Ti
 
 The atomicity constraint of audit-of-record is non-negotiable: business write + audit row must commit together. Two ways to achieve this:
 
-| Approach | Cost | Audit |
-|---|---|---|
-| Same-tx INSERT to `journal.events` table | Same as V1; widely-precedented | Strong |
+| Approach                                                                                    | Cost                                                                               | Audit                                                |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Same-tx INSERT to `journal.events` table                                                    | Same as V1; widely-precedented                                                     | Strong                                               |
 | `SELECT pg_logical_emit_message(true, 'journal', json)` then read via Debezium WAL consumer | Slightly higher (no PG table write directly) — uses Postgres's logical replication | Strict superset — message is in WAL, can be replayed |
 
 `pg_logical_emit_message` is **the cleanest possible outbox**: no separate outbox table to clean up, message is in the same WAL position as the row change it accompanies, atomically committed with the business transaction.
@@ -136,6 +137,7 @@ async function recordEvent(envelope: JournalEnvelope, tx: PgConnection) {
 ```
 
 **Why both writes:**
+
 - The direct INSERT makes the audit row visible to queries immediately (within the same transaction)
 - The `pg_logical_emit_message` provides a Kafka-routable copy for downstream consumers (replication, cross-cluster audit mirror, analytics)
 - If the direct INSERT fails (UNIQUE violation), the message is still in WAL — audit consumer dedups
@@ -149,6 +151,7 @@ async function recordEvent(envelope: JournalEnvelope, tx: PgConnection) {
 ### 4.4 WAL consumer (NEW — ~500 LoC Go)
 
 A small Go service runs as a Deployment, consumes the `journal` logical replication slot, and:
+
 1. Optionally writes the message to ClickHouse as a Logs Bridge record (for unified query)
 2. Optionally pushes to Kafka for downstream auditors
 3. Updates a Prometheus metric for WAL lag
@@ -186,6 +189,7 @@ Faizan's 5-way discriminated enum (USER / SERVICE / WORKFLOW / CRON / AI) + `on_
 ## 7. Payload handling — OTel Logs Bridge + S3 spill
 
 ### 7.1 Inline cap (256 KB) + spill
+
 - Payloads ≤ 256 KB inline as `event.body` in the Logs Bridge record
 - Payloads > 256 KB written to S3/R2/Azure Blob, URI in `journal.payload_spilled_to` attribute, body NULL
 - `payload_content_hash` (SHA-256) enables dedup of duplicate blobs
@@ -217,11 +221,11 @@ Default-deny. Allow-list: `User-Agent`, `Content-Type`, `X-Request-Id`, `X-Tenan
 
 ## 8. Retention — hybrid (UNCHANGED conceptually from R2)
 
-| Surface | Policy | Mechanism |
-|---|---|---|
-| `journal.events` (PG) | Soft-delete after 18 months, never hard-delete | `pg_partman` monthly, Faizan's V1 retention job |
-| OTel Logs Bridge captures (ClickHouse) | TTL per `event.name` (`http.outbound` = 30d, `sql.query` = 7d, etc.) | ClickHouse TTL on `Toscope` partitioning |
-| Spilled payloads (S3) | Lifecycle policy mirroring per-event TTL | S3 lifecycle config |
+| Surface                                | Policy                                                               | Mechanism                                       |
+| -------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------- |
+| `journal.events` (PG)                  | Soft-delete after 18 months, never hard-delete                       | `pg_partman` monthly, Faizan's V1 retention job |
+| OTel Logs Bridge captures (ClickHouse) | TTL per `event.name` (`http.outbound` = 30d, `sql.query` = 7d, etc.) | ClickHouse TTL on `Toscope` partitioning        |
+| Spilled payloads (S3)                  | Lifecycle policy mirroring per-event TTL                             | S3 lifecycle config                             |
 
 For audit-grade long retention beyond 30 days, the WAL consumer also writes captures to a "cold archive" S3 bucket with WORM (Write-Once-Read-Many) lock. The Logs Bridge record in ClickHouse points to the cold copy via `journal.archive_uri` attribute.
 
@@ -232,17 +236,17 @@ For audit-grade long retention beyond 30 days, the WAL consumer also writes capt
 Same three modes (cassette / passthrough / partial). **What changes:** the replay engine reads captures from the SigNoz query API (not a custom PG table) and audit context from PG. Otherwise identical: AsyncLocalStorage replay context, UUID/Date/RNG interception, etc.
 
 Read pattern:
+
 ```ts
 async function reconstructRequest(requestId: string) {
-  const events = await pg.query(
-    'SELECT * FROM journal.events WHERE correlation_id = $1',
-    [requestId]
-  );
+  const events = await pg.query('SELECT * FROM journal.events WHERE correlation_id = $1', [
+    requestId,
+  ])
   const captures = await signozClient.queryLogs({
     query: `attributes['journal.request_id'] = '${requestId}'`,
     sort: { field: 'timestamp', order: 'asc' },
-  });
-  return mergeByTimestamp(events, captures);
+  })
+  return mergeByTimestamp(events, captures)
 }
 ```
 
@@ -271,13 +275,13 @@ W3C Trace Context (native OTel) propagates `traceparent` headers across HTTP/Kaf
 
 R2 had 9 phases (A-I). R3 collapses to 5:
 
-| Phase | Scope |
-|---|---|
-| **A — Outbox + per-language shim** | `pg_logical_emit_message` write contract in V1 client; `@pnats/journal-attrs` (~40 LoC TS) + `pnats-journal-attrs` (~40 LoC Python) shims that attach `journal.*` to the active OTel span; WAL consumer Go service (~500 LoC); kaarbaaz adopts |
-| **B — Beyla MCP extension + collector pipeline** | Contribute MCP/JSON-RPC parser to OBI (~150 LoC Go); deploy OTel Collector pipeline with `journal-redact` processor + routing to SigNoz; mailer + api-gateway adopt the shim |
-| **C — PII + spill + envelope** | Field redaction registry, S3 spill, synthetic user envelope (§18) production-ready |
-| **D — Query layer + replay** | CLI verbs (§21), replay engine reading from SigNoz + PG, `journal repro` local-seed pattern |
-| **E — Cross-service + governance** | `originating_request_id` propagation, RBAC scopes, post-hoc redaction, `journal retention` introspection |
+| Phase                                            | Scope                                                                                                                                                                                                                                          |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A — Outbox + per-language shim**               | `pg_logical_emit_message` write contract in V1 client; `@pnats/journal-attrs` (~40 LoC TS) + `pnats-journal-attrs` (~40 LoC Python) shims that attach `journal.*` to the active OTel span; WAL consumer Go service (~500 LoC); kaarbaaz adopts |
+| **B — Beyla MCP extension + collector pipeline** | Contribute MCP/JSON-RPC parser to OBI (~150 LoC Go); deploy OTel Collector pipeline with `journal-redact` processor + routing to SigNoz; mailer + api-gateway adopt the shim                                                                   |
+| **C — PII + spill + envelope**                   | Field redaction registry, S3 spill, synthetic user envelope (§18) production-ready                                                                                                                                                             |
+| **D — Query layer + replay**                     | CLI verbs (§21), replay engine reading from SigNoz + PG, `journal repro` local-seed pattern                                                                                                                                                    |
+| **E — Cross-service + governance**               | `originating_request_id` propagation, RBAC scopes, post-hoc redaction, `journal retention` introspection                                                                                                                                       |
 
 Each phase 1-2 weeks. Total: **~8-10 weeks to production**.
 
@@ -295,17 +299,17 @@ The ENTIRE §13 from R2 (twin packages, JSON Schema SoT, JCS RFC 8785 conformanc
 
 ```ts
 // @pnats/journal-attrs (TypeScript / NestJS)
-import { trace, context } from '@opentelemetry/api';
+import { trace, context } from '@opentelemetry/api'
 
 export function recordJournalEvent(envelope: {
-  type: string;
-  actor: { kind: string; id: string; display?: string };
-  tenant_id: string;
-  entity?: { type: string; id: string };
-  on_behalf_of_user_id?: string;
+  type: string
+  actor: { kind: string; id: string; display?: string }
+  tenant_id: string
+  entity?: { type: string; id: string }
+  on_behalf_of_user_id?: string
 }) {
-  const span = trace.getSpan(context.active());
-  if (!span) return;
+  const span = trace.getSpan(context.active())
+  if (!span) return
   span.setAttributes({
     'event.name': envelope.type,
     'journal.actor.kind': envelope.actor.kind,
@@ -315,7 +319,7 @@ export function recordJournalEvent(envelope: {
     'journal.entity.type': envelope.entity?.type,
     'journal.entity.id': envelope.entity?.id,
     'journal.on_behalf_of_user_id': envelope.on_behalf_of_user_id,
-  });
+  })
 }
 ```
 
@@ -405,15 +409,15 @@ The Kysely / SQLAlchemy middleware that auto-captures pre-state on opt-in querie
 
 ## 18. What R3 collapses vs R2
 
-| R2 component | R3 status |
-|---|---|
-| `journal.captures` PG table (26 cols) | **GONE** — OTel Logs Bridge records |
-| Twin packages (`@pnats/journal-types` + `pnats-journal-types`) | **GONE** — OTel semconv is the schema |
-| JSON Schema SoT repo + RFC 8785 JCS conformance CI | **GONE** — OTel attribute encoding is canonical |
-| Hand-written client lib per language | **40-LoC shim per language** |
-| Custom CLI query layer for captures | **SigNoz HTTP API** |
-| Cassette assembly from `journal.captures` | **SigNoz logs query + PG join** |
-| ~5,000 LoC | **~470 LoC** total |
+| R2 component                                                   | R3 status                                       |
+| -------------------------------------------------------------- | ----------------------------------------------- |
+| `journal.captures` PG table (26 cols)                          | **GONE** — OTel Logs Bridge records             |
+| Twin packages (`@pnats/journal-types` + `pnats-journal-types`) | **GONE** — OTel semconv is the schema           |
+| JSON Schema SoT repo + RFC 8785 JCS conformance CI             | **GONE** — OTel attribute encoding is canonical |
+| Hand-written client lib per language                           | **40-LoC shim per language**                    |
+| Custom CLI query layer for captures                            | **SigNoz HTTP API**                             |
+| Cassette assembly from `journal.captures`                      | **SigNoz logs query + PG join**                 |
+| ~5,000 LoC                                                     | **~470 LoC** total                              |
 
 ---
 
@@ -450,6 +454,7 @@ R3 represents the synthesis of Teams Alpha/Beta/Gamma/Delta — the "industry-al
 ## 21. Next step
 
 When ready:
+
 1. Invoke `superpowers:writing-plans` against this design doc (or against R2 if explicit preferred).
 2. Output: `docs/superpowers/plans/<date>-event-journal-R3-phase-a.md` (Phase A: outbox + per-language shim + WAL consumer).
 3. Execute via `superpowers:subagent-driven-development` in a dedicated worktree (`.worktrees/EVENT-JOURNAL-R3-A`).
@@ -462,12 +467,14 @@ Total Phase A estimate: ~3 weeks. Total all-phases (A-E): ~8-10 weeks to feature
 ## 22. Honest closing note
 
 R3 trades explicit control for radical simplicity. Pick R3 if you trust:
+
 - OTel + Beyla + ClickHouse stay operational (Team Beta + Alpha verified)
 - The OTel Logs Bridge API stabilizes per the 2026 roadmap (Team Alpha verified)
 - Audit-of-record stays in PG (every industry survey agrees — Team Gamma)
 - `pg_logical_emit_message` is a viable outbox mechanism (Decodable + Morling demos exist)
 
 Pick R2 if you want:
+
 - Full hand-control of every byte
 - Don't trust OTel attribute size limits / SigNoz multi-tenancy / ClickHouse mutability
 - Have the engineering capacity for 6+ months of custom-build

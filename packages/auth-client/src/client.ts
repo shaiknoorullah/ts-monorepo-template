@@ -11,7 +11,10 @@ export function createAuthClient(cfg: AuthConfig): AuthClient {
     const res = await fetch(`${base}/sessions/whoami`, { credentials: 'include' })
     if (res.status === 401) return null
     if (!res.ok) throw new Error(`whoami failed: ${res.status}`)
-    const data = (await res.json()) as { expires_at?: string; identity?: { id: string; traits: unknown }; }
+    const data = (await res.json()) as {
+      expires_at?: string
+      identity?: { id: string; traits: unknown }
+    }
     if (!data.identity) return null
     const traits = data.identity.traits as Record<string, unknown>
     const user = UserSchema.parse({
@@ -31,7 +34,11 @@ export function createAuthClient(cfg: AuthConfig): AuthClient {
     // Ory Kratos uses flow tokens; this is a simplified path. Real flows
     // initiate a login-flow first, then submit.
     const res = await fetch(`${base}/self-service/login?flow=api`, {
-      body: JSON.stringify({ identifier: input.email, method: 'password', password: input.password }),
+      body: JSON.stringify({
+        identifier: input.email,
+        method: 'password',
+        password: input.password,
+      }),
       headers: { 'content-type': 'application/json' },
       method: 'POST',
     })

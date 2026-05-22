@@ -10,3 +10,13 @@ CHANGELOG.md
 docs/.vitepress/cache
 docs/.vitepress/dist
 docs/api
+# Templates contain Handlebars-like {{name}} placeholders that aren't valid YAML/JSON/TS
+internal/templates
+.next
+.astro
+.expo
+.wrangler
+sbom
+# YAML anchors trip up prettier's parser
+docker/*.compose.yml
+docker/*.compose.yaml

@@ -10,5 +10,6 @@ Customer-facing docs. Rules:
 6. **Images go in `src/assets/`**, optimized via Astro's `<Image />`.
 
 Reading list:
+
 - `docs/specs/frontend/documentation-sites.md`
 - `docs/specs/frontend/cloudflare-deployment.md`

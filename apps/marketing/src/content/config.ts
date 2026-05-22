@@ -11,7 +11,6 @@
 import { decapLoader, payloadLoader } from '@pkg/cms-client'
 import { defineCollection, z } from 'astro:content'
 
- 
 // `Loader` type still references zod 3's `ZodType<any, ZodTypeDef, any>` shape;
 // our loaders type-check against zod 4. Cast at the call-site to bridge.
 const posts = defineCollection({

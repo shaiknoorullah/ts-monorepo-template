@@ -6,9 +6,7 @@
     "rootDir": ".",
     "outDir": "dist",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "plugins": [
       {
@@ -25,9 +23,5 @@
     "src/**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "dist",
-    "node_modules",
-    ".next"
-  ]
+  "exclude": ["dist", "node_modules", ".next"]
 }

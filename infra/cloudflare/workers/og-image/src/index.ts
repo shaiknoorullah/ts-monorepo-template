@@ -33,9 +33,7 @@ app.get('/og', async (c) => {
   const subtitle = c.req.query('subtitle')
   const themeParam = c.req.query('theme')
   const theme: 'dark' | 'light' =
-    themeParam === 'light' || themeParam === 'dark'
-      ? themeParam
-      : (c.env.DEFAULT_THEME ?? 'dark')
+    themeParam === 'light' || themeParam === 'dark' ? themeParam : (c.env.DEFAULT_THEME ?? 'dark')
   const logoUrl = c.req.query('logo') || undefined
 
   try {
@@ -48,10 +46,7 @@ app.get('/og', async (c) => {
       title,
     })
   } catch (error) {
-    return c.json(
-      { error: 'og-image-render-failed', message: (error as Error).message },
-      500,
-    )
+    return c.json({ error: 'og-image-render-failed', message: (error as Error).message }, 500)
   }
 })
 

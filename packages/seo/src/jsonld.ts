@@ -19,9 +19,7 @@ export function article(input: {
   }
 }
 
-export function breadcrumbs(input: {
-  items: { name: string; url: string }[]
-}): BreadcrumbList {
+export function breadcrumbs(input: { items: { name: string; url: string }[] }): BreadcrumbList {
   return {
     '@type': 'BreadcrumbList',
     itemListElement: input.items.map((item, i) => ({
@@ -33,7 +31,7 @@ export function breadcrumbs(input: {
   }
 }
 
-export function faqPage(input: { questions: { a: string; q: string; }[] }): FAQPage {
+export function faqPage(input: { questions: { a: string; q: string }[] }): FAQPage {
   return {
     '@type': 'FAQPage',
     mainEntity: input.questions.map((q) => ({
@@ -44,7 +42,7 @@ export function faqPage(input: { questions: { a: string; q: string; }[] }): FAQP
   }
 }
 
-export function organization(input: { logo: string; name: string; url: string; }): Organization {
+export function organization(input: { logo: string; name: string; url: string }): Organization {
   return {
     '@type': 'Organization',
     logo: input.logo,
@@ -53,7 +51,7 @@ export function organization(input: { logo: string; name: string; url: string; }
   }
 }
 
-export function product(input: { description: string; image: string; name: string; }): Product {
+export function product(input: { description: string; image: string; name: string }): Product {
   return {
     '@type': 'Product',
     description: input.description,

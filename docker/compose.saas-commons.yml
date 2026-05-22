@@ -39,9 +39,9 @@ services:
   saas-commons-meta:
     image: alpine:3.20
     container_name: saas-commons-meta
-    command: ["sh", "-c", "echo 'saas-commons stack loaded'; sleep infinity"]
-    restart: "no"
-    profiles: ["meta"]   # only runs with `--profile meta`
+    command: ['sh', '-c', "echo 'saas-commons stack loaded'; sleep infinity"]
+    restart: 'no'
+    profiles: ['meta'] # only runs with `--profile meta`
     networks: [saas-commons]
 
 networks:

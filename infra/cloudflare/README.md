@@ -45,16 +45,16 @@ Pages-deployed apps live in `apps/*` with their own `wrangler.toml`.
 
 ## Resources
 
-| Resource | Purpose | Free-tier limit |
-|---|---|---|
-| Pages (marketing, docs-public, web-app) | Static + SSR hosting | Unlimited req, 500 builds/mo |
-| Workers (tenant-router, webhook-receiver) | Edge logic | 100k req/day |
-| R2 bucket `marketing-media` | CMS media | 10 GB |
-| R2 bucket `app-uploads` | App user uploads | shared 10 GB |
-| KV namespace `edge-config` | Feature flags, edge config | 1 GB |
-| D1 database `marketing-forms` | Contact forms | 5 GB |
-| Turnstile site key | CAPTCHA | Unlimited |
-| Web Analytics token | Page-view analytics | Unlimited |
+| Resource                                  | Purpose                    | Free-tier limit              |
+| ----------------------------------------- | -------------------------- | ---------------------------- |
+| Pages (marketing, docs-public, web-app)   | Static + SSR hosting       | Unlimited req, 500 builds/mo |
+| Workers (tenant-router, webhook-receiver) | Edge logic                 | 100k req/day                 |
+| R2 bucket `marketing-media`               | CMS media                  | 10 GB                        |
+| R2 bucket `app-uploads`                   | App user uploads           | shared 10 GB                 |
+| KV namespace `edge-config`                | Feature flags, edge config | 1 GB                         |
+| D1 database `marketing-forms`             | Contact forms              | 5 GB                         |
+| Turnstile site key                        | CAPTCHA                    | Unlimited                    |
+| Web Analytics token                       | Page-view analytics        | Unlimited                    |
 
 Create each via `wrangler` CLI or the CF dashboard, then plug IDs into the corresponding `wrangler.toml`.
 

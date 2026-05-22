@@ -76,10 +76,7 @@ _repo() {
   fi
   case "\${words[2]}" in
 ${Object.entries(SUBS)
-  .map(
-    ([k, vs]) =>
-      `    ${k}) _values 'subcommand' ${vs.map((v) => `'${v}'`).join(' ')} ;;`,
-  )
+  .map(([k, vs]) => `    ${k}) _values 'subcommand' ${vs.map((v) => `'${v}'`).join(' ')} ;;`)
   .join('\n')}
   esac
 }
@@ -94,12 +91,14 @@ export const completionCommand = defineCommand({
   run({ args }) {
     const shell = String(args.shell)
     if (shell === 'bash') {
-      if (isJsonMode()) emit({ data: { script: bashScript() }, message: 'bash completion', status: 'ok' })
+      if (isJsonMode())
+        emit({ data: { script: bashScript() }, message: 'bash completion', status: 'ok' })
       else logRaw(bashScript())
       return
     }
     if (shell === 'zsh') {
-      if (isJsonMode()) emit({ data: { script: zshScript() }, message: 'zsh completion', status: 'ok' })
+      if (isJsonMode())
+        emit({ data: { script: zshScript() }, message: 'zsh completion', status: 'ok' })
       else logRaw(zshScript())
       return
     }

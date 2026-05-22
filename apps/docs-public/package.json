@@ -6,8 +6,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "astro dev --port 4322",
     "build": "astro build",
+    "dev": "astro dev --port 4322",
     "preview": "astro preview",
     "test": "vitest run",
     "type-check": "astro check"
@@ -16,7 +16,7 @@
     "@astrojs/cloudflare": "^11.0.0",
     "@astrojs/starlight": "^0.30.0",
     "astro": "^5.0.0",
-    "sharp": "^0.33.0"
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.0",

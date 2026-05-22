@@ -18,27 +18,27 @@ First boot: visit `/admin`, create the first user (becomes `admin`).
 
 ## Env vars
 
-| Var | Purpose |
-| --- | --- |
-| `PAYLOAD_SECRET` | JWT signing secret. Generate via `openssl rand -hex 32`. |
-| `PAYLOAD_PUBLIC_SERVER_URL` | Public origin (e.g. `https://cms.example.com`). |
-| `DATABASE_URI` | Postgres connection string. |
-| `R2_BUCKET` | R2 / S3-compat bucket name. |
-| `R2_ENDPOINT` | R2 endpoint (e.g. `https://<acct>.r2.cloudflarestorage.com`). |
-| `R2_ACCESS_KEY_ID` | R2 access key. |
-| `R2_SECRET_ACCESS_KEY` | R2 secret. |
-| `CORS_ORIGINS` | Comma-separated allow-list. |
-| `CSRF_ORIGINS` | Comma-separated CSRF allow-list. |
+| Var                         | Purpose                                                       |
+| --------------------------- | ------------------------------------------------------------- |
+| `PAYLOAD_SECRET`            | JWT signing secret. Generate via `openssl rand -hex 32`.      |
+| `PAYLOAD_PUBLIC_SERVER_URL` | Public origin (e.g. `https://cms.example.com`).               |
+| `DATABASE_URI`              | Postgres connection string.                                   |
+| `R2_BUCKET`                 | R2 / S3-compat bucket name.                                   |
+| `R2_ENDPOINT`               | R2 endpoint (e.g. `https://<acct>.r2.cloudflarestorage.com`). |
+| `R2_ACCESS_KEY_ID`          | R2 access key.                                                |
+| `R2_SECRET_ACCESS_KEY`      | R2 secret.                                                    |
+| `CORS_ORIGINS`              | Comma-separated allow-list.                                   |
+| `CSRF_ORIGINS`              | Comma-separated CSRF allow-list.                              |
 
 ## Collections
 
-| Slug | Purpose |
-| --- | --- |
-| `pages` | Static pages (Pages router on the marketing app reads these). |
-| `posts` | Blog posts. |
-| `media` | Uploads — stored in R2 via `@payloadcms/plugin-cloud-storage`. |
-| `tenants` | Tenant metadata + theme override. |
-| `users` | Admin + editor + viewer roles. Argon2id hashes. |
+| Slug      | Purpose                                                        |
+| --------- | -------------------------------------------------------------- |
+| `pages`   | Static pages (Pages router on the marketing app reads these).  |
+| `posts`   | Blog posts.                                                    |
+| `media`   | Uploads — stored in R2 via `@payloadcms/plugin-cloud-storage`. |
+| `tenants` | Tenant metadata + theme override.                              |
+| `users`   | Admin + editor + viewer roles. Argon2id hashes.                |
 
 ## Argon2id + Kratos migration
 
@@ -56,9 +56,9 @@ When migrating to Ory Kratos:
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `pnpm dev` | Next dev server on :3000 |
-| `pnpm build` | Next prod build |
-| `pnpm generate:types` | Regenerate `src/payload-types.ts` |
-| `pnpm generate:importmap` | Regenerate the admin import map |
+| Command                   | What it does                      |
+| ------------------------- | --------------------------------- |
+| `pnpm dev`                | Next dev server on :3000          |
+| `pnpm build`              | Next prod build                   |
+| `pnpm generate:types`     | Regenerate `src/payload-types.ts` |
+| `pnpm generate:importmap` | Regenerate the admin import map   |

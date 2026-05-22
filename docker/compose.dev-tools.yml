@@ -10,45 +10,45 @@ name: tsm-dev-tools
 services:
   pgadmin:
     image: dpage/pgadmin4:8.12
-    profiles: ["tools"]
+    profiles: ['tools']
     environment:
       PGADMIN_DEFAULT_EMAIL: dev@local
       PGADMIN_DEFAULT_PASSWORD: dev
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    ports: ["5050:80"]
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports: ['5050:80']
     volumes:
       - ./dev-tools/pgadmin-servers.json:/pgadmin4/servers.json:ro
 
   redisinsight:
     image: redis/redisinsight:2.58
-    profiles: ["tools"]
-    ports: ["5540:5540"]
+    profiles: ['tools']
+    ports: ['5540:5540']
 
   kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.2
-    profiles: ["tools"]
+    profiles: ['tools']
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8080/apis/ccompat/v7
-    ports: ["8090:8080"]
+    ports: ['8090:8080']
 
   apicurio-ui:
     image: apicurio/apicurio-studio:1.0.0.Final
-    profiles: ["tools"]
-    ports: ["8091:8080"]
+    profiles: ['tools']
+    ports: ['8091:8080']
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
-    profiles: ["tools"]
+    profiles: ['tools']
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - '1025:1025'
+      - '8025:8025'
 
   jaeger-ui:
     image: jaegertracing/all-in-one:1.62
-    profiles: ["tools"]
+    profiles: ['tools']
     ports:
-      - "16686:16686"
+      - '16686:16686'
     environment:
-      COLLECTOR_OTLP_ENABLED: "true"
+      COLLECTOR_OTLP_ENABLED: 'true'

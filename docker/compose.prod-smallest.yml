@@ -47,9 +47,9 @@ services:
       - --accesslog=true
       - --accesslog.format=json
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
     environment:
       CF_DNS_API_TOKEN_FILE: /run/secrets/cf_token
     secrets:
@@ -61,7 +61,7 @@ services:
     networks: [edge, observability]
     deploy:
       resources:
-        limits: { cpus: "1", memory: 256M }
+        limits: { cpus: '1', memory: 256M }
 
   # ─── State: Postgres HA via Patroni + etcd ────────────────────────────
   etcd:
@@ -77,14 +77,14 @@ services:
       ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd:2380
     volumes: [etcd-data:/etcd-data]
     healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
+      test: ['CMD', 'etcdctl', 'endpoint', 'health']
       interval: 10s
       timeout: 3s
       retries: 5
     networks: [state]
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 256M }
+        limits: { cpus: '0.5', memory: 256M }
 
   pg-1: &pg-base
     image: ghcr.io/zalando/spilo-16:3.2-p3
@@ -92,13 +92,13 @@ services:
     environment:
       <<: *pg-env
       SCOPE: tsm
-      PGVERSION: "16"
+      PGVERSION: '16'
       ETCD_HOSTS: etcd:2379
       PATRONI_NAME: pg-1
     volumes: [pg1-data:/home/postgres/pgdata]
     networks: [state]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 3s
       retries: 10
@@ -106,14 +106,14 @@ services:
       etcd: { condition: service_healthy }
     deploy:
       resources:
-        limits: { cpus: "2", memory: 3G }
+        limits: { cpus: '2', memory: 3G }
 
   pg-2:
     <<: *pg-base
     environment:
       <<: *pg-env
       SCOPE: tsm
-      PGVERSION: "16"
+      PGVERSION: '16'
       ETCD_HOSTS: etcd:2379
       PATRONI_NAME: pg-2
     volumes: [pg2-data:/home/postgres/pgdata]
@@ -123,7 +123,7 @@ services:
     environment:
       <<: *pg-env
       SCOPE: tsm
-      PGVERSION: "16"
+      PGVERSION: '16'
       ETCD_HOSTS: etcd:2379
       PATRONI_NAME: pg-3
     volumes: [pg3-data:/home/postgres/pgdata]
@@ -136,15 +136,15 @@ services:
       DB_USER: ${POSTGRES_USER:-postgres}
       DB_PASSWORD: ${POSTGRES_PASSWORD:?required}
       POOL_MODE: transaction
-      MAX_CLIENT_CONN: "500"
-      DEFAULT_POOL_SIZE: "40"
+      MAX_CLIENT_CONN: '500'
+      DEFAULT_POOL_SIZE: '40'
       SERVER_RESET_QUERY: DISCARD ALL
     networks: [state, app]
     depends_on:
       pg-1: { condition: service_healthy }
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 256M }
+        limits: { cpus: '0.5', memory: 256M }
 
   # ─── Cache: Redis Cluster (6 nodes, 3 masters + 3 replicas) ───────────
   redis-node-1: &redis-node
@@ -160,7 +160,7 @@ services:
       --maxmemory-policy allkeys-lru
     networks: [state]
     deploy:
-      resources: { limits: { cpus: "0.5", memory: 700M } }
+      resources: { limits: { cpus: '0.5', memory: 700M } }
   redis-node-2: { <<: *redis-node }
   redis-node-3: { <<: *redis-node }
   redis-node-4: { <<: *redis-node }
@@ -168,7 +168,7 @@ services:
   redis-node-6: { <<: *redis-node }
   redis-cluster-init:
     image: redis:7.4-alpine
-    profiles: ["init"]
+    profiles: ['init']
     entrypoint: >
       sh -c "sleep 5 &&
         echo 'yes' | redis-cli --cluster create
@@ -200,17 +200,17 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_LOG_RETENTION_HOURS: 168
-      CLUSTER_ID: "tsm-staging-kraft-001"
+      CLUSTER_ID: 'tsm-staging-kraft-001'
     volumes: [kafka-data:/var/lib/kafka/data]
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      test: ['CMD', 'kafka-broker-api-versions', '--bootstrap-server', 'localhost:9092']
       interval: 15s
       timeout: 5s
       retries: 10
     networks: [state, app]
     deploy:
       resources:
-        limits: { cpus: "2", memory: 2G }
+        limits: { cpus: '2', memory: 2G }
 
   schema-registry:
     image: apicurio/apicurio-registry:2.6.5.Final
@@ -224,7 +224,7 @@ services:
     networks: [app]
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 512M }
+        limits: { cpus: '0.5', memory: 512M }
 
   # ─── Apps ─────────────────────────────────────────────────────────────
   api:
@@ -250,7 +250,7 @@ services:
     networks: [app, edge]
     deploy:
       resources:
-        limits: { cpus: "1", memory: 768M }
+        limits: { cpus: '1', memory: 768M }
 
   worker:
     image: ${REGISTRY:-ghcr.io/shaiknoorullah/ts-monorepo-template}/worker:${TAG:-latest}
@@ -267,13 +267,13 @@ services:
     networks: [app]
     deploy:
       resources:
-        limits: { cpus: "1", memory: 512M }
+        limits: { cpus: '1', memory: 512M }
 
   # ─── Observability edge collector ─────────────────────────────────────
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.110.0
     <<: *restart
-    command: ["--config=/etc/otelcol/config.yml"]
+    command: ['--config=/etc/otelcol/config.yml']
     volumes:
       - ./observability/otel-collector.yml:/etc/otelcol/config.yml:ro
     networks: [app, observability]
@@ -291,9 +291,9 @@ volumes:
   traefik-letsencrypt:
 
 networks:
-  edge:    { driver: bridge }
-  app:     { driver: bridge }
-  state:   { driver: bridge, internal: true }
+  edge: { driver: bridge }
+  app: { driver: bridge }
+  state: { driver: bridge, internal: true }
   observability:
     name: observability
     driver: bridge

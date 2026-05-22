@@ -22,7 +22,7 @@ export interface HealthCheck {
 export type IsoDateTime = Brand<string, 'IsoDateTime'>
 
 /** A Result type — `ok` carries data, `err` carries a typed error. */
-export type Result<T, E = Error> = { error: E; ok: false; } | { ok: true; value: T }
+export type Result<T, E = Error> = { error: E; ok: false } | { ok: true; value: T }
 
 /** Stable, opaque identifier for a tenant. */
 export type TenantId = Brand<string, 'TenantId'>

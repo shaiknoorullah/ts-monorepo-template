@@ -8,7 +8,7 @@
 
 Next.js is the dominant React framework in 2026. It is mature, well-maintained, MIT-licensed, and broadly understood. The default reaction to "we need a React frontend" is "use Next.js".
 
-This ADR exists to make the *opposite* default explicit for this template: **Next.js is not in the toolbox.** It can be added by a downstream consumer if they have a specific need, but the template ships without it.
+This ADR exists to make the _opposite_ default explicit for this template: **Next.js is not in the toolbox.** It can be added by a downstream consumer if they have a specific need, but the template ships without it.
 
 This is a contentious decision and the rest of this ADR makes the case (both sides) carefully.
 
@@ -29,7 +29,7 @@ The framework code is MIT, but Next.js's strongest features are pull-the-rope-to
 
 - **ISR** is first-class on Vercel; on Cloudflare it requires the OpenNext adapter, which is functional but lags upstream and ships its own caveats. <https://opennext.js.org/cloudflare>
 - **Image Optimization** defaults to Vercel's image CDN; alternate setups (Cloudflare Images, Imgix) are configurable but not the path of least resistance.
-- **Edge Runtime / Middleware** is *not* the same as Workers' V8 isolate; the runtime semantics differ subtly enough that OpenNext patches around them. We pay debugging cost when a feature works on Vercel but not CF.
+- **Edge Runtime / Middleware** is _not_ the same as Workers' V8 isolate; the runtime semantics differ subtly enough that OpenNext patches around them. We pay debugging cost when a feature works on Vercel but not CF.
 - **Vercel Analytics, Speed Insights, Cron** — Vercel-proprietary. Replacing them on Cloudflare means assembling Cloudflare Web Analytics + Workers Cron Triggers + custom Speed Insights collection.
 - **Server Actions** + the error boundary + revalidation story lean on Vercel's infra assumptions.
 
@@ -53,7 +53,7 @@ We share code with React Native via Expo + react-native-web. Next.js does not he
 
 ### 5. License is fine; gravity is the issue
 
-Next.js MIT license is permissive. The gravity comes from convention and developer-time investment in Vercel-shaped patterns. Once a team commits to Next.js, the "use Vercel" decision is easier than the "use Cloudflare" decision *every single time*. We avoid the gravity by not starting on Next.
+Next.js MIT license is permissive. The gravity comes from convention and developer-time investment in Vercel-shaped patterns. Once a team commits to Next.js, the "use Vercel" decision is easier than the "use Cloudflare" decision _every single time_. We avoid the gravity by not starting on Next.
 
 ### 6. RSC feature velocity gap will close
 

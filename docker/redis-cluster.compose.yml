@@ -1,38 +1,38 @@
 # 6-node Redis Cluster (3 master + 3 replica) on a single host for development.
 # Each node has its own data volume.
 # After all 6 are healthy, the cluster-init container forms the cluster.
-version: "3.9"
+version: '3.9'
 
 x-redis-base: &redis_base
   image: redis:7.4
   restart: unless-stopped
   command:
-    - "redis-server"
-    - "--port"
-    - "6379"
-    - "--cluster-enabled"
-    - "yes"
-    - "--cluster-config-file"
-    - "/data/nodes.conf"
-    - "--cluster-node-timeout"
-    - "5000"
-    - "--cluster-require-full-coverage"
-    - "no"
-    - "--appendonly"
-    - "yes"
-    - "--appendfsync"
-    - "everysec"
-    - "--maxmemory"
-    - "512mb"
-    - "--maxmemory-policy"
-    - "allkeys-lru"
-    - "--save"
-    - "3600 1"
-    - "--save"
-    - "300 100"
+    - 'redis-server'
+    - '--port'
+    - '6379'
+    - '--cluster-enabled'
+    - 'yes'
+    - '--cluster-config-file'
+    - '/data/nodes.conf'
+    - '--cluster-node-timeout'
+    - '5000'
+    - '--cluster-require-full-coverage'
+    - 'no'
+    - '--appendonly'
+    - 'yes'
+    - '--appendfsync'
+    - 'everysec'
+    - '--maxmemory'
+    - '512mb'
+    - '--maxmemory-policy'
+    - 'allkeys-lru'
+    - '--save'
+    - '3600 1'
+    - '--save'
+    - '300 100'
   networks: [cache]
   healthcheck:
-    test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+    test: ['CMD', 'redis-cli', '-p', '6379', 'ping']
     interval: 5s
     timeout: 3s
     retries: 20
@@ -41,38 +41,38 @@ services:
   redis-1:
     <<: *redis_base
     container_name: redis-1
-    ports: ["7001:6379", "17001:16379"]
-    volumes: ["redis-1-data:/data"]
+    ports: ['7001:6379', '17001:16379']
+    volumes: ['redis-1-data:/data']
 
   redis-2:
     <<: *redis_base
     container_name: redis-2
-    ports: ["7002:6379", "17002:16379"]
-    volumes: ["redis-2-data:/data"]
+    ports: ['7002:6379', '17002:16379']
+    volumes: ['redis-2-data:/data']
 
   redis-3:
     <<: *redis_base
     container_name: redis-3
-    ports: ["7003:6379", "17003:16379"]
-    volumes: ["redis-3-data:/data"]
+    ports: ['7003:6379', '17003:16379']
+    volumes: ['redis-3-data:/data']
 
   redis-4:
     <<: *redis_base
     container_name: redis-4
-    ports: ["7004:6379", "17004:16379"]
-    volumes: ["redis-4-data:/data"]
+    ports: ['7004:6379', '17004:16379']
+    volumes: ['redis-4-data:/data']
 
   redis-5:
     <<: *redis_base
     container_name: redis-5
-    ports: ["7005:6379", "17005:16379"]
-    volumes: ["redis-5-data:/data"]
+    ports: ['7005:6379', '17005:16379']
+    volumes: ['redis-5-data:/data']
 
   redis-6:
     <<: *redis_base
     container_name: redis-6
-    ports: ["7006:6379", "17006:16379"]
-    volumes: ["redis-6-data:/data"]
+    ports: ['7006:6379', '17006:16379']
+    volumes: ['redis-6-data:/data']
 
   cluster-init:
     image: redis:7.4
@@ -84,7 +84,7 @@ services:
       redis-4: { condition: service_healthy }
       redis-5: { condition: service_healthy }
       redis-6: { condition: service_healthy }
-    entrypoint: ["/bin/sh", "-c"]
+    entrypoint: ['/bin/sh', '-c']
     command:
       - |
         set -e
@@ -98,7 +98,7 @@ services:
           redis-4:6379 redis-5:6379 redis-6:6379 \
           --cluster-replicas 1
     networks: [cache]
-    restart: "no"
+    restart: 'no'
 
 volumes:
   redis-1-data:

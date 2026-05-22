@@ -4,9 +4,11 @@
   "private": true,
   "description": "Shared TSConfig presets — extend instead of duplicating tsconfig.base.json.",
   "license": "MIT",
-  "files": ["*.json"],
   "exports": {
     "./node": "./node.json",
     "./library": "./library.json"
-  }
+  },
+  "files": [
+    "*.json"
+  ]
 }

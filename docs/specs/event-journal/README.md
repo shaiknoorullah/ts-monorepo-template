@@ -32,14 +32,14 @@ Research outputs at: `~/work/.handoffs/event-journal/2026-05-22/` (out-of-repo).
 
 See R3's §0 for the full comparison. TL;DR:
 
-| | R2 | R3 |
-|---|---|---|
-| Total LoC | ~5,000+ | **~470** |
-| Time to production | 6-12 mo | **2-3 wk** |
-| Schema cross-language | Twin pkgs + JSON Schema + JCS conformance CI | **OTel semconv** |
-| V2 storage | `journal.captures` PG table | **OTel Logs Bridge → ClickHouse/SigNoz** |
-| V1 audit storage | `journal.events` PG (Faizan) | **Same** (with `pg_logical_emit_message` outbox) |
-| Industry precedent | Mixed (Sentry uses similar; most don't) | Strong (Datadog, Coinbase, Stripe pattern) |
+|                       | R2                                           | R3                                               |
+| --------------------- | -------------------------------------------- | ------------------------------------------------ |
+| Total LoC             | ~5,000+                                      | **~470**                                         |
+| Time to production    | 6-12 mo                                      | **2-3 wk**                                       |
+| Schema cross-language | Twin pkgs + JSON Schema + JCS conformance CI | **OTel semconv**                                 |
+| V2 storage            | `journal.captures` PG table                  | **OTel Logs Bridge → ClickHouse/SigNoz**         |
+| V1 audit storage      | `journal.events` PG (Faizan)                 | **Same** (with `pg_logical_emit_message` outbox) |
+| Industry precedent    | Mixed (Sentry uses similar; most don't)      | Strong (Datadog, Coinbase, Stripe pattern)       |
 
 ## Key constraints both specs share
 

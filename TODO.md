@@ -4,15 +4,15 @@ The template has shipped 16+ commits across v1.0.0+ with substantive scaffolding
 
 ## Status of past TODOs
 
-| Past TODO | State |
-|---|---|
-| Initial scaffold (89 files) | ✅ Done (v1.0.0) |
-| 20 backend/data specs + 10 docker-compose files | ✅ Done |
-| 7 SaaS-commons compose files (Lago/Umami/Keycloak/Unleash/Meilisearch/Uptime-Kuma/Chatwoot) | ✅ Done |
-| YAML config hierarchy (c12 + Zod) | ✅ Done |
-| `repo` CLI with 17 commands + --json mode | ✅ Done |
-| Frontend tier (Astro + Expo + Cloudflare; Next.js eliminated) | ✅ Done — 5 apps + 9 packages + 4 ADRs + 7 specs |
-| `.github/workflows/{web,mobile,marketing,docs}-{build,deploy}.yml` | ✅ Done (4 of 12 workflows shipped by the frontend agent) |
+| Past TODO                                                                                   | State                                                     |
+| ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Initial scaffold (89 files)                                                                 | ✅ Done (v1.0.0)                                          |
+| 20 backend/data specs + 10 docker-compose files                                             | ✅ Done                                                   |
+| 7 SaaS-commons compose files (Lago/Umami/Keycloak/Unleash/Meilisearch/Uptime-Kuma/Chatwoot) | ✅ Done                                                   |
+| YAML config hierarchy (c12 + Zod)                                                           | ✅ Done                                                   |
+| `repo` CLI with 17 commands + --json mode                                                   | ✅ Done                                                   |
+| Frontend tier (Astro + Expo + Cloudflare; Next.js eliminated)                               | ✅ Done — 5 apps + 9 packages + 4 ADRs + 7 specs          |
+| `.github/workflows/{web,mobile,marketing,docs}-{build,deploy}.yml`                          | ✅ Done (4 of 12 workflows shipped by the frontend agent) |
 
 ## Still deferred (3 batches, blocked on Anthropic API capacity 2026-05-22)
 
@@ -40,6 +40,7 @@ Add to `.github/workflows/`:
 11. `lighthouse-ci.yml` — PR affecting `apps/marketing/**` or `apps/docs-public/**` + nightly; `treosh/lighthouse-ci-action`; budgets in `.lighthouserc.json` (Perf/A11y/BP/SEO ≥ 95; LCP < 2.5s; CLS < 0.1; INP < 200ms)
 
 **Hard rules**:
+
 - All third-party actions pinned to 40-char commit SHAs (post-Trivy 2026 supply-chain hygiene)
 - Add `# v4.x.x` comments alongside SHAs
 - Workflow-injection safe: any untrusted input via `env:` block before `run:`

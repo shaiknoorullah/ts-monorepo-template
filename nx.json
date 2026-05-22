@@ -10,10 +10,7 @@
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/vitest.config.ts"
     ],
-    "sharedGlobals": [
-      "{workspaceRoot}/tsconfig.base.json",
-      "{workspaceRoot}/eslint.config.mjs"
-    ]
+    "sharedGlobals": ["{workspaceRoot}/tsconfig.base.json", "{workspaceRoot}/eslint.config.mjs"]
   },
   "targetDefaults": {
     "build": {

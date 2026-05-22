@@ -8,12 +8,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'pathe'
 import { parse as parseYaml } from 'yaml'
 
-import {
-  type AppConfig,
-  AppConfigSchema,
-  
-  type SecretRef,
-} from '../../../../config/schema'
+import { type AppConfig, AppConfigSchema, type SecretRef } from '../../../../config/schema'
 import { repoPath } from './paths'
 
 const ENV_VAR_RE = /\$\{([A-Z_][A-Z0-9_]*)\}/g
@@ -38,7 +33,10 @@ export function isSecretRef(v: unknown): v is SecretRef {
   )
 }
 
-export async function loadEnv(envName: string, opts: { tenant?: string } = {}): Promise<LoadResult> {
+export async function loadEnv(
+  envName: string,
+  opts: { tenant?: string } = {},
+): Promise<LoadResult> {
   const cfgDir = repoPath('config')
   const filePath = opts.tenant
     ? resolve(cfgDir, 'tenants', `${opts.tenant}.yaml`)
@@ -49,10 +47,7 @@ export async function loadEnv(envName: string, opts: { tenant?: string } = {}): 
   await c12Load({ cwd: cfgDir, defaultConfig: {}, name: 'app' }).catch(() => {})
 
   const missing: string[] = []
-  const merged = substituteEnvVars(resolveYamlExtends(filePath), missing) as Record<
-    string,
-    unknown
-  >
+  const merged = substituteEnvVars(resolveYamlExtends(filePath), missing) as Record<string, unknown>
 
   // Best-effort parse — re-collect errors as friendly messages.
   const parsed = AppConfigSchema.safeParse(merged)
@@ -113,12 +108,15 @@ function deepMerge(
   const out: Record<string, unknown> = { ...a }
   for (const [k, v] of Object.entries(b)) {
     const av = out[k]
-    out[k] = av &&
+    out[k] =
+      av &&
       typeof av === 'object' &&
       !Array.isArray(av) &&
       v &&
       typeof v === 'object' &&
-      !Array.isArray(v) ? deepMerge(av as Record<string, unknown>, v as Record<string, unknown>) : v;
+      !Array.isArray(v)
+        ? deepMerge(av as Record<string, unknown>, v as Record<string, unknown>)
+        : v
   }
   return out
 }
@@ -184,6 +182,4 @@ function substituteEnvVars(input: unknown, missing: string[] = []): unknown {
   return input
 }
 
-
-
-export {parseConfig} from '../../../../config/schema'
+export { parseConfig } from '../../../../config/schema'

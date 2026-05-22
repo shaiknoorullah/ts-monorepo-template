@@ -2,14 +2,14 @@
 title: Kafka Topic Management Runbooks
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
-  - "https://kafka.apache.org/documentation/#topicconfigs"
-  - "https://kafka.apache.org/documentation/#operations"
-  - "https://strimzi.io/docs/operators/latest/deploying.html#con-kafka-topic-str"
-  - "https://docs.confluent.io/platform/current/installation/configuration/topic-configs.html"
-  - "https://kafka.apache.org/documentation/#log_compaction"
-  - "https://cwiki.apache.org/confluence/display/KAFKA/KIP-455%3A+Create+an+Administrative+API+for+Replica+Reassignment"
+  - 'https://kafka.apache.org/documentation/#topicconfigs'
+  - 'https://kafka.apache.org/documentation/#operations'
+  - 'https://strimzi.io/docs/operators/latest/deploying.html#con-kafka-topic-str'
+  - 'https://docs.confluent.io/platform/current/installation/configuration/topic-configs.html'
+  - 'https://kafka.apache.org/documentation/#log_compaction'
+  - 'https://cwiki.apache.org/confluence/display/KAFKA/KIP-455%3A+Create+an+Administrative+API+for+Replica+Reassignment'
 ---
 
 # Kafka Topic Management Runbooks
@@ -32,20 +32,20 @@ Examples:
 Rules:
 
 1. All lowercase, dot-separated, no underscores.
-2. Bounded context is the *first* segment — never the entity. (`orders.order.created`, not `order.orders.created`.) This makes `--topic-pattern` filters in admin tools natural: `orders.*` lists everything for orders.
+2. Bounded context is the _first_ segment — never the entity. (`orders.order.created`, not `order.orders.created`.) This makes `--topic-pattern` filters in admin tools natural: `orders.*` lists everything for orders.
 3. Past-tense verbs for events (`created`, `updated`, `deleted`, `fulfilled`).
 4. DLQ topics mirror the source topic name prefixed with `dlq.`.
-5. CDC topics are prefixed with `cdc.` to distinguish them from outbox-emitted events. CDC streams reflect *all* row changes (including transient state) and are not safe to consume as domain events.
+5. CDC topics are prefixed with `cdc.` to distinguish them from outbox-emitted events. CDC streams reflect _all_ row changes (including transient state) and are not safe to consume as domain events.
 
 ## Per-topic config standards
 
-| Topic class | Partitions | Replication | Retention | Cleanup policy | min.insync.replicas | Compatibility |
-|---|---|---|---|---|---|---|
-| Domain events (outbox) | 6 | 3 | 7 days | delete | 2 | BACKWARD |
-| CDC streams | 6–12 | 3 | 3 days | delete | 2 | BACKWARD |
-| Compacted state | 6 | 3 | infinite | compact | 2 | FULL |
-| Audit / immutable | 12 | 3 | 90 days | delete | 2 | BACKWARD |
-| DLQ | 3 | 3 | 14 days | delete | 2 | NONE |
+| Topic class            | Partitions | Replication | Retention | Cleanup policy | min.insync.replicas | Compatibility |
+| ---------------------- | ---------- | ----------- | --------- | -------------- | ------------------- | ------------- |
+| Domain events (outbox) | 6          | 3           | 7 days    | delete         | 2                   | BACKWARD      |
+| CDC streams            | 6–12       | 3           | 3 days    | delete         | 2                   | BACKWARD      |
+| Compacted state        | 6          | 3           | infinite  | compact        | 2                   | FULL          |
+| Audit / immutable      | 12         | 3           | 90 days   | delete         | 2                   | BACKWARD      |
+| DLQ                    | 3          | 3           | 14 days   | delete         | 2                   | NONE          |
 
 Partition count is chosen for **target throughput** and **target consumer parallelism**. A consumer group can have at most P consumers actually doing work, where P = partition count. 6 partitions accommodates 6-way parallelism, which is enough for most domain event streams. CDC streams of large tables may need 12+. Once chosen, partition count is effectively immutable — see "increase partitions" runbook below for why.
 
@@ -87,6 +87,7 @@ Acceptance: `kafka-topics --describe` shows the topic with the expected config, 
 ## Runbook 2 — Delete a topic
 
 **Pre-flight:**
+
 - Verify no active consumer groups: `kafka-consumer-groups --bootstrap-server kafka:9092 --all-groups --describe | grep <topic>`.
 - Verify no producer is writing: `kafka-log-dirs --bootstrap-server kafka:9092 --topic-list <topic>` shows segment age > 1h.
 - Snapshot the topic to object storage if any consumer might still need replay (Kafka Connect S3 sink → archive).
@@ -110,14 +111,16 @@ Increasing partitions on an existing topic is technically supported:
 kafka-topics --bootstrap-server kafka:9092 --alter --topic <topic> --partitions 12
 ```
 
-**It is forbidden in most cases** because it silently breaks key-based ordering. Records with key `K` are placed on partition `hash(K) mod P`. When `P` changes, the *same* key starts going to a *different* partition. Consumers that rely on per-key order (which is most of them) will now see records for `K` arrive on two partitions, potentially out of order. This corrupts state machines downstream — and there is no error from Kafka.
+**It is forbidden in most cases** because it silently breaks key-based ordering. Records with key `K` are placed on partition `hash(K) mod P`. When `P` changes, the _same_ key starts going to a _different_ partition. Consumers that rely on per-key order (which is most of them) will now see records for `K` arrive on two partitions, potentially out of order. This corrupts state machines downstream — and there is no error from Kafka.
 
 Allowed cases:
+
 - The topic has no keys (round-robin produce). Partition count change has no ordering implication.
 - All consumers have been drained, paused, or upgraded to a key-aware state-rebuild that tolerates re-keying.
 - The topic has just been created with low traffic and < 1h of data.
 
 Forbidden cases:
+
 - Any keyed topic with active consumers. Period. Either create a new topic with the higher partition count and migrate producers, or live with the original count.
 
 The correct migration pattern: produce a one-time `*.v2` topic with the new partition count, dual-write from producers for one consumer-deploy cycle, switch consumers to the v2 topic, stop the v1 producers, then delete v1.
@@ -201,15 +204,15 @@ kafka-configs --bootstrap-server kafka:9092 --entity-type topics \
 
 ## Forbidden operations
 
-| Operation | Why forbidden |
-|---|---|
-| `--delete --topic <broad pattern>` | A typo deletes too many topics. Always single-topic, always with confirmation. |
-| Decrease partition count | Not supported at all by Kafka. There is no API. |
-| `auto.create.topics.enable=true` | Creates topics with `replication.factor=1` — silent durability violation. |
-| `unclean.leader.election.enable=true` | Promotes an out-of-sync replica → data loss. Only enable for non-durable caches. |
-| Drop replication factor on an existing topic | Risk window where the topic has fewer replicas than expected. Use partition reassignment to move replicas, not config change. |
-| Run `kafka-reassign-partitions` without `--throttle` | Saturates the NIC, takes the cluster down for normal traffic. |
-| Reset consumer offsets to skip data without sign-off | Data loss. Document as an incident. |
+| Operation                                            | Why forbidden                                                                                                                 |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `--delete --topic <broad pattern>`                   | A typo deletes too many topics. Always single-topic, always with confirmation.                                                |
+| Decrease partition count                             | Not supported at all by Kafka. There is no API.                                                                               |
+| `auto.create.topics.enable=true`                     | Creates topics with `replication.factor=1` — silent durability violation.                                                     |
+| `unclean.leader.election.enable=true`                | Promotes an out-of-sync replica → data loss. Only enable for non-durable caches.                                              |
+| Drop replication factor on an existing topic         | Risk window where the topic has fewer replicas than expected. Use partition reassignment to move replicas, not config change. |
+| Run `kafka-reassign-partitions` without `--throttle` | Saturates the NIC, takes the cluster down for normal traffic.                                                                 |
+| Reset consumer offsets to skip data without sign-off | Data loss. Document as an incident.                                                                                           |
 
 ## Monitoring KPIs per topic
 

@@ -9,7 +9,7 @@ Consumers: `apps/web-app`, `apps/mobile-customer`, `apps/mobile-admin`, `apps/ma
 ```ts
 import { tokens, lightTheme, darkTheme, useColorScheme, useToast } from '@pkg/ui'
 import { Search, ChevronRight } from '@pkg/ui/icons'
-import { Toaster } from '@pkg/ui/web'  // web only
+import { Toaster } from '@pkg/ui/web' // web only
 ```
 
 See `docs/specs/frontend/ui-package-shared-components.md`.

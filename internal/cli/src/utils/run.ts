@@ -15,7 +15,7 @@ export async function run(
   bin: string,
   args: string[] = [],
   opts: RunOptions = {},
-): Promise<{ exitCode: number; stderr: string; stdout: string; }> {
+): Promise<{ exitCode: number; stderr: string; stdout: string }> {
   const result = await execa(bin, args, {
     cwd: opts.cwd ?? findRepoRoot(),
     env: { ...process.env, ...opts.env },

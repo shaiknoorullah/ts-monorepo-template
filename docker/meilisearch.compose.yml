@@ -9,7 +9,7 @@
 #
 # Production: set MEILI_ENV=production AND MEILI_MASTER_KEY (>=16 bytes).
 # Without a master key in production mode, Meili refuses to start.
-version: "3.9"
+version: '3.9'
 
 services:
   meilisearch:
@@ -19,23 +19,23 @@ services:
     environment:
       MEILI_ENV: ${MEILI_ENV:-production}
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:?MEILI_MASTER_KEY is required (>=16 bytes) when MEILI_ENV=production}
-      MEILI_NO_ANALYTICS: "true"
+      MEILI_NO_ANALYTICS: 'true'
       MEILI_DB_PATH: /meili_data
       MEILI_DUMP_DIR: /meili_data/dumps
       MEILI_LOG_LEVEL: ${MEILI_LOG_LEVEL:-INFO}
     volumes:
       - meilisearch-data:/meili_data
     ports:
-      - "${MEILISEARCH_PORT:-7700}:7700"
+      - '${MEILISEARCH_PORT:-7700}:7700'
     networks: [saas-commons, obs]
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:7700/health >/dev/null || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:7700/health >/dev/null || exit 1']
       interval: 10s
       timeout: 3s
       retries: 10
     deploy:
       resources:
-        limits: { cpus: "1", memory: 1G }
+        limits: { cpus: '1', memory: 1G }
 
 volumes:
   meilisearch-data:

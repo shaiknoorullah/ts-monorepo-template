@@ -16,7 +16,10 @@ export interface ApiClientOptions {
 }
 
 export class ApiError extends Error {
-  constructor(public status: number, public body: string) {
+  constructor(
+    public status: number,
+    public body: string,
+  ) {
     super(`HTTP ${status}: ${body}`)
     this.name = 'ApiError'
   }

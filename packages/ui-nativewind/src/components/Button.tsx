@@ -46,9 +46,7 @@ export function Button({
       className={`flex-row items-center justify-center ${sz.container} ${containerByVariant[variant]}`}
       {...rest}
     >
-      <RNText className={`font-semibold ${sz.label} ${labelByVariant[variant]}`}>
-        {children}
-      </RNText>
+      <RNText className={`font-semibold ${sz.label} ${labelByVariant[variant]}`}>{children}</RNText>
     </Pressable>
   )
 }

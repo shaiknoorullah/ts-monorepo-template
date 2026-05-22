@@ -31,7 +31,7 @@ async function bootstrap(): Promise<void> {
 
 bootstrap().catch((error: unknown) => {
   const err = toError(error)
-   
+
   console.error('FATAL: bootstrap failed', err)
   process.exit(1)
 })

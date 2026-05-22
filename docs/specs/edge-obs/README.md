@@ -2,7 +2,7 @@
 title: Edge + Observability + Multi-Tenancy Specs
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 ---
 
 # Edge, Observability & Multi-Tenancy
@@ -37,14 +37,14 @@ multi-tenancy-schema-based ──► signoz-apm ──► observability-prom-gra
 
 ## Status
 
-| Spec | Status | Owner | Next step |
-|---|---|---|---|
-| api-gateway-alternatives | draft | @shaiknoorullah | ADR-0007 to ratify Envoy Gateway pick |
-| multi-tenancy-schema-based | draft | @shaiknoorullah | Land `@pkg/tenancy` package |
-| docker-compose-variants | draft | @shaiknoorullah | Wire actual files in `docker/` |
-| signoz-apm | draft | @shaiknoorullah | `@pkg/telemetry` package + collector configs |
-| load-balancer | draft | @shaiknoorullah | MetalLB IPPool yaml in `infra/k8s/` |
-| observability-prom-grafana-loki-tempo | draft | @shaiknoorullah | `@pkg/metrics-conventions` package |
+| Spec                                  | Status | Owner           | Next step                                    |
+| ------------------------------------- | ------ | --------------- | -------------------------------------------- |
+| api-gateway-alternatives              | draft  | @shaiknoorullah | ADR-0007 to ratify Envoy Gateway pick        |
+| multi-tenancy-schema-based            | draft  | @shaiknoorullah | Land `@pkg/tenancy` package                  |
+| docker-compose-variants               | draft  | @shaiknoorullah | Wire actual files in `docker/`               |
+| signoz-apm                            | draft  | @shaiknoorullah | `@pkg/telemetry` package + collector configs |
+| load-balancer                         | draft  | @shaiknoorullah | MetalLB IPPool yaml in `infra/k8s/`          |
+| observability-prom-grafana-loki-tempo | draft  | @shaiknoorullah | `@pkg/metrics-conventions` package           |
 
 ## Cross-references
 

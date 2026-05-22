@@ -14,7 +14,7 @@
 app:
   name: app
   version: 0.0.0
-  env: dev          # overridden by every env file
+  env: dev # overridden by every env file
   port: 3000
   logLevel: info
 

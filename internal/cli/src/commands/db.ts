@@ -12,12 +12,7 @@ const migrate = defineCommand({
   args: { env: { default: 'dev', description: 'Target env name', type: 'string' } },
   meta: { description: 'Apply pending migrations (atlas migrate apply).', name: 'migrate' },
   async run({ args }) {
-    const { exitCode } = await run('atlas', [
-      'migrate',
-      'apply',
-      '--env',
-      String(args.env),
-    ])
+    const { exitCode } = await run('atlas', ['migrate', 'apply', '--env', String(args.env)])
     if (exitCode !== 0) fail(`atlas migrate apply failed (exit ${exitCode})`)
     emit({ message: `Migrations applied for ${args.env}.`, status: 'ok' })
   },
@@ -69,7 +64,18 @@ const psql = defineCommand({
     const db = args.db ? String(args.db) : 'app'
     const { exitCode } = await run(
       'docker',
-      ['compose', '-f', 'docker/compose.dev.yml', 'exec', '-it', 'postgres', 'psql', '-U', 'dev', db],
+      [
+        'compose',
+        '-f',
+        'docker/compose.dev.yml',
+        'exec',
+        '-it',
+        'postgres',
+        'psql',
+        '-U',
+        'dev',
+        db,
+      ],
       { stdio: 'inherit' },
     )
     if (exitCode !== 0) fail(`psql exited ${exitCode}`)

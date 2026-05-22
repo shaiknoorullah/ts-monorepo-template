@@ -2,7 +2,7 @@
 title: Multi-Tenancy — Schema-Per-Tenant in Postgres
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://www.postgresql.org/docs/16/ddl-schemas.html
   - https://www.postgresql.org/docs/16/runtime-config-client.html#GUC-SEARCH-PATH
@@ -24,11 +24,11 @@ We isolate tenants by giving each one a **Postgres schema** (`tenant_<id>`), kee
 
 Three isolation strategies exist:
 
-| Strategy | Isolation | Ops cost | Migration cost | Blast radius |
-|---|---|---|---|---|
-| Single schema + RLS (`tenant_id` column + `CREATE POLICY`) | Logical | Lowest | Single migration | High — one bad query exposes all tenants |
-| **Schema-per-tenant** | Logical, hard via `search_path` | Medium | N tenants × M migrations | Per-tenant |
-| Database-per-tenant | Physical | Highest | N migrations × N pools | Per-tenant; full noisy-neighbor isolation |
+| Strategy                                                   | Isolation                       | Ops cost | Migration cost           | Blast radius                              |
+| ---------------------------------------------------------- | ------------------------------- | -------- | ------------------------ | ----------------------------------------- |
+| Single schema + RLS (`tenant_id` column + `CREATE POLICY`) | Logical                         | Lowest   | Single migration         | High — one bad query exposes all tenants  |
+| **Schema-per-tenant**                                      | Logical, hard via `search_path` | Medium   | N tenants × M migrations | Per-tenant                                |
+| Database-per-tenant                                        | Physical                        | Highest  | N migrations × N pools   | Per-tenant; full noisy-neighbor isolation |
 
 RLS ([Postgres RLS docs](https://www.postgresql.org/docs/16/ddl-rowsecurity.html)) is operationally cheap but has known footguns:
 
@@ -39,10 +39,12 @@ RLS ([Postgres RLS docs](https://www.postgresql.org/docs/16/ddl-rowsecurity.html
 5. **Application-layer leaks** — joins to non-RLS tables, `EXPLAIN ANALYZE` output, error messages, all can spill rows.
 
 Schema-per-tenant trades these for two manageable costs:
+
 - **Migrations run N times**. Atlas + concurrency + a migration runner make this routine.
 - **Catalog bloat** — one row per table-per-tenant in `pg_class`. Postgres handles 100k+ relations fine but `\dt *.*` becomes slow. Beyond ~5k tenants we partition into Postgres **clusters**, not schemas in one cluster.
 
 Schema-per-tenant gives us:
+
 - **Hard isolation** by `search_path`. A query without the schema prefix referencing tenant data **fails outright** rather than returning the wrong rows.
 - **Per-tenant backups** via `pg_dump -n tenant_<id>`.
 - **Per-tenant `pg_stat_*` rollups** are trivial.
@@ -129,42 +131,40 @@ We default to **B** with PgBouncer 1.21+ or **pgcat** ([pgcat repo](https://gith
 
 ```ts
 // packages/tenancy/src/withTenant.ts
-import { drizzle } from "drizzle-orm/node-postgres";
-import { sql } from "drizzle-orm";
-import type { Pool } from "pg";
+import { drizzle } from 'drizzle-orm/node-postgres'
+import { sql } from 'drizzle-orm'
+import type { Pool } from 'pg'
 
-export type TenantCtx = { tenantId: string; schemaName: string };
+export type TenantCtx = { tenantId: string; schemaName: string }
 
 export async function withTenant<T>(
   pool: Pool,
   ctx: TenantCtx,
   fn: (tx: ReturnType<typeof drizzle>) => Promise<T>,
 ): Promise<T> {
-  const client = await pool.connect();
+  const client = await pool.connect()
   try {
-    await client.query("BEGIN");
+    await client.query('BEGIN')
     // SET LOCAL is the only correct form here.
     // Identifier quoting via format() to avoid injection from schema_name.
-    await client.query(
-      `SET LOCAL search_path TO ${quoteIdent(ctx.schemaName)}, shared, public`,
-    );
-    const db = drizzle(client);
-    const result = await fn(db);
-    await client.query("COMMIT");
-    return result;
+    await client.query(`SET LOCAL search_path TO ${quoteIdent(ctx.schemaName)}, shared, public`)
+    const db = drizzle(client)
+    const result = await fn(db)
+    await client.query('COMMIT')
+    return result
   } catch (err) {
-    await client.query("ROLLBACK").catch(() => undefined);
-    throw err;
+    await client.query('ROLLBACK').catch(() => undefined)
+    throw err
   } finally {
-    client.release();
+    client.release()
   }
 }
 
 function quoteIdent(s: string): string {
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(s)) {
-    throw new Error(`invalid schema identifier: ${s}`);
+    throw new Error(`invalid schema identifier: ${s}`)
   }
-  return `"${s}"`;
+  return `"${s}"`
 }
 ```
 
@@ -172,29 +172,29 @@ function quoteIdent(s: string): string {
 
 ```ts
 // packages/tenancy/src/fastify.ts
-import fp from "fastify-plugin";
-import type { FastifyPluginAsync } from "fastify";
+import fp from 'fastify-plugin'
+import type { FastifyPluginAsync } from 'fastify'
 
-declare module "fastify" {
+declare module 'fastify' {
   interface FastifyRequest {
-    tenant: { tenantId: string; schemaName: string };
+    tenant: { tenantId: string; schemaName: string }
   }
 }
 
 const plugin: FastifyPluginAsync = async (app) => {
-  app.addHook("onRequest", async (req, reply) => {
-    const tid = req.headers["x-tenant-id"];
-    if (typeof tid !== "string" || !UUID_RX.test(tid)) {
-      return reply.code(401).send({ error: "missing tenant" });
+  app.addHook('onRequest', async (req, reply) => {
+    const tid = req.headers['x-tenant-id']
+    if (typeof tid !== 'string' || !UUID_RX.test(tid)) {
+      return reply.code(401).send({ error: 'missing tenant' })
     }
     // schemaName lookup is cached (LRU); evict on tenant lifecycle event.
-    const schemaName = await resolveSchema(tid);
-    req.tenant = { tenantId: tid, schemaName };
-  });
-};
-export default fp(plugin, { name: "tenancy" });
+    const schemaName = await resolveSchema(tid)
+    req.tenant = { tenantId: tid, schemaName }
+  })
+}
+export default fp(plugin, { name: 'tenancy' })
 
-const UUID_RX = /^[0-9a-f-]{36}$/i;
+const UUID_RX = /^[0-9a-f-]{36}$/i
 ```
 
 ## Migration strategy
@@ -206,22 +206,22 @@ Migrations come in two flavors:
 
 ```ts
 // scripts/migrate-tenants.ts
-import pLimit from "p-limit";
-import { listActiveTenants } from "./tenants";
-import { runAtlasOnSchema } from "./atlas";
+import pLimit from 'p-limit'
+import { listActiveTenants } from './tenants'
+import { runAtlasOnSchema } from './atlas'
 
-const limit = pLimit(8); // 8 concurrent migrations
-const tenants = await listActiveTenants();
+const limit = pLimit(8) // 8 concurrent migrations
+const tenants = await listActiveTenants()
 await Promise.all(
   tenants.map((t) =>
     limit(() =>
       runAtlasOnSchema({
         schema: t.schemaName,
-        migrationsDir: "packages/db-tenant-migrations/migrations",
+        migrationsDir: 'packages/db-tenant-migrations/migrations',
       }),
     ),
   ),
-);
+)
 ```
 
 Each per-tenant migration runs in its own transaction with `SET LOCAL search_path` (Atlas understands `--schema` per invocation). Failures are recorded in `ops.tenant_migration_log(tenant_id, version, status, error)`. The runner is idempotent: re-running picks up where it stopped.
@@ -264,25 +264,19 @@ This keeps the tenant runtime path free of `UNION ALL` over N schemas. Anyone do
 ```ts
 // packages/tenancy/src/index.ts
 export interface TenantContext {
-  readonly tenantId: string;
-  readonly schemaName: string;
-  readonly userId: string;
-  readonly roles: readonly string[];
+  readonly tenantId: string
+  readonly schemaName: string
+  readonly userId: string
+  readonly roles: readonly string[]
 }
 
-export function getTenantContext(): TenantContext;     // AsyncLocalStorage
-export function withTenantContext<T>(
-  ctx: TenantContext,
-  fn: () => Promise<T>,
-): Promise<T>;
+export function getTenantContext(): TenantContext // AsyncLocalStorage
+export function withTenantContext<T>(ctx: TenantContext, fn: () => Promise<T>): Promise<T>
 
-export async function withTenantTx<T>(
-  pool: Pool,
-  fn: (tx: PgTx) => Promise<T>,
-): Promise<T>;                                          // uses ALS
+export async function withTenantTx<T>(pool: Pool, fn: (tx: PgTx) => Promise<T>): Promise<T> // uses ALS
 
-export const fastifyTenancyPlugin: FastifyPluginAsync;
-export const otelTenancyPropagator: TextMapPropagator; // attaches tid to spans
+export const fastifyTenancyPlugin: FastifyPluginAsync
+export const otelTenancyPropagator: TextMapPropagator // attaches tid to spans
 ```
 
 `AsyncLocalStorage` lets background workers, repository methods, and OTel processors all read the same context without threading it manually. The OTel propagator attaches `tenant.id` as a span attribute so SigNoz can filter traces per-tenant.

@@ -2,7 +2,7 @@
 title: docker-compose Variants — prod-smallest, dev, dev-tools
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://docs.docker.com/compose/compose-file/
   - https://docs.docker.com/compose/multiple-compose-files/merge/
@@ -46,12 +46,12 @@ The legacy `.env.saas-commons.example` is preserved for backward compatibility b
 
 ## Files at a glance
 
-| File | Purpose | Scale | Where it runs |
-|---|---|---|---|
-| `compose.prod-smallest.yml` | Production-grade topology at smallest viable scale | Multi-broker Kafka, 3-node Postgres HA, 6-node Redis cluster | Single beefy node (16+ GiB), staging, POC |
-| `compose.dev.yml` | Single-instance everything, ports exposed, hot reload | Single broker, single Postgres, single Redis | Developer laptop |
-| `compose.dev-tools.yml` | Web UIs and inspection tools | n/a | Layered on top of either of the above |
-| `compose.saas-commons.yml` | Foundational SaaS tools: Keycloak, Unleash, Meilisearch, Lago, Chatwoot, Umami, Uptime Kuma — each with a dedicated Postgres/Redis where required | 7 tools, ~10 GiB resident at idle | Layered on top of `prod-smallest`; see [governance-saas/saas-commons.md §17](../governance-saas/saas-commons.md#17-compose-recipes) |
+| File                        | Purpose                                                                                                                                           | Scale                                                        | Where it runs                                                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `compose.prod-smallest.yml` | Production-grade topology at smallest viable scale                                                                                                | Multi-broker Kafka, 3-node Postgres HA, 6-node Redis cluster | Single beefy node (16+ GiB), staging, POC                                                                                           |
+| `compose.dev.yml`           | Single-instance everything, ports exposed, hot reload                                                                                             | Single broker, single Postgres, single Redis                 | Developer laptop                                                                                                                    |
+| `compose.dev-tools.yml`     | Web UIs and inspection tools                                                                                                                      | n/a                                                          | Layered on top of either of the above                                                                                               |
+| `compose.saas-commons.yml`  | Foundational SaaS tools: Keycloak, Unleash, Meilisearch, Lago, Chatwoot, Umami, Uptime Kuma — each with a dedicated Postgres/Redis where required | 7 tools, ~10 GiB resident at idle                            | Layered on top of `prod-smallest`; see [governance-saas/saas-commons.md §17](../governance-saas/saas-commons.md#17-compose-recipes) |
 
 Where this template overlaps with `data-eventing` (Kafka, Schema Registry, Connect), we **import** by symlink to avoid duplication. See "Cross-spec composition" below.
 
@@ -98,14 +98,14 @@ services:
       ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd:2380
     volumes: [etcd-data:/etcd-data]
     healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
+      test: ['CMD', 'etcdctl', 'endpoint', 'health']
       interval: 10s
       timeout: 3s
       retries: 5
     networks: [state]
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 256M }
+        limits: { cpus: '0.5', memory: 256M }
 
   pg-1: &pg-base
     image: ghcr.io/zalando/spilo-16:3.2-p3
@@ -113,13 +113,13 @@ services:
     environment:
       <<: *pg-env
       SCOPE: tsm
-      PGVERSION: "16"
+      PGVERSION: '16'
       ETCD_HOSTS: etcd:2379
       PATRONI_NAME: pg-1
     volumes: [pg1-data:/home/postgres/pgdata]
     networks: [state]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 3s
       retries: 10
@@ -127,14 +127,14 @@ services:
       etcd: { condition: service_healthy }
     deploy:
       resources:
-        limits: { cpus: "2", memory: 3G }
+        limits: { cpus: '2', memory: 3G }
 
   pg-2:
     <<: *pg-base
     environment:
       <<: *pg-env
       SCOPE: tsm
-      PGVERSION: "16"
+      PGVERSION: '16'
       ETCD_HOSTS: etcd:2379
       PATRONI_NAME: pg-2
     volumes: [pg2-data:/home/postgres/pgdata]
@@ -144,7 +144,7 @@ services:
     environment:
       <<: *pg-env
       SCOPE: tsm
-      PGVERSION: "16"
+      PGVERSION: '16'
       ETCD_HOSTS: etcd:2379
       PATRONI_NAME: pg-3
     volumes: [pg3-data:/home/postgres/pgdata]
@@ -157,15 +157,15 @@ services:
       DB_USER: ${POSTGRES_USER:-postgres}
       DB_PASSWORD: ${POSTGRES_PASSWORD:?required}
       POOL_MODE: transaction
-      MAX_CLIENT_CONN: "500"
-      DEFAULT_POOL_SIZE: "40"
+      MAX_CLIENT_CONN: '500'
+      DEFAULT_POOL_SIZE: '40'
       SERVER_RESET_QUERY: DISCARD ALL
     networks: [state, app]
     depends_on:
       pg-1: { condition: service_healthy }
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 256M }
+        limits: { cpus: '0.5', memory: 256M }
 
   # ─── Cache: Redis Cluster (6 nodes) ────────────────────────────────────
   redis-node-1: &redis-node
@@ -182,7 +182,7 @@ services:
     networks: [state]
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 700M }
+        limits: { cpus: '0.5', memory: 700M }
   redis-node-2: { <<: *redis-node }
   redis-node-3: { <<: *redis-node }
   redis-node-4: { <<: *redis-node }
@@ -190,7 +190,7 @@ services:
   redis-node-6: { <<: *redis-node }
   redis-cluster-init:
     image: redis:7.4-alpine
-    profiles: ["init"]
+    profiles: ['init']
     entrypoint: >
       sh -c "sleep 5 &&
         echo 'yes' | redis-cli --cluster create
@@ -222,17 +222,17 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_LOG_RETENTION_HOURS: 168
-      CLUSTER_ID: "tsm-staging-kraft-001"
+      CLUSTER_ID: 'tsm-staging-kraft-001'
     volumes: [kafka-data:/var/lib/kafka/data]
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      test: ['CMD', 'kafka-broker-api-versions', '--bootstrap-server', 'localhost:9092']
       interval: 15s
       timeout: 5s
       retries: 10
     networks: [state, app]
     deploy:
       resources:
-        limits: { cpus: "2", memory: 2G }
+        limits: { cpus: '2', memory: 2G }
 
   schema-registry:
     image: apicurio/apicurio-registry:2.6.5.Final
@@ -246,7 +246,7 @@ services:
     networks: [app]
     deploy:
       resources:
-        limits: { cpus: "0.5", memory: 512M }
+        limits: { cpus: '0.5', memory: 512M }
 
   # ─── Apps ──────────────────────────────────────────────────────────────
   api:
@@ -272,7 +272,7 @@ services:
     networks: [app, edge]
     deploy:
       resources:
-        limits: { cpus: "1", memory: 768M }
+        limits: { cpus: '1', memory: 768M }
 
   worker:
     image: ${REGISTRY:-ghcr.io/shaiknoorullah/ts-monorepo-template}/worker:${TAG:-latest}
@@ -289,13 +289,13 @@ services:
     networks: [app]
     deploy:
       resources:
-        limits: { cpus: "1", memory: 512M }
+        limits: { cpus: '1', memory: 512M }
 
   # ─── Observability collector ──────────────────────────────────────────
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.110.0
     <<: *restart
-    command: ["--config=/etc/otelcol/config.yml"]
+    command: ['--config=/etc/otelcol/config.yml']
     volumes:
       - ./observability/otel-collector.yml:/etc/otelcol/config.yml:ro
     networks: [app, observability]
@@ -308,9 +308,9 @@ volumes:
   kafka-data:
 
 networks:
-  edge:     { driver: bridge }
-  app:      { driver: bridge }
-  state:    { driver: bridge, internal: true }   # no host egress for stateful tier
+  edge: { driver: bridge }
+  app: { driver: bridge }
+  state: { driver: bridge, internal: true } # no host egress for stateful tier
   observability: { driver: bridge }
 ```
 
@@ -337,21 +337,21 @@ services:
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: dev
       POSTGRES_DB: app
-    ports: ["5432:5432"]
+    ports: ['5432:5432']
     volumes: [pg-dev:/var/lib/postgresql/data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dev"]
+      test: ['CMD-SHELL', 'pg_isready -U dev']
       interval: 5s
       retries: 10
 
   redis:
     image: redis:7.4-alpine
-    ports: ["6379:6379"]
-    command: ["redis-server", "--save", "''", "--appendonly", "no"]
+    ports: ['6379:6379']
+    command: ['redis-server', '--save', "''", '--appendonly', 'no']
 
   kafka:
     image: confluentinc/cp-kafka:7.7.1
-    ports: ["9092:9092"]
+    ports: ['9092:9092']
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -363,25 +363,25 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      CLUSTER_ID: "tsm-dev-kraft-000"
+      CLUSTER_ID: 'tsm-dev-kraft-000'
 
   schema-registry:
     image: apicurio/apicurio-registry-mem:2.6.5.Final
-    ports: ["8080:8080"]
+    ports: ['8080:8080']
 
   api:
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
       target: dev
-    command: ["pnpm", "--filter", "@app/api", "dev"]
+    command: ['pnpm', '--filter', '@app/api', 'dev']
     environment:
       NODE_ENV: development
       DATABASE_URL: postgres://dev:dev@postgres:5432/app
       REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:9092
       SCHEMA_REGISTRY_URL: http://schema-registry:8080
-    ports: ["3000:3000"]
+    ports: ['3000:3000']
     volumes:
       - ../apps/api:/app/apps/api
       - ../packages:/app/packages
@@ -413,48 +413,48 @@ name: tsm-dev-tools
 services:
   pgadmin:
     image: dpage/pgadmin4:8.12
-    profiles: ["tools"]
+    profiles: ['tools']
     environment:
       PGADMIN_DEFAULT_EMAIL: dev@local
       PGADMIN_DEFAULT_PASSWORD: dev
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    ports: ["5050:80"]
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports: ['5050:80']
     volumes:
       - ./dev-tools/pgadmin-servers.json:/pgadmin4/servers.json:ro
 
   redisinsight:
     image: redis/redisinsight:2.58
-    profiles: ["tools"]
-    ports: ["5540:5540"]
+    profiles: ['tools']
+    ports: ['5540:5540']
 
   kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.2
-    profiles: ["tools"]
+    profiles: ['tools']
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8080/apis/ccompat/v7
-    ports: ["8090:8080"]
+    ports: ['8090:8080']
 
   apicurio-ui:
     image: apicurio/apicurio-studio:1.0.0.Final
-    profiles: ["tools"]
-    ports: ["8091:8080"]
+    profiles: ['tools']
+    ports: ['8091:8080']
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
-    profiles: ["tools"]
+    profiles: ['tools']
     ports:
-      - "1025:1025"   # SMTP
-      - "8025:8025"   # HTTP UI
+      - '1025:1025' # SMTP
+      - '8025:8025' # HTTP UI
 
   jaeger-ui:
     # When using OTel collector locally; only the UI, no storage.
     image: jaegertracing/all-in-one:1.62
-    profiles: ["tools"]
-    ports: ["16686:16686"]
+    profiles: ['tools']
+    ports: ['16686:16686']
     environment:
-      COLLECTOR_OTLP_ENABLED: "true"
+      COLLECTOR_OTLP_ENABLED: 'true'
 ```
 
 `profiles: ["tools"]` means `docker compose up` is a **no-op for these services** unless invoked with `--profile tools`. Keeps `dev up` fast for engineers who don't want pgAdmin running.
@@ -538,15 +538,15 @@ Why each SaaS tool ships its own Postgres/Redis instead of reusing the Patroni c
 
 Each `deploy.resources.limits` was sized from the upstream documentation's "minimum recommended" or our own benchmarks on a 4 vCPU / 8 GiB Contabo S box:
 
-| Service | CPU | RAM | Source |
-|---|---|---|---|
-| Postgres | 2.0 | 3 G | shared_buffers=512MB + work_mem + connections × 10 MiB |
-| Kafka | 2.0 | 2 G | KRaft 1 G heap + 1 G page cache |
-| Redis node | 0.5 | 700 M | maxmemory 512 MB + 30% overhead |
-| API | 1.0 | 768 M | Node heap 512 MB + libs |
-| Worker | 1.0 | 512 M | Node heap 384 MB |
-| Traefik | 1.0 | 256 M | Traefik docs |
-| OTel collector | 0.5 | 384 M | otel-collector docs |
+| Service        | CPU | RAM   | Source                                                 |
+| -------------- | --- | ----- | ------------------------------------------------------ |
+| Postgres       | 2.0 | 3 G   | shared_buffers=512MB + work_mem + connections × 10 MiB |
+| Kafka          | 2.0 | 2 G   | KRaft 1 G heap + 1 G page cache                        |
+| Redis node     | 0.5 | 700 M | maxmemory 512 MB + 30% overhead                        |
+| API            | 1.0 | 768 M | Node heap 512 MB + libs                                |
+| Worker         | 1.0 | 512 M | Node heap 384 MB                                       |
+| Traefik        | 1.0 | 256 M | Traefik docs                                           |
+| OTel collector | 0.5 | 384 M | otel-collector docs                                    |
 
 ## Frontend dev services — `compose.frontend-dev.yml`
 

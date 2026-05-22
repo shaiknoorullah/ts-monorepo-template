@@ -2,7 +2,7 @@
 title: Platform Observability — Prometheus, Grafana, Loki, Tempo (alongside SigNoz)
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://prometheus.io/docs/practices/instrumentation/
   - https://grafana.com/docs/loki/latest/get-started/
@@ -25,13 +25,13 @@ The open trio (Prometheus + Grafana + Loki + Tempo) owns **platform observabilit
 
 The two stacks complement each other:
 
-| Signal | Owner | Reason |
-|---|---|---|
-| App spans, app metrics, app logs with span correlation | SigNoz | OTel-native, one place to pivot |
-| Node CPU/mem/disk, kubelet, CNI, Postgres exporter | Prom + Grafana | Standard exporters; mature dashboards |
-| Container logs from system namespaces (kube-system, longhorn-system) | Loki | Cheaper than ClickHouse for bulk system logs |
-| Long-tail traces for non-instrumented workloads (kube-apiserver, ingress) | Tempo | Free traces without instrumenting upstream |
-| Per-host syslog, dmesg, journald | Loki | Compliance evidence chain |
+| Signal                                                                    | Owner          | Reason                                       |
+| ------------------------------------------------------------------------- | -------------- | -------------------------------------------- |
+| App spans, app metrics, app logs with span correlation                    | SigNoz         | OTel-native, one place to pivot              |
+| Node CPU/mem/disk, kubelet, CNI, Postgres exporter                        | Prom + Grafana | Standard exporters; mature dashboards        |
+| Container logs from system namespaces (kube-system, longhorn-system)      | Loki           | Cheaper than ClickHouse for bulk system logs |
+| Long-tail traces for non-instrumented workloads (kube-apiserver, ingress) | Tempo          | Free traces without instrumenting upstream   |
+| Per-host syslog, dmesg, journald                                          | Loki           | Compliance evidence chain                    |
 
 A common alternative is "just send everything to SigNoz." We reject that for two reasons:
 
@@ -62,16 +62,16 @@ Recommendation: **Vector**.
 
 Comparison:
 
-| Concern | Promtail | Fluent Bit | Vector |
-|---|---|---|---|
-| Language / runtime | Go | C | Rust |
-| RAM baseline | ~50 MiB | ~30 MiB | ~30 MiB |
-| Throughput per core | ~150 MB/s | ~250 MB/s | ~400 MB/s |
-| Multi-sink (Loki + S3 + ES) | Loki only | Many | Many |
-| Transform language | Pipeline stages | Lua / parsers | VRL (Vector Remap Language) |
-| Sidecar / agent / aggregator roles | Agent only | Both | Both |
-| OTel logs support | Indirect | OTLP exporter | OTLP source & sink |
-| K8s metadata enrichment | Yes | Yes | Yes |
+| Concern                            | Promtail        | Fluent Bit    | Vector                      |
+| ---------------------------------- | --------------- | ------------- | --------------------------- |
+| Language / runtime                 | Go              | C             | Rust                        |
+| RAM baseline                       | ~50 MiB         | ~30 MiB       | ~30 MiB                     |
+| Throughput per core                | ~150 MB/s       | ~250 MB/s     | ~400 MB/s                   |
+| Multi-sink (Loki + S3 + ES)        | Loki only       | Many          | Many                        |
+| Transform language                 | Pipeline stages | Lua / parsers | VRL (Vector Remap Language) |
+| Sidecar / agent / aggregator roles | Agent only      | Both          | Both                        |
+| OTel logs support                  | Indirect        | OTLP exporter | OTLP source & sink          |
+| K8s metadata enrichment            | Yes             | Yes           | Yes                         |
 
 Vector wins on:
 
@@ -245,10 +245,10 @@ services:
       - ./prom/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prom/rules:/etc/prometheus/rules:ro
       - prom-data:/prometheus
-    ports: ["9090:9090"]
+    ports: ['9090:9090']
     networks: [obs]
     deploy:
-      resources: { limits: { cpus: "1", memory: 1G } }
+      resources: { limits: { cpus: '1', memory: 1G } }
 
   alertmanager:
     image: prom/alertmanager:v0.27.0
@@ -256,8 +256,8 @@ services:
     volumes:
       - ./prom/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
       - am-data:/alertmanager
-    command: ["--config.file=/etc/alertmanager/alertmanager.yml"]
-    ports: ["9093:9093"]
+    command: ['--config.file=/etc/alertmanager/alertmanager.yml']
+    ports: ['9093:9093']
     networks: [obs]
 
   grafana:
@@ -265,8 +265,8 @@ services:
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?required}
-      GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
-      GF_AUTH_GENERIC_OAUTH_NAME: "Entra ID"
+      GF_AUTH_GENERIC_OAUTH_ENABLED: 'true'
+      GF_AUTH_GENERIC_OAUTH_NAME: 'Entra ID'
       GF_AUTH_GENERIC_OAUTH_CLIENT_ID: ${ENTRA_CLIENT_ID}
       GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: ${ENTRA_CLIENT_SECRET}
       GF_AUTH_GENERIC_OAUTH_AUTH_URL: https://login.microsoftonline.com/${ENTRA_TENANT}/oauth2/v2.0/authorize
@@ -276,31 +276,31 @@ services:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
-    ports: ["3000:3000"]
+    ports: ['3000:3000']
     networks: [obs]
 
   loki:
     image: grafana/loki:3.2.1
     restart: unless-stopped
-    command: ["-config.file=/etc/loki/config.yml"]
+    command: ['-config.file=/etc/loki/config.yml']
     volumes:
       - ./loki/config.yml:/etc/loki/config.yml:ro
       - loki-data:/var/loki
-    ports: ["3100:3100"]
+    ports: ['3100:3100']
     networks: [obs]
     deploy:
-      resources: { limits: { cpus: "1", memory: 1G } }
+      resources: { limits: { cpus: '1', memory: 1G } }
 
   tempo:
     image: grafana/tempo:2.6.0
     restart: unless-stopped
-    command: ["-config.file=/etc/tempo/config.yml"]
+    command: ['-config.file=/etc/tempo/config.yml']
     volumes:
       - ./tempo/config.yml:/etc/tempo/config.yml:ro
       - tempo-data:/var/tempo
     ports:
-      - "3200:3200"   # query
-      - "4319:4317"   # OTLP gRPC (host-distinct from SigNoz collector)
+      - '3200:3200' # query
+      - '4319:4317' # OTLP gRPC (host-distinct from SigNoz collector)
     networks: [obs]
 
   vector:
@@ -315,7 +315,7 @@ services:
       CLUSTER_NAME: ${CLUSTER_NAME:-staging}
     networks: [obs]
     deploy:
-      resources: { limits: { cpus: "0.5", memory: 384M } }
+      resources: { limits: { cpus: '0.5', memory: 384M } }
 
 volumes:
   prom-data:
@@ -339,43 +339,47 @@ A tiny package shared across services that enforces naming and label discipline:
 ```ts
 // packages/metrics-conventions/src/index.ts
 import {
-  Counter, Histogram, Gauge,
-  Registry, collectDefaultMetrics, register as defaultRegister,
-} from "prom-client";
+  Counter,
+  Histogram,
+  Gauge,
+  Registry,
+  collectDefaultMetrics,
+  register as defaultRegister,
+} from 'prom-client'
 
 export const httpRequestsTotal = new Counter({
-  name: "tsm_http_requests_total",
-  help: "Total HTTP requests by service",
-  labelNames: ["service", "method", "route_template", "status_class"] as const,
-});
+  name: 'tsm_http_requests_total',
+  help: 'Total HTTP requests by service',
+  labelNames: ['service', 'method', 'route_template', 'status_class'] as const,
+})
 
 export const httpRequestDuration = new Histogram({
-  name: "tsm_http_request_duration_seconds",
-  help: "HTTP request duration",
-  labelNames: ["service", "method", "route_template", "status_class"] as const,
+  name: 'tsm_http_request_duration_seconds',
+  help: 'HTTP request duration',
+  labelNames: ['service', 'method', 'route_template', 'status_class'] as const,
   buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
-});
+})
 
 export const dbQueryDuration = new Histogram({
-  name: "tsm_db_query_duration_seconds",
-  help: "DB query duration",
-  labelNames: ["service", "operation", "table"] as const,
+  name: 'tsm_db_query_duration_seconds',
+  help: 'DB query duration',
+  labelNames: ['service', 'operation', 'table'] as const,
   buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
-});
+})
 
 export const tenantClassActiveUsers = new Gauge({
-  name: "tsm_tenant_class_active_users",
-  help: "Active users by tenant class",
-  labelNames: ["tenant_class"] as const,
-});
+  name: 'tsm_tenant_class_active_users',
+  help: 'Active users by tenant class',
+  labelNames: ['tenant_class'] as const,
+})
 
-collectDefaultMetrics({ register: defaultRegister });
+collectDefaultMetrics({ register: defaultRegister })
 
-export function statusClass(code: number): "2xx" | "3xx" | "4xx" | "5xx" {
-  if (code < 300) return "2xx";
-  if (code < 400) return "3xx";
-  if (code < 500) return "4xx";
-  return "5xx";
+export function statusClass(code: number): '2xx' | '3xx' | '4xx' | '5xx' {
+  if (code < 300) return '2xx'
+  if (code < 400) return '3xx'
+  if (code < 500) return '4xx'
+  return '5xx'
 }
 ```
 
@@ -389,27 +393,27 @@ Fastify glue:
 
 ```ts
 // packages/metrics-conventions/src/fastify.ts
-import fp from "fastify-plugin";
-import { httpRequestsTotal, httpRequestDuration, statusClass } from "./index";
+import fp from 'fastify-plugin'
+import { httpRequestsTotal, httpRequestDuration, statusClass } from './index'
 
 export default fp(async (app) => {
-  app.addHook("onResponse", async (req, reply) => {
+  app.addHook('onResponse', async (req, reply) => {
     const labels = {
-      service: process.env.OTEL_SERVICE_NAME ?? "unknown",
+      service: process.env.OTEL_SERVICE_NAME ?? 'unknown',
       method: req.method,
-      route_template: req.routeOptions?.url ?? "unknown",
+      route_template: req.routeOptions?.url ?? 'unknown',
       status_class: statusClass(reply.statusCode),
-    };
-    httpRequestsTotal.inc(labels);
-    httpRequestDuration.observe(labels, reply.elapsedTime / 1000);
-  });
+    }
+    httpRequestsTotal.inc(labels)
+    httpRequestDuration.observe(labels, reply.elapsedTime / 1000)
+  })
 
-  app.get("/metrics", async (_, reply) => {
-    const { register } = await import("prom-client");
-    reply.type(register.contentType);
-    return register.metrics();
-  });
-});
+  app.get('/metrics', async (_, reply) => {
+    const { register } = await import('prom-client')
+    reply.type(register.contentType)
+    return register.metrics()
+  })
+})
 ```
 
 ## Cross-stack pivoting in Grafana
@@ -440,12 +444,12 @@ datasources:
 
 ## Retention defaults
 
-| Store | Retention | Disk @ small scale |
-|---|---|---|
-| Prometheus (TSDB) | 30 d hot, then `--storage.tsdb.retention.size` cap | 10–20 GiB |
-| Loki | 14 d on local FS; longer requires S3 / GCS backend | 30 GiB |
-| Tempo | 7 d on local FS; we sample very little since SigNoz holds the rich traces | 10 GiB |
-| Vector buffer | 5 min on disk per sink | 1 GiB |
+| Store             | Retention                                                                 | Disk @ small scale |
+| ----------------- | ------------------------------------------------------------------------- | ------------------ |
+| Prometheus (TSDB) | 30 d hot, then `--storage.tsdb.retention.size` cap                        | 10–20 GiB          |
+| Loki              | 14 d on local FS; longer requires S3 / GCS backend                        | 30 GiB             |
+| Tempo             | 7 d on local FS; we sample very little since SigNoz holds the rich traces | 10 GiB             |
+| Vector buffer     | 5 min on disk per sink                                                    | 1 GiB              |
 
 For prod, swap Loki and Tempo to S3/Blob backends. Local FS only for staging.
 

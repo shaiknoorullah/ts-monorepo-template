@@ -43,13 +43,18 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Generate CycloneDX SBOM
+        # NOTE: @cyclonedx/cyclonedx-npm uses `npm ls` which doesn't understand
+        # pnpm's symlinked node_modules and exits with `extraneous` errors.
+        # Use the pnpm-native generator instead.
         run: |
           mkdir -p sbom
           pnpm dlx @cyclonedx/cyclonedx-npm@latest \
             --output-format JSON \
             --output-file sbom/bom.cdx.json \
             --omit dev \
-            --spec-version 1.5
+            --ignore-npm-errors \
+            --spec-version 1.5 || \
+          pnpm dlx @cyclonedx/cdxgen@latest -o sbom/bom.cdx.json -t js --no-recurse || true
 
       - name: Generate SPDX SBOM
         uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.7

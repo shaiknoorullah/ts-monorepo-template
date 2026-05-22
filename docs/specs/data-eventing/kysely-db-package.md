@@ -1,16 +1,16 @@
 ---
-title: "@pkg/db-client — Kysely-based Database Package"
+title: '@pkg/db-client — Kysely-based Database Package'
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
-  - "https://kysely.dev/docs/intro"
-  - "https://github.com/RobinBlomberg/kysely-codegen"
-  - "https://github.com/valtyr/prisma-kysely"
-  - "https://atlasgo.io/"
-  - "https://atlasgo.io/declarative/diff"
-  - "https://github.com/brianc/node-postgres"
-  - "https://kysely.dev/docs/recipes/data-types"
+  - 'https://kysely.dev/docs/intro'
+  - 'https://github.com/RobinBlomberg/kysely-codegen'
+  - 'https://github.com/valtyr/prisma-kysely'
+  - 'https://atlasgo.io/'
+  - 'https://atlasgo.io/declarative/diff'
+  - 'https://github.com/brianc/node-postgres'
+  - 'https://kysely.dev/docs/recipes/data-types'
 ---
 
 # `@pkg/db-client` — Kysely-based Database Package
@@ -46,27 +46,27 @@ Components:
 
 ## Schema generation — `kysely-codegen` vs `prisma-kysely` vs hand-written
 
-| Approach | Best when |
-|---|---|
+| Approach         | Best when                                                                                                              |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `kysely-codegen` | Source of truth is the database itself (migrations land in DB first). Reads `information_schema` and writes a `.d.ts`. |
-| `prisma-kysely` | Source of truth is a `schema.prisma` file. Prisma generates the migration AND a Kysely-typed schema. |
-| Hand-written | Tiny schema (< 10 tables), or you want full control over enum types and custom domains. |
+| `prisma-kysely`  | Source of truth is a `schema.prisma` file. Prisma generates the migration AND a Kysely-typed schema.                   |
+| Hand-written     | Tiny schema (< 10 tables), or you want full control over enum types and custom domains.                                |
 
 For this template, **`kysely-codegen`** is the default. Rationale: the template uses Atlas for migrations (see below), so the database is the source of truth; `kysely-codegen` reads the live DB after each migration apply. `prisma-kysely` would re-introduce Prisma's migrator, which conflicts with the Atlas decision. Hand-written is fine for tiny prototypes; for anything > 10 tables, generated wins.
 
 `kysely-codegen.config.ts`:
 
 ```ts
-import { defineConfig } from "kysely-codegen";
+import { defineConfig } from 'kysely-codegen'
 
 export default defineConfig({
-  dialect: "postgres",
+  dialect: 'postgres',
   url: process.env.DATABASE_URL!,
-  outFile: "src/types/database.d.ts",
+  outFile: 'src/types/database.d.ts',
   camelCase: true,
-  includePattern: "public.*",
-  excludePattern: "public._migrations*",
-});
+  includePattern: 'public.*',
+  excludePattern: 'public._migrations*',
+})
 ```
 
 Run as `pnpm db:gen` after each Atlas migration. CI fails if the generated types don't match git (i.e. someone changed schema without updating types).
@@ -75,7 +75,7 @@ Run as `pnpm db:gen` after each Atlas migration. CI fails if the generated types
 
 [Atlas](https://atlasgo.io/) is a declarative schema migration tool that supports Postgres natively. The schema is described in HCL or SQL, and Atlas diffs the desired schema against the live database to produce a migration. Why Atlas over alternatives:
 
-- **Drift detection** — `atlas migrate diff` is honest about what actually changed. Prisma's migrator emits "drift" warnings but you don't get a *diff* you can review.
+- **Drift detection** — `atlas migrate diff` is honest about what actually changed. Prisma's migrator emits "drift" warnings but you don't get a _diff_ you can review.
 - **Linting** — `atlas migrate lint` flags destructive migrations (drop column, drop not-null), enables policy-as-code for migration review.
 - **Multi-environment** — Atlas can run against a dev DB and produce a migration for staging, with the same SQL applied to prod.
 - **HCL + plain SQL** — Atlas accepts both. SQL-first teams keep their `.sql` files; HCL gives one declarative schema file when desired.
@@ -118,8 +118,8 @@ The template uses (1). The helper:
 
 ```ts
 // packages/db-client/src/tenant.ts
-import type { Kysely, Transaction } from "kysely";
-import { sql } from "kysely";
+import type { Kysely, Transaction } from 'kysely'
+import { sql } from 'kysely'
 
 export async function withTenant<DB, T>(
   db: Kysely<DB>,
@@ -127,12 +127,12 @@ export async function withTenant<DB, T>(
   fn: (trx: Transaction<DB>) => Promise<T>,
 ): Promise<T> {
   if (!/^[a-z][a-z0-9_]{0,62}$/.test(schema)) {
-    throw new Error(`invalid schema name: ${schema}`);
+    throw new Error(`invalid schema name: ${schema}`)
   }
   return db.transaction().execute(async (trx) => {
-    await sql`SET LOCAL search_path = ${sql.id(schema)}, public`.execute(trx);
-    return fn(trx);
-  });
+    await sql`SET LOCAL search_path = ${sql.id(schema)}, public`.execute(trx)
+    return fn(trx)
+  })
 }
 ```
 
@@ -142,46 +142,49 @@ The regex guard is the only defence against SQL injection here — schema names 
 
 ```ts
 // packages/db-client/src/index.ts
-export { createRwDb, createRoDb } from "./client";
-export { withTransaction, withReadOnly } from "./transaction";
-export { withTenant } from "./tenant";
-export type { DB } from "./types/database";
+export { createRwDb, createRoDb } from './client'
+export { withTransaction, withReadOnly } from './transaction'
+export { withTenant } from './tenant'
+export type { DB } from './types/database'
 
 // Re-export selected Kysely primitives
-export { sql, type Kysely, type Transaction } from "kysely";
+export { sql, type Kysely, type Transaction } from 'kysely'
 ```
 
 Typical use:
 
 ```ts
-import { createRwDb, withTransaction } from "@pkg/db-client";
+import { createRwDb, withTransaction } from '@pkg/db-client'
 
-const db = createRwDb({ url: process.env.DATABASE_URL!, poolSize: 10 });
+const db = createRwDb({ url: process.env.DATABASE_URL!, poolSize: 10 })
 
 const order = await withTransaction(db, async (trx) => {
   const o = await trx
-    .insertInto("orders")
+    .insertInto('orders')
     .values({ customer_id, total })
     .returningAll()
-    .executeTakeFirstOrThrow();
-  await trx.insertInto("order_items").values(items.map(i => ({ ...i, order_id: o.id }))).execute();
-  return o;
-});
+    .executeTakeFirstOrThrow()
+  await trx
+    .insertInto('order_items')
+    .values(items.map((i) => ({ ...i, order_id: o.id })))
+    .execute()
+  return o
+})
 ```
 
 ## Test helpers
 
 ```ts
 // packages/db-client/src/test/helpers.ts
-import { Kysely } from "kysely";
+import { Kysely } from 'kysely'
 
 /** Truncate-then-restart-identity all tables in dependency order. */
 export async function truncateAll<DB>(db: Kysely<DB>, tables: string[]): Promise<void> {
   await db.executeQuery({
-    sql: `TRUNCATE TABLE ${tables.map(t => `"${t}"`).join(", ")} RESTART IDENTITY CASCADE`,
+    sql: `TRUNCATE TABLE ${tables.map((t) => `"${t}"`).join(', ')} RESTART IDENTITY CASCADE`,
     parameters: [],
-    query: { kind: "RawNode" } as never,
-  } as never);
+    query: { kind: 'RawNode' } as never,
+  } as never)
 }
 
 /**
@@ -191,18 +194,18 @@ export async function truncateAll<DB>(db: Kysely<DB>, tables: string[]): Promise
 export function perTestTransaction<DB>(rootDb: Kysely<DB>) {
   return {
     async run<T>(test: (trx: Kysely<DB>) => Promise<T>): Promise<T> {
-      const trx = await rootDb.startTransaction().execute();
+      const trx = await rootDb.startTransaction().execute()
       try {
-        return await test(trx as never);
+        return await test(trx as never)
       } finally {
-        await trx.rollback().execute();
+        await trx.rollback().execute()
       }
     },
-  };
+  }
 }
 ```
 
-Tests then use `perTestTransaction(testDb).run(async (db) => { ... })` and never need to clean up. The trade-off is that anything that *spans* transactions (e.g., listening for NOTIFY) can't be tested this way — use the truncate approach for those.
+Tests then use `perTestTransaction(testDb).run(async (db) => { ... })` and never need to clean up. The trade-off is that anything that _spans_ transactions (e.g., listening for NOTIFY) can't be tested this way — use the truncate approach for those.
 
 ## References
 

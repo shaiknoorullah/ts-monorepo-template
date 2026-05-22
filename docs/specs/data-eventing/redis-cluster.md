@@ -2,15 +2,15 @@
 title: Redis Cluster — 3 master + 3 replica
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
-  - "https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/"
-  - "https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/"
-  - "https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/"
-  - "https://redis.io/docs/latest/operate/oss_and_stack/management/security/acl/"
-  - "https://redis.io/docs/latest/develop/reference/eviction/"
-  - "https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/"
-  - "https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/"
+  - 'https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/'
+  - 'https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/'
+  - 'https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/'
+  - 'https://redis.io/docs/latest/operate/oss_and_stack/management/security/acl/'
+  - 'https://redis.io/docs/latest/develop/reference/eviction/'
+  - 'https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/'
+  - 'https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/'
 ---
 
 # Redis Cluster — 3 master + 3 replica
@@ -19,10 +19,10 @@ references:
 
 Redis offers two HA topologies:
 
-- **Sentinel**: 1 primary + N replicas + a Sentinel quorum that promotes a replica on primary failure. The dataset is *fully replicated* on every node. Capacity is bounded by a single node's memory.
+- **Sentinel**: 1 primary + N replicas + a Sentinel quorum that promotes a replica on primary failure. The dataset is _fully replicated_ on every node. Capacity is bounded by a single node's memory.
 - **Cluster** (sharded): The keyspace is partitioned into 16,384 **hash slots**, each owned by one master. Replicas back individual masters. Capacity scales horizontally.
 
-For any production workload that might exceed a single host's memory (rare in caches, common in feature flags / session stores / queue-backed workers), **Cluster** is the right choice. It is also the recommended topology for new deployments per the [Redis cluster spec](https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/). Sentinel is fine if you are certain the keyspace fits in one machine *forever*; in that case it is operationally simpler. The template defaults to Cluster.
+For any production workload that might exceed a single host's memory (rare in caches, common in feature flags / session stores / queue-backed workers), **Cluster** is the right choice. It is also the recommended topology for new deployments per the [Redis cluster spec](https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/). Sentinel is fine if you are certain the keyspace fits in one machine _forever_; in that case it is operationally simpler. The template defaults to Cluster.
 
 ## Minimum production topology — 3 + 3
 
@@ -40,13 +40,13 @@ Multi-key operations across slots are not supported. Workloads that need them mu
 
 Redis evicts when `maxmemory` is reached. Policies:
 
-| Policy | When to use |
-|---|---|
-| `noeviction` | Persistent store, errors on OOM. Never for caches. |
-| `allkeys-lru` | Pure cache, all keys can be evicted. Recommended for caches. |
+| Policy         | When to use                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| `noeviction`   | Persistent store, errors on OOM. Never for caches.                                         |
+| `allkeys-lru`  | Pure cache, all keys can be evicted. Recommended for caches.                               |
 | `volatile-lru` | Mixed dataset, only TTL'd keys evictable. Recommended for cache-with-some-persistent-keys. |
-| `allkeys-lfu` | Cache with stable hot set, frequency matters more than recency. |
-| `volatile-ttl` | Evict by shortest TTL. Niche. |
+| `allkeys-lfu`  | Cache with stable hot set, frequency matters more than recency.                            |
+| `volatile-ttl` | Evict by shortest TTL. Niche.                                                              |
 
 Set explicitly per service. A misconfigured `noeviction` cache is a queue of OOM errors waiting to happen. See the [eviction docs](https://redis.io/docs/latest/develop/reference/eviction/).
 
@@ -85,7 +85,7 @@ cluster-replica-no-failover no
 cluster-allow-reads-when-down no
 ```
 
-`cluster-require-full-coverage no` is important. With the default `yes`, *any* slot down halts *all* writes; setting it to `no` keeps available slots writable while the cluster recovers — usually what you want for a cache, sometimes not what you want for a session store.
+`cluster-require-full-coverage no` is important. With the default `yes`, _any_ slot down halts _all_ writes; setting it to `no` keeps available slots writable while the cluster recovers — usually what you want for a cache, sometimes not what you want for a session store.
 
 ## TLS + ACL
 

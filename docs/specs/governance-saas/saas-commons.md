@@ -2,7 +2,7 @@
 title: SaaS Commons — OSS Building Blocks
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://www.getlago.com/
   - https://github.com/openmeterio/openmeter
@@ -298,41 +298,41 @@ See ADR-NNNN-grafana-stack.md (TBD) for the rationale.
 
 Tools that relicensed in recent years — re-evaluate any of these before adopting:
 
-| Tool | Old license | New license | Workaround |
-|---|---|---|---|
-| Elasticsearch | Apache 2.0 | SSPL/Elastic v2 (AGPL added 2024) | OpenSearch |
-| MongoDB | AGPL | SSPL | Postgres + JSONB, or FerretDB |
-| Redis | BSD | SSPL/RSALv2 (2024) | Valkey (BSD-3) |
-| Terraform | MPL | BSL 1.1 (2023) | OpenTofu (MPL-2.0) |
-| Sentry | BSD | FSL (2023) | GlitchTip (MIT) — partial drop-in |
-| Grafana | Apache 2.0 | AGPL-3.0 (2021) | Stay on AGPL; we accept the obligation as a self-host |
-| HashiCorp Vault | MPL | BSL 1.1 (2023) | OpenBao (MPL fork) — emerging |
+| Tool            | Old license | New license                       | Workaround                                            |
+| --------------- | ----------- | --------------------------------- | ----------------------------------------------------- |
+| Elasticsearch   | Apache 2.0  | SSPL/Elastic v2 (AGPL added 2024) | OpenSearch                                            |
+| MongoDB         | AGPL        | SSPL                              | Postgres + JSONB, or FerretDB                         |
+| Redis           | BSD         | SSPL/RSALv2 (2024)                | Valkey (BSD-3)                                        |
+| Terraform       | MPL         | BSL 1.1 (2023)                    | OpenTofu (MPL-2.0)                                    |
+| Sentry          | BSD         | FSL (2023)                        | GlitchTip (MIT) — partial drop-in                     |
+| Grafana         | Apache 2.0  | AGPL-3.0 (2021)                   | Stay on AGPL; we accept the obligation as a self-host |
+| HashiCorp Vault | MPL         | BSL 1.1 (2023)                    | OpenBao (MPL fork) — emerging                         |
 
-Rule: when a license changes, **do not panic-rip**. Assess: are you modifying and redistributing? Usually no. Self-host of an unmodified backing service almost always remains acceptable. But for any tool you *embed* in a product, double-check.
+Rule: when a license changes, **do not panic-rip**. Assess: are you modifying and redistributing? Usually no. Self-host of an unmodified backing service almost always remains acceptable. But for any tool you _embed_ in a product, double-check.
 
 ---
 
 ## 16. Summary defaults (the cheat sheet)
 
-| Subsystem | Default | License |
-|---|---|---|
-| Billing | Lago | AGPL-3.0 ⚠️ |
-| Metering | OpenMeter (with Lago) | Apache 2.0 ✅ |
-| Product analytics | OpenPanel | AGPL-3.0 ⚠️ |
-| Web analytics | Umami | MIT ✅ |
-| Identity | Ory (Kratos + Hydra) | Apache 2.0 ✅ |
-| Feature flags | OpenFeature SDK + Unleash provider | Apache 2.0 ✅ |
-| Search | Meilisearch | MIT ✅ |
-| Email — transactional | SMTP relay (Postmark/SES) behind `@pkg/email` | proprietary |
-| Email — campaigns | Listmonk | AGPL-3.0 ⚠️ |
-| Object storage | MinIO | AGPL-3.0 ⚠️ |
-| CDN | Bunny.net | proprietary |
-| CMS | PayloadCMS | MIT ✅ |
-| API docs | Scalar | MIT ✅ |
-| Status page | Uptime Kuma | MIT ✅ |
-| Support / chat | Chatwoot CE | MIT ⚠️ |
-| Audit log | in-house Kafka → ClickHouse | Apache 2.0 ✅ |
-| Cache / queue (legacy only) | Valkey + BullMQ | BSD-3 / MIT ✅ |
+| Subsystem                   | Default                                       | License        |
+| --------------------------- | --------------------------------------------- | -------------- |
+| Billing                     | Lago                                          | AGPL-3.0 ⚠️    |
+| Metering                    | OpenMeter (with Lago)                         | Apache 2.0 ✅  |
+| Product analytics           | OpenPanel                                     | AGPL-3.0 ⚠️    |
+| Web analytics               | Umami                                         | MIT ✅         |
+| Identity                    | Ory (Kratos + Hydra)                          | Apache 2.0 ✅  |
+| Feature flags               | OpenFeature SDK + Unleash provider            | Apache 2.0 ✅  |
+| Search                      | Meilisearch                                   | MIT ✅         |
+| Email — transactional       | SMTP relay (Postmark/SES) behind `@pkg/email` | proprietary    |
+| Email — campaigns           | Listmonk                                      | AGPL-3.0 ⚠️    |
+| Object storage              | MinIO                                         | AGPL-3.0 ⚠️    |
+| CDN                         | Bunny.net                                     | proprietary    |
+| CMS                         | PayloadCMS                                    | MIT ✅         |
+| API docs                    | Scalar                                        | MIT ✅         |
+| Status page                 | Uptime Kuma                                   | MIT ✅         |
+| Support / chat              | Chatwoot CE                                   | MIT ⚠️         |
+| Audit log                   | in-house Kafka → ClickHouse                   | Apache 2.0 ✅  |
+| Cache / queue (legacy only) | Valkey + BullMQ                               | BSD-3 / MIT ✅ |
 
 Every default above is overridable per app with an ADR. Do not vary defaults silently.
 
@@ -342,16 +342,16 @@ Every default above is overridable per app with an ADR. Do not vary defaults sil
 
 Self-host recipes for the seven foundational tools above. Each file is independently runnable and composable with the rest of the stack (see [docker-compose-variants.md](../edge-obs/docker-compose-variants.md)).
 
-| Tool | Purpose | File | Default host port |
-|---|---|---|---|
-| Lago | Billing & metering | [lago.compose.yml](../../../docker/lago.compose.yml) | 8101 (UI), 8102 (API) |
-| Umami | Web analytics | [umami.compose.yml](../../../docker/umami.compose.yml) | 8103 |
-| Keycloak | Identity / OIDC | [keycloak.compose.yml](../../../docker/keycloak.compose.yml) | 8104 |
-| Unleash | Feature flags | [unleash.compose.yml](../../../docker/unleash.compose.yml) | 4242 |
-| Meilisearch | Search | [meilisearch.compose.yml](../../../docker/meilisearch.compose.yml) | 7700 |
-| Uptime Kuma | Status page | [uptime-kuma.compose.yml](../../../docker/uptime-kuma.compose.yml) | 8105 |
-| Chatwoot | Customer support | [chatwoot.compose.yml](../../../docker/chatwoot.compose.yml) | 8106 |
-| **Master** | Includes all seven | [compose.saas-commons.yml](../../../docker/compose.saas-commons.yml) | — |
+| Tool        | Purpose            | File                                                                 | Default host port     |
+| ----------- | ------------------ | -------------------------------------------------------------------- | --------------------- |
+| Lago        | Billing & metering | [lago.compose.yml](../../../docker/lago.compose.yml)                 | 8101 (UI), 8102 (API) |
+| Umami       | Web analytics      | [umami.compose.yml](../../../docker/umami.compose.yml)               | 8103                  |
+| Keycloak    | Identity / OIDC    | [keycloak.compose.yml](../../../docker/keycloak.compose.yml)         | 8104                  |
+| Unleash     | Feature flags      | [unleash.compose.yml](../../../docker/unleash.compose.yml)           | 4242                  |
+| Meilisearch | Search             | [meilisearch.compose.yml](../../../docker/meilisearch.compose.yml)   | 7700                  |
+| Uptime Kuma | Status page        | [uptime-kuma.compose.yml](../../../docker/uptime-kuma.compose.yml)   | 8105                  |
+| Chatwoot    | Customer support   | [chatwoot.compose.yml](../../../docker/chatwoot.compose.yml)         | 8106                  |
+| **Master**  | Includes all seven | [compose.saas-commons.yml](../../../docker/compose.saas-commons.yml) | —                     |
 
 Common conventions:
 
@@ -370,4 +370,3 @@ docker compose -f docker/compose.saas-commons.yml --env-file .env.saas-commons u
 ```
 
 OIDC wiring: Unleash speaks OIDC natively (configure via UI → Identity Providers → OIDC with Keycloak's `.well-known` URL). Chatwoot CE does not — front it with `oauth2-proxy` against Keycloak, or use SAML.
-

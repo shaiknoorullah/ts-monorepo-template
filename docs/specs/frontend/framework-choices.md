@@ -2,7 +2,7 @@
 title: Frontend framework choices
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
   - https://docs.astro.build/
   - https://docs.expo.dev/
@@ -18,18 +18,18 @@ A small, opinionated set of frameworks. Each owns a distinct surface. **Next.js 
 
 ## The matrix
 
-| Surface | Framework | Repo path |
-|---|---|---|
-| Marketing site (`www.*`) | Astro 5 | `apps/marketing` |
-| Per-campaign landing pages | Astro 5 (routes within marketing, or a sibling app) | `apps/marketing/src/pages/landing/*` |
-| Customer-facing docs (`docs.*`) | Astro Starlight | `apps/docs-public` |
-| Internal docs / ADRs | VitePress (already in repo) | `docs/` |
-| Multi-tenant SaaS web app (`app.*.example.com`) | Expo + react-native-web + expo-router 4 | `apps/web-app` |
-| Customer mobile (iOS + Android) | Expo + expo-router 4 | `apps/mobile-customer` |
-| Admin mobile (iOS + Android) | Expo + expo-router 4 | `apps/mobile-admin` |
-| Edge endpoint / webhook / lightweight API at edge | Hono on Cloudflare Workers | `apps/<name>-worker` (Hono) |
-| Heavy-interaction web surface NOT shared with mobile | TanStack Start | (not in initial scope — documented fallback) |
-| Anything else | **ASK before defaulting** | — |
+| Surface                                              | Framework                                           | Repo path                                    |
+| ---------------------------------------------------- | --------------------------------------------------- | -------------------------------------------- |
+| Marketing site (`www.*`)                             | Astro 5                                             | `apps/marketing`                             |
+| Per-campaign landing pages                           | Astro 5 (routes within marketing, or a sibling app) | `apps/marketing/src/pages/landing/*`         |
+| Customer-facing docs (`docs.*`)                      | Astro Starlight                                     | `apps/docs-public`                           |
+| Internal docs / ADRs                                 | VitePress (already in repo)                         | `docs/`                                      |
+| Multi-tenant SaaS web app (`app.*.example.com`)      | Expo + react-native-web + expo-router 4             | `apps/web-app`                               |
+| Customer mobile (iOS + Android)                      | Expo + expo-router 4                                | `apps/mobile-customer`                       |
+| Admin mobile (iOS + Android)                         | Expo + expo-router 4                                | `apps/mobile-admin`                          |
+| Edge endpoint / webhook / lightweight API at edge    | Hono on Cloudflare Workers                          | `apps/<name>-worker` (Hono)                  |
+| Heavy-interaction web surface NOT shared with mobile | TanStack Start                                      | (not in initial scope — documented fallback) |
+| Anything else                                        | **ASK before defaulting**                           | —                                            |
 
 ## Decision tree
 

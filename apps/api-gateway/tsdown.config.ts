@@ -6,15 +6,7 @@ export default defineConfig({
   entry: ['src/main.ts'],
   // Services bundle their workspace deps, leave runtime deps external so the
   // container's node_modules can dedupe them.
-  external: [
-    'fastify',
-    '@fastify/cors',
-    '@fastify/helmet',
-    'pino',
-    'zod',
-    'pg',
-    'drizzle-orm',
-  ],
+  external: ['fastify', '@fastify/cors', '@fastify/helmet', 'pino', 'zod', 'pg', 'drizzle-orm'],
   format: ['esm'],
   sourcemap: true,
   target: 'node22',

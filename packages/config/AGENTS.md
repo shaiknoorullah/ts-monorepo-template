@@ -31,5 +31,5 @@ Append to the `commonSchemas` const in `src/index.ts`, export via the existing `
 
 ## Out of scope
 
-- Reading `.env` files. That's deployment-tool work (dotenv, Doppler, Vault). This package consumes the *already-resolved* env.
+- Reading `.env` files. That's deployment-tool work (dotenv, Doppler, Vault). This package consumes the _already-resolved_ env.
 - Hot reload. Config is immutable for the lifetime of the process.

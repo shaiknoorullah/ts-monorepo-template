@@ -2,15 +2,15 @@
 title: Debezium + Transactional Outbox Pattern
 status: draft
 last_updated: 2026-05-22
-owners: ["@shaiknoorullah"]
+owners: ['@shaiknoorullah']
 references:
-  - "https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html"
-  - "https://debezium.io/documentation/reference/stable/connectors/postgresql.html"
-  - "https://microservices.io/patterns/data/transactional-outbox.html"
-  - "https://www.postgresql.org/docs/current/logicaldecoding-explanation.html"
-  - "https://debezium.io/blog/2019/02/19/reliable-microservices-data-exchange-with-the-outbox-pattern/"
-  - "https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-publication-name"
-  - "https://www.postgresql.org/docs/current/sql-createpublication.html"
+  - 'https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html'
+  - 'https://debezium.io/documentation/reference/stable/connectors/postgresql.html'
+  - 'https://microservices.io/patterns/data/transactional-outbox.html'
+  - 'https://www.postgresql.org/docs/current/logicaldecoding-explanation.html'
+  - 'https://debezium.io/blog/2019/02/19/reliable-microservices-data-exchange-with-the-outbox-pattern/'
+  - 'https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-publication-name'
+  - 'https://www.postgresql.org/docs/current/sql-createpublication.html'
 ---
 
 # Debezium + Transactional Outbox
@@ -19,10 +19,10 @@ references:
 
 A service that needs to publish a domain event after committing a database write has two correctness options:
 
-1. **Transactional Outbox** — insert the event row inside the same DB transaction as the business write. A separate process (Debezium) reads the WAL and publishes to Kafka. The DB commit *is* the publish.
+1. **Transactional Outbox** — insert the event row inside the same DB transaction as the business write. A separate process (Debezium) reads the WAL and publishes to Kafka. The DB commit _is_ the publish.
 2. **Two-phase / XA** — distributed transactions across DB and broker. Not practical with Kafka (no XA coordinator).
 
-Everything else is "dual-write": write the row, then publish to Kafka, hope both succeed. That hope is misplaced. If the process crashes between the two writes, you have a row with no event, or an event with no row, depending on ordering. There is no retry that fixes this: retrying the publish risks duplicates *if* the original succeeded but the ACK was lost; not retrying risks loss. The outbox pattern resolves this by reducing the problem to a single atomic database commit, then letting a log-tailing process (Debezium) deliver at-least-once to Kafka. Idempotent consumers handle the duplicates that at-least-once permits. See Chris Richardson's [microservices.io article](https://microservices.io/patterns/data/transactional-outbox.html) for the canonical write-up and the [Debezium blog](https://debezium.io/blog/2019/02/19/reliable-microservices-data-exchange-with-the-outbox-pattern/) for the original Debezium-specific design.
+Everything else is "dual-write": write the row, then publish to Kafka, hope both succeed. That hope is misplaced. If the process crashes between the two writes, you have a row with no event, or an event with no row, depending on ordering. There is no retry that fixes this: retrying the publish risks duplicates _if_ the original succeeded but the ACK was lost; not retrying risks loss. The outbox pattern resolves this by reducing the problem to a single atomic database commit, then letting a log-tailing process (Debezium) deliver at-least-once to Kafka. Idempotent consumers handle the duplicates that at-least-once permits. See Chris Richardson's [microservices.io article](https://microservices.io/patterns/data/transactional-outbox.html) for the canonical write-up and the [Debezium blog](https://debezium.io/blog/2019/02/19/reliable-microservices-data-exchange-with-the-outbox-pattern/) for the original Debezium-specific design.
 
 ## Outbox table schema
 
@@ -46,7 +46,7 @@ ALTER PUBLICATION dbz_publication ADD TABLE outbox;
 
 `aggregate_id` becomes the Kafka **key** (so all events for one aggregate land in one partition, preserving per-aggregate order). `type` becomes the event type header, and routes to a per-event topic via Debezium's Outbox Event Router SMT. `payload` is the actual event JSON (CloudEvents-shaped — see `cloudevents-schema-registry.md`).
 
-The application never *reads* the outbox at runtime, only writes. The cleanup of old rows is decoupled (see TTL section).
+The application never _reads_ the outbox at runtime, only writes. The cleanup of old rows is decoupled (see TTL section).
 
 ## Debezium PostgresConnector config
 
@@ -90,9 +90,10 @@ The application never *reads* the outbox at runtime, only writes. The cleanup of
 ```
 
 Key points:
+
 - `plugin.name=pgoutput` is the built-in Postgres logical decoding plugin (no `wal2json` install). Required `wal_level=logical` (see `postgres-ha-patroni-pgbouncer.md`).
-- `publication.autocreate.mode=filtered` makes Debezium create the publication for *only* `public.outbox`, not for the whole DB. Required for least privilege.
-- `slot.drop.on.stop=false` — never drop the slot on stop. A dropped slot will lose WAL position, and on restart Debezium will skip everything that happened in between. The safe operational stance is to *delete* the slot manually after fully draining and decommissioning the connector, and never automatically.
+- `publication.autocreate.mode=filtered` makes Debezium create the publication for _only_ `public.outbox`, not for the whole DB. Required for least privilege.
+- `slot.drop.on.stop=false` — never drop the slot on stop. A dropped slot will lose WAL position, and on restart Debezium will skip everything that happened in between. The safe operational stance is to _delete_ the slot manually after fully draining and decommissioning the connector, and never automatically.
 - `heartbeat.interval.ms=10000` + `heartbeat.action.query` writes to a separate heartbeat table inside the publication, which advances the slot's `confirmed_flush_lsn` even when the outbox is idle. **Without this, an idle outbox table on a busy database will wedge the replication slot** and WAL will accumulate indefinitely on the primary disk. This is the failure mode described in the cluster's chi-audit-cdc forensic — see `~/work/ovh/docs/incidents/` for postmortem detail.
 - `tombstones.on.delete=false` because we delete outbox rows on TTL cleanup and do not want Kafka to ingest tombstones for routed event topics.
 - `value.converter=CloudEventsConverter` produces CloudEvents 1.0 JSON envelopes (see `cloudevents-schema-registry.md`).
@@ -124,37 +125,37 @@ Tiny Kysely-aware helper. The whole package is < 50 lines. It composes with `db.
 
 ```ts
 // packages/outbox/src/index.ts
-import type { Kysely, Transaction } from "kysely";
-import { randomUUID } from "node:crypto";
+import type { Kysely, Transaction } from 'kysely'
+import { randomUUID } from 'node:crypto'
 
 export interface OutboxRow {
-  id: string;
-  aggregate_type: string;
-  aggregate_id: string;
-  type: string;
-  payload: Record<string, unknown>;
-  headers: Record<string, string>;
+  id: string
+  aggregate_type: string
+  aggregate_id: string
+  type: string
+  payload: Record<string, unknown>
+  headers: Record<string, string>
 }
 
 export interface OutboxTable {
   outbox: {
-    id: string;
-    aggregate_type: string;
-    aggregate_id: string;
-    type: string;
-    payload: unknown;
-    headers: unknown;
-    created_at: Date;
-  };
+    id: string
+    aggregate_type: string
+    aggregate_id: string
+    type: string
+    payload: unknown
+    headers: unknown
+    created_at: Date
+  }
 }
 
 export async function emit<DB extends OutboxTable>(
   trx: Transaction<DB> | Kysely<DB>,
-  event: Omit<OutboxRow, "id"> & { id?: string },
+  event: Omit<OutboxRow, 'id'> & { id?: string },
 ): Promise<string> {
-  const id = event.id ?? randomUUID();
+  const id = event.id ?? randomUUID()
   await trx
-    .insertInto("outbox" as never)
+    .insertInto('outbox' as never)
     .values({
       id,
       aggregate_type: event.aggregate_type,
@@ -163,8 +164,8 @@ export async function emit<DB extends OutboxTable>(
       payload: event.payload as never,
       headers: event.headers as never,
     } as never)
-    .execute();
-  return id;
+    .execute()
+  return id
 }
 ```
 
@@ -172,15 +173,19 @@ Used as:
 
 ```ts
 await db.transaction().execute(async (trx) => {
-  const order = await trx.insertInto("orders").values(input).returning("id").executeTakeFirstOrThrow();
+  const order = await trx
+    .insertInto('orders')
+    .values(input)
+    .returning('id')
+    .executeTakeFirstOrThrow()
   await emit(trx, {
-    aggregate_type: "order",
+    aggregate_type: 'order',
     aggregate_id: order.id,
-    type: "order.created",
+    type: 'order.created',
     payload: { id: order.id, total: input.total },
-    headers: { "ce-source": "service.orders" },
-  });
-});
+    headers: { 'ce-source': 'service.orders' },
+  })
+})
 ```
 
 If the business `INSERT` fails, the outbox row is rolled back with it. Atomicity preserved.

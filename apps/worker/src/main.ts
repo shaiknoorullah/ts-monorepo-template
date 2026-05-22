@@ -18,10 +18,12 @@ async function bootstrap(): Promise<void> {
     },
   )
 
-  worker.on('completed', (job) => { logger.info({ jobId: job.id }, 'job completed'); })
-  worker.on('failed', (job, err) =>
-    { logger.error({ err: toError(err), jobId: job?.id }, 'job failed'); },
-  )
+  worker.on('completed', (job) => {
+    logger.info({ jobId: job.id }, 'job completed')
+  })
+  worker.on('failed', (job, err) => {
+    logger.error({ err: toError(err), jobId: job?.id }, 'job failed')
+  })
 
   const shutdown = async (signal: string): Promise<void> => {
     logger.info({ signal }, 'shutdown initiated')
@@ -38,12 +40,15 @@ async function bootstrap(): Promise<void> {
   process.on('SIGINT', () => void shutdown('SIGINT'))
   process.on('SIGTERM', () => void shutdown('SIGTERM'))
 
-  logger.info({ concurrency: config.WORKER_CONCURRENCY, queue: config.QUEUE_NAME }, 'worker started')
+  logger.info(
+    { concurrency: config.WORKER_CONCURRENCY, queue: config.QUEUE_NAME },
+    'worker started',
+  )
 }
 
 bootstrap().catch((error: unknown) => {
   const err = toError(error)
-   
+
   console.error('FATAL: worker bootstrap failed', err)
   process.exit(1)
 })
