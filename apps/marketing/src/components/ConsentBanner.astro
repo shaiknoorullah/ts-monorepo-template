@@ -1,0 +1,16 @@
+---
+// Lightweight consent banner. The real implementation lives in @pkg/consent
+// (vanilla-cookieconsent v3 wrapper). This Astro component mounts it as a
+// client island so the marketing HTML stays JS-free until the user interacts.
+---
+
+<div id="consent-mount" data-testid="consent-mount"></div>
+
+<script>
+  import { mountConsentBanner } from '@pkg/consent'
+
+  mountConsentBanner({
+    categories: ['necessary', 'functional', 'analytics', 'marketing'],
+    defaultGranted: ['necessary'],
+  })
+</script>

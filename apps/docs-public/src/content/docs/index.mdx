@@ -1,0 +1,42 @@
+---
+title: Example Docs
+description: Documentation for the Example platform.
+template: splash
+hero:
+  tagline: Build, ship, and operate multi-tenant SaaS without surprise bills.
+  actions:
+    - text: Get started
+      link: /get-started/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: API reference
+      link: /reference/api/
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components'
+
+## Where to start
+
+<CardGrid>
+  <Card title="Introduction" icon="open-book">
+    Understand what Example is and what it isn't.
+
+    [Read →](/get-started/introduction/)
+  </Card>
+  <Card title="Quickstart" icon="rocket">
+    Stand up your first tenant in under five commands.
+
+    [Read →](/get-started/quickstart/)
+  </Card>
+  <Card title="Concepts" icon="puzzle">
+    Tenants, projects, environments, roles.
+
+    [Read →](/get-started/concepts/)
+  </Card>
+  <Card title="API reference" icon="document">
+    REST + WebSocket APIs. OpenAPI 3.1.
+
+    [Read →](/reference/api/)
+  </Card>
+</CardGrid>

@@ -1,0 +1,33 @@
+# apps/marketing/wrangler.toml
+# Cloudflare Pages project config for the marketing site.
+
+name = "marketing"
+compatibility_date = "2026-05-22"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./dist"
+
+# KV namespace bindings (configure IDs via `wrangler kv:namespace create`)
+# [[kv_namespaces]]
+# binding = "MARKETING_CACHE"
+# id = "<replace-with-id>"
+
+# D1 binding for forms
+# [[d1_databases]]
+# binding = "FORMS_DB"
+# database_name = "marketing-forms"
+# database_id = "<replace-with-id>"
+
+# R2 bucket for marketing media uploads
+# [[r2_buckets]]
+# binding = "MARKETING_MEDIA"
+# bucket_name = "marketing-media"
+
+# Environment variables (non-secret)
+[vars]
+PUBLIC_TURNSTILE_SITE_KEY = ""
+PUBLIC_UMAMI_WEBSITE_ID = ""
+PUBLIC_CF_BEACON_TOKEN = ""
+
+# Secrets (set via `wrangler pages secret put <NAME>`):
+#   TURNSTILE_SECRET_KEY
+#   CMS_API_KEY

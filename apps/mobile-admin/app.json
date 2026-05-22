@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Example Admin",
+    "slug": "example-admin",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "scheme": "exampleadmin",
+    "userInterfaceStyle": "automatic",
+    "runtimeVersion": { "policy": "appVersion" },
+    "platforms": ["ios", "android"],
+    "ios": {
+      "bundleIdentifier": "com.example.admin",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.example.admin"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "tsconfigPaths": true
+    }
+  }
+}

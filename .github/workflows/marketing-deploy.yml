@@ -1,0 +1,51 @@
+name: marketing build + deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/marketing/**'
+      - 'packages/**'
+      - '.github/workflows/marketing-deploy.yml'
+  pull_request:
+    paths:
+      - 'apps/marketing/**'
+      - 'packages/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @app/marketing type-check
+      - run: pnpm --filter @app/marketing build
+
+      - name: Publish to Cloudflare Pages (preview)
+        if: github.event_name == 'pull_request'
+        uses: cloudflare/wrangler-action@392082e81fbedc8b0f2a04a09a91e7d2bdeaa630 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/marketing/dist --project-name=marketing --branch=preview-${PR_NUMBER}
+
+      - name: Publish to Cloudflare Pages (production)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: cloudflare/wrangler-action@392082e81fbedc8b0f2a04a09a91e7d2bdeaa630 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/marketing/dist --project-name=marketing --branch=main

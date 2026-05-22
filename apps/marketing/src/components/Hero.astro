@@ -1,0 +1,26 @@
+---
+interface CTA {
+  label: string
+  href: string
+}
+
+interface Props {
+  title: string
+  subtitle: string
+  primaryCta: CTA
+  secondaryCta?: CTA
+}
+
+const { title, subtitle, primaryCta, secondaryCta } = Astro.props
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <h1 id="hero-title">{title}</h1>
+  <p class="lede">{subtitle}</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href={primaryCta.href}>{primaryCta.label}</a>
+    {secondaryCta && (
+      <a class="btn btn-secondary" href={secondaryCta.href}>{secondaryCta.label}</a>
+    )}
+  </div>
+</section>

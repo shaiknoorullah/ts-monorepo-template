@@ -1,0 +1,23 @@
+{
+  "name": "@pkg/tracking",
+  "version": "0.0.0",
+  "description": "Unified tracking API. Routes to Umami + Cloudflare Web Analytics. Consent-gated.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "type-check": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "@pkg/consent": "workspace:*"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

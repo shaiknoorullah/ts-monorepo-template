@@ -1,0 +1,32 @@
+{
+  "name": "{{scope}}/{{name}}",
+  "version": "0.0.0",
+  "private": true,
+  "description": "{{name}} — Expo native (iOS + Android)",
+  "license": "MIT",
+  "type": "module",
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "ios": "expo start --ios",
+    "android": "expo start --android",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pkg/ui": "workspace:*",
+    "expo": "~53.0.0",
+    "expo-router": "~4.0.0",
+    "expo-status-bar": "~2.0.0",
+    "react": "18.3.1",
+    "react-native": "0.76.0",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@types/react": "^18.3.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

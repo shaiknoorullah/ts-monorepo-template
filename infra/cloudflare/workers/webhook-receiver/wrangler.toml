@@ -1,0 +1,11 @@
+name = "webhook-receiver"
+main = "src/index.ts"
+compatibility_date = "2026-05-22"
+
+# Queue producer (configure once Queues are provisioned)
+# [[queues.producers]]
+# binding = "WEBHOOKS"
+# queue = "inbound-webhooks"
+
+[vars]
+ALLOWED_SOURCES = "stripe,github,payload"

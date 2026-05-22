@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "{{name}}",
+    "slug": "{{name}}",
+    "version": "0.0.0",
+    "scheme": "{{name}}",
+    "platforms": ["web", "ios", "android"],
+    "runtimeVersion": { "policy": "appVersion" },
+    "web": { "bundler": "metro", "output": "static" },
+    "plugins": ["expo-router"],
+    "experiments": { "typedRoutes": true, "tsconfigPaths": true }
+  }
+}

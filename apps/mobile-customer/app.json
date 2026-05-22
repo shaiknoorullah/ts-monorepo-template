@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Example",
+    "slug": "example-customer",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "scheme": "examplecustomer",
+    "userInterfaceStyle": "automatic",
+    "runtimeVersion": { "policy": "appVersion" },
+    "platforms": ["ios", "android"],
+    "ios": {
+      "bundleIdentifier": "com.example.customer",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.example.customer"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "tsconfigPaths": true
+    }
+  }
+}

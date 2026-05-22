@@ -1,0 +1,37 @@
+{
+  "name": "@app/marketing",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Marketing + landing pages — Astro 5 on Cloudflare Pages",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --port 4321",
+    "build": "astro build",
+    "preview": "astro preview",
+    "start": "astro dev",
+    "check": "astro check",
+    "test": "vitest run",
+    "type-check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^11.0.0",
+    "@astrojs/mdx": "^4.0.0",
+    "@astrojs/rss": "^4.0.0",
+    "@astrojs/sitemap": "^3.0.0",
+    "@pkg/consent": "workspace:*",
+    "@pkg/forms": "workspace:*",
+    "@pkg/seo": "workspace:*",
+    "@pkg/tracking": "workspace:*",
+    "@pkg/ui": "workspace:*",
+    "astro": "^5.0.0",
+    "sharp": "^0.33.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "^3.80.0"
+  }
+}

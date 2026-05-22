@@ -1,0 +1,52 @@
+---
+import Layout from '../layouts/Layout.astro'
+import Hero from '../components/Hero.astro'
+import FeatureGrid from '../components/FeatureGrid.astro'
+import Footer from '../components/Footer.astro'
+import { jsonLdOrganization } from '../lib/jsonld'
+
+const org = jsonLdOrganization({
+  name: 'Example',
+  url: 'https://www.example.com',
+  logo: 'https://www.example.com/logo.png',
+})
+---
+
+<Layout
+  title="Example — the simplest way to ship multi-tenant SaaS"
+  description="Multi-tenant by default. Open-source by design. Free-tier friendly."
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(org)} />
+  </Fragment>
+
+  <Hero
+    title="Multi-tenant SaaS, opinionated and open"
+    subtitle="The template that ships everything you need to start, and nothing you don't."
+    primaryCta={{ label: 'Get started', href: '/docs' }}
+    secondaryCta={{ label: 'See pricing', href: '/pricing' }}
+  />
+
+  <FeatureGrid
+    features={[
+      {
+        title: 'TypeScript end-to-end',
+        body: 'Strict-mode TS across apps, packages, and infra. One language, no glue.',
+      },
+      {
+        title: 'Multi-tenant by default',
+        body: 'Schema-per-tenant Postgres + tenant-aware everything. Onboard a tenant in one CLI call.',
+      },
+      {
+        title: 'Edge-deployed',
+        body: 'Cloudflare Pages + Workers. No Vercel, no surprise bills.',
+      },
+      {
+        title: 'Mobile + web from one codebase',
+        body: 'Expo + react-native-web means the same UI on iOS, Android, and the browser.',
+      },
+    ]}
+  />
+
+  <Footer />
+</Layout>

@@ -85,7 +85,28 @@ const reset = defineCommand({
   },
 })
 
+const tunnels = defineCommand({
+  meta: {
+    name: 'tunnels',
+    description:
+      'Start cloudflared tunnels exposing local dev apps on *.dev.example.com (free CF tunnel).',
+  },
+  args: {
+    config: {
+      type: 'string',
+      description: 'Path to cloudflared config (default: .cloudflared/config.yml)',
+      default: '.cloudflared/config.yml',
+    },
+  },
+  async run({ args }): Promise<void> {
+    const cfg = String(args.config)
+    const { exitCode } = await run('cloudflared', ['tunnel', '--config', cfg, 'run'])
+    if (exitCode !== 0) fail(`cloudflared tunnel run failed (exit ${exitCode})`)
+    emit({ status: 'ok', message: 'Tunnels exited cleanly.' })
+  },
+})
+
 export const devCommand = defineCommand({
-  meta: { name: 'dev', description: 'Local dev stack — docker compose wrappers.' },
-  subCommands: { up, down, tools, logs, reset },
+  meta: { name: 'dev', description: 'Local dev stack — docker compose wrappers + tunnels.' },
+  subCommands: { up, down, tools, logs, reset, tunnels },
 })

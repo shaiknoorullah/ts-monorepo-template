@@ -548,6 +548,27 @@ Each `deploy.resources.limits` was sized from the upstream documentation's "mini
 | Traefik | 1.0 | 256 M | Traefik docs |
 | OTel collector | 0.5 | 384 M | otel-collector docs |
 
+## Frontend dev services — `compose.frontend-dev.yml`
+
+The frontend tier (Astro marketing, Starlight docs, Expo web-app) consumes a few local services for full-loop development:
+
+- **Payload CMS 3** (`payload`) on `:3001` — the default CMS for marketing content; consumed via `@pkg/cms-client`.
+- **Umami v2** (`umami`) on `:3002` — privacy-respecting analytics; consumed via `@pkg/tracking` (consent-gated).
+- **cloudflared** (`cloudflared`) — local tunnel exposing dev apps on `*.dev.example.com`; started by `repo dev tunnels`.
+
+Merge with `compose.dev.yml`:
+
+```bash
+docker compose \
+  -f docker/compose.dev.yml \
+  -f docker/compose.frontend-dev.yml \
+  --profile frontend up -d
+```
+
+Profiles available in the file: `frontend` (CMS + analytics), `cms`, `analytics`, `tunnels`. None are in the default profile — opt in deliberately.
+
+See `docs/specs/frontend/cloudflare-deployment.md` and `docs/specs/frontend/marketing-and-landing-pages.md` for the broader story.
+
 ## TODO
 
 - Add `compose.prod.yml` (full HA — 3 Kafka brokers, 5 Postgres) once we sign off on hardware.

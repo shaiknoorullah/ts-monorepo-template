@@ -1,0 +1,12 @@
+name = "tenant-router"
+main = "src/index.ts"
+compatibility_date = "2026-05-22"
+
+# Bind this Worker to *.app.example.com once DNS exists.
+# routes = [
+#   { pattern = "*.app.example.com/*", zone_name = "example.com" }
+# ]
+
+[vars]
+ROOT_DOMAIN = ".app.example.com"
+WEB_APP_ORIGIN = "https://web-app.pages.dev"
