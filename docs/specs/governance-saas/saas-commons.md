@@ -335,3 +335,39 @@ Rule: when a license changes, **do not panic-rip**. Assess: are you modifying an
 | Cache / queue (legacy only) | Valkey + BullMQ | BSD-3 / MIT ✅ |
 
 Every default above is overridable per app with an ADR. Do not vary defaults silently.
+
+---
+
+## 17. Compose recipes
+
+Self-host recipes for the seven foundational tools above. Each file is independently runnable and composable with the rest of the stack (see [docker-compose-variants.md](../edge-obs/docker-compose-variants.md)).
+
+| Tool | Purpose | File | Default host port |
+|---|---|---|---|
+| Lago | Billing & metering | [lago.compose.yml](../../../docker/lago.compose.yml) | 8101 (UI), 8102 (API) |
+| Umami | Web analytics | [umami.compose.yml](../../../docker/umami.compose.yml) | 8103 |
+| Keycloak | Identity / OIDC | [keycloak.compose.yml](../../../docker/keycloak.compose.yml) | 8104 |
+| Unleash | Feature flags | [unleash.compose.yml](../../../docker/unleash.compose.yml) | 4242 |
+| Meilisearch | Search | [meilisearch.compose.yml](../../../docker/meilisearch.compose.yml) | 7700 |
+| Uptime Kuma | Status page | [uptime-kuma.compose.yml](../../../docker/uptime-kuma.compose.yml) | 8105 |
+| Chatwoot | Customer support | [chatwoot.compose.yml](../../../docker/chatwoot.compose.yml) | 8106 |
+| **Master** | Includes all seven | [compose.saas-commons.yml](../../../docker/compose.saas-commons.yml) | — |
+
+Common conventions:
+
+- All services join the shared external network `saas-commons`; HTTP-exposing services additionally attach to `obs` so the OTel collector / Prometheus exporters can reach them.
+- Each tool with state owns a dedicated Postgres/Redis instance — they pin to specific upstream versions (Lago → PG 14, Chatwoot → PG 12, others → PG 16) and bundle migrations that own the schema. Sharing the app's Patroni-managed PG 16 cluster is not supported.
+- Required secrets fail-fast via `${VAR:?msg}`. See [`.env.saas-commons.example`](../../../.env.saas-commons.example) for the full list (Lago RSA key + 3 encryption keys, Chatwoot/Lago Rails `SECRET_KEY_BASE`, Meilisearch master key, Keycloak admin bootstrap password, Umami JWT secret).
+- Volumes named `<tool>-<role>` (e.g., `lago-postgres-data`, `keycloak-postgres-data`, `meilisearch-data`, `uptime-kuma-data`, `chatwoot-storage`).
+- Conservative `deploy.resources.limits` sized for a 16-32 GiB single-host dev machine — bump per upstream recommendation when scaling out.
+
+Run the full SaaS-commons stack:
+
+```bash
+cp .env.saas-commons.example .env.saas-commons   # fill in REQUIRED secrets
+docker network create saas-commons
+docker compose -f docker/compose.saas-commons.yml --env-file .env.saas-commons up -d
+```
+
+OIDC wiring: Unleash speaks OIDC natively (configure via UI → Identity Providers → OIDC with Keycloak's `.well-known` URL). Chatwoot CE does not — front it with `oauth2-proxy` against Keycloak, or use SAML.
+

@@ -1,0 +1,75 @@
+# Unleash — open-source feature flags (Apache 2.0).
+# Adapted from https://github.com/Unleash/unleash/blob/main/docker-compose.yml
+#
+# Default port: 4242 (the canonical Unleash port — no collision with this repo).
+# Override: UNLEASH_PORT=<port>
+#
+# OIDC wiring (Keycloak):
+#   Once Keycloak is running, log in to Unleash as admin and add an SSO config:
+#     Identity Providers → OpenID Connect
+#       Discover URL: http://keycloak:8080/realms/master/.well-known/openid-configuration
+#       Client ID:    unleash
+#       Client Secret: <from Keycloak client config>
+#       Auto-create users: on
+#   The container can reach Keycloak via the shared saas-commons network.
+version: "3.9"
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  unleash-db:
+    image: postgres:16-alpine
+    container_name: unleash-db
+    <<: *restart
+    environment:
+      POSTGRES_DB: ${UNLEASH_POSTGRES_DB:-unleash}
+      POSTGRES_USER: ${UNLEASH_POSTGRES_USER:-unleash}
+      POSTGRES_PASSWORD: ${UNLEASH_POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - unleash-postgres-data:/var/lib/postgresql/data
+    networks: [saas-commons]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${UNLEASH_POSTGRES_USER:-unleash}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+
+  unleash:
+    image: unleashorg/unleash-server:6.4
+    container_name: unleash
+    <<: *restart
+    depends_on:
+      unleash-db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: "postgres://${UNLEASH_POSTGRES_USER:-unleash}:${UNLEASH_POSTGRES_PASSWORD:-changeme}@unleash-db:5432/${UNLEASH_POSTGRES_DB:-unleash}"
+      DATABASE_SSL: "false"
+      LOG_LEVEL: ${UNLEASH_LOG_LEVEL:-info}
+      INIT_ADMIN_API_TOKENS: "${UNLEASH_INIT_ADMIN_API_TOKENS:-}"
+      INIT_CLIENT_API_TOKENS:  "${UNLEASH_INIT_CLIENT_API_TOKENS:-}"
+      INIT_FRONTEND_API_TOKENS: "${UNLEASH_INIT_FRONTEND_API_TOKENS:-}"
+    ports:
+      - "${UNLEASH_PORT:-4242}:4242"
+    networks: [saas-commons, obs]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4242/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+
+volumes:
+  unleash-postgres-data:
+
+networks:
+  saas-commons:
+    external: true
+    name: saas-commons
+  obs:
+    external: true
+    name: obs

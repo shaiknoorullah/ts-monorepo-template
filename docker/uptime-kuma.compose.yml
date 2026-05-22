@@ -1,0 +1,43 @@
+# Uptime Kuma — self-hosted monitoring + status page (MIT).
+# Reference: https://github.com/louislam/uptime-kuma
+#
+# Single container, embedded SQLite (mounted at /app/data).
+#
+# Default port: container :3001 → host :8105 (3001 is taken by Grafana in this repo).
+# Override: UPTIME_KUMA_PORT=<port>
+#
+# After first boot, hit the UI on http://localhost:8105 and create the admin account.
+# No env-var bootstrap is supported upstream; that's by design.
+version: "3.9"
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1.23
+    container_name: uptime-kuma
+    restart: unless-stopped
+    volumes:
+      - uptime-kuma-data:/app/data
+    ports:
+      - "${UPTIME_KUMA_PORT:-8105}:3001"
+    networks: [saas-commons, obs]
+    healthcheck:
+      # Uptime Kuma ships its own healthcheck binary in /app/extra/healthcheck
+      test: ["CMD", "extra/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+
+volumes:
+  uptime-kuma-data:
+
+networks:
+  saas-commons:
+    external: true
+    name: saas-commons
+  obs:
+    external: true
+    name: obs
