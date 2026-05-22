@@ -13,7 +13,7 @@
     "MD041": false, // first line H1
     "MD045": false, // images alt text
     "MD051": false, // link fragments
-    "default": true
+    "default": true,
   },
   "ignores": [
     "**/node_modules/**",
@@ -27,6 +27,6 @@
     "internal/templates/**",
     "docs/.vitepress/cache/**",
     "docs/.vitepress/dist/**",
-    "sbom/**"
-  ]
+    "sbom/**",
+  ],
 }
