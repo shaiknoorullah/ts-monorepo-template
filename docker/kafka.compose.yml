@@ -1,0 +1,98 @@
+# Smallest prod-grade single-node KRaft Kafka.
+# Combined controller+broker. Auto-create disabled. Topic list bootstrapped via kafka-init.
+#
+# Intended use:
+#  - Local dev (`docker compose -f docker/kafka.compose.yml up -d`)
+#  - Smallest possible "real" deployment (single-host VM). NOT HA.
+#
+# For HA, deploy via Strimzi on Kubernetes (see docs/specs/data-eventing/kafka-single-node-kraft.md).
+version: "3.9"
+
+x-kafka-env: &kafka_env
+  KAFKA_NODE_ID: "1"
+  KAFKA_PROCESS_ROLES: "controller,broker"
+  KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+  KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19092"
+  KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092,EXTERNAL://localhost:19092"
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT"
+  KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+  KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+  KAFKA_DEFAULT_REPLICATION_FACTOR: "1"
+  KAFKA_MIN_INSYNC_REPLICAS: "1"
+  KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+  KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE: "false"
+  KAFKA_LOG_RETENTION_HOURS: "168"
+  KAFKA_LOG_SEGMENT_BYTES: "1073741824"
+  CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+
+services:
+  kafka:
+    image: apache/kafka:3.9.0
+    container_name: kafka
+    hostname: kafka
+    restart: unless-stopped
+    ports:
+      - "19092:19092"
+    environment:
+      <<: *kafka_env
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [events]
+
+  kafka-init:
+    image: apache/kafka:3.9.0
+    container_name: kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -euo pipefail
+        BS=kafka:9092
+        TOPICS=(
+          "orders.order.created:6:1"
+          "orders.order.fulfilled:6:1"
+          "cdc.public.orders:6:1"
+          "audit.events:12:1"
+          "dlq.default:3:1"
+        )
+        for t in "${TOPICS[@]}"; do
+          IFS=':' read -r name parts rf <<< "$$t"
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server $$BS --create --if-not-exists \
+            --topic "$$name" --partitions "$$parts" --replication-factor "$$rf" \
+            --config min.insync.replicas=1 --config cleanup.policy=delete
+        done
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server $$BS --list
+    networks: [events]
+    restart: "no"
+
+  # Optional UI for development (not for production).
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: "events"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9092"
+    ports:
+      - "8080:8080"
+    networks: [events]
+    profiles: ["dev"]
+
+volumes:
+  kafka-data:
+
+networks:
+  events:
+    name: events

@@ -239,7 +239,23 @@ If a sub-directory has its own `AGENTS.md`, **that one wins** for files inside i
 
 ---
 
-## 9. Useful references
+## 9. Governance — the authoritative rule docs
+
+Conventions are not described in this file (this file is a lighthouse). The **rules** live in:
+
+- [`docs/specs/governance-saas/repo-governance.md`](./docs/specs/governance-saas/repo-governance.md) — naming, style, TypeScript, API, DB, logging, testing, security, docs, releases, PR & ADR processes. **Read this before opening a PR.**
+- [`docs/specs/governance-saas/temporal-when-and-when-not.md`](./docs/specs/governance-saas/temporal-when-and-when-not.md) — decision rule for Temporal vs Kafka vs RPC vs cron; determinism, versioning, worker anatomy, replay tests.
+- [`docs/specs/governance-saas/saas-commons.md`](./docs/specs/governance-saas/saas-commons.md) — OSS defaults for every SaaS-essential subsystem (billing, analytics, identity, flags, search, email, storage, CMS, audit) with license caveats.
+- [`docs/specs/governance-saas/package-architecture-rules.md`](./docs/specs/governance-saas/package-architecture-rules.md) — what goes in `apps/*` vs `packages/*` vs `internal/*`, forbidden patterns, coordinated-deploy rules.
+- [`docs/specs/governance-saas/multi-tenancy-isolation-rules.md`](./docs/specs/governance-saas/multi-tenancy-isolation-rules.md) — tenant-context propagation, cross-tenant query rules, deletion + migration playbooks.
+- [`docs/specs/governance-saas/governance-process.md`](./docs/specs/governance-saas/governance-process.md) — how to amend the rules; ADR process; review cadence.
+- [`GOVERNANCE.md`](./GOVERNANCE.md) — top-level pointer.
+
+If the rules here in `AGENTS.md` ever appear to disagree with the governance docs, **the governance docs win** and this file needs updating.
+
+---
+
+## 10. Useful references
 
 - [`docs/adrs/0001-tsdown-over-tsup.md`](./docs/adrs/0001-tsdown-over-tsup.md)
 - [`docs/adrs/0002-changesets-over-release-please.md`](./docs/adrs/0002-changesets-over-release-please.md)
@@ -248,3 +264,4 @@ If a sub-directory has its own `AGENTS.md`, **that one wins** for files inside i
 - [`docs/adrs/0005-sha-pinned-github-actions.md`](./docs/adrs/0005-sha-pinned-github-actions.md)
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 - [`SECURITY.md`](./SECURITY.md)
+- [`GOVERNANCE.md`](./GOVERNANCE.md)

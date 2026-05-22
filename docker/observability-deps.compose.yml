@@ -1,0 +1,101 @@
+# Observability dependencies for local data + eventing development.
+# Prometheus scrapes Kafka, Postgres, Redis exporters. Grafana visualizes.
+# OTel Collector receives traces from app code.
+#
+# All services on the "obs" network. Wire your app and the broker/db networks
+# to "obs" with `docker network connect obs <container>` if cross-network scrape is needed.
+version: "3.9"
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks: [obs]
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3001:3000"
+    networks: [obs]
+    depends_on:
+      - prometheus
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.110.0
+    container_name: otel-collector
+    restart: unless-stopped
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ./observability/otel-collector.yaml:/etc/otel/config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP/gRPC
+      - "4318:4318"   # OTLP/HTTP
+      - "8889:8889"   # Prometheus exporter
+    networks: [obs]
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.8.0
+    container_name: kafka-exporter
+    restart: unless-stopped
+    command:
+      - "--kafka.server=kafka:9092"
+      - "--log.level=warn"
+    ports:
+      - "9308:9308"
+    networks: [obs, events]
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres-exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://app:app@pg-primary:5432/app?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks: [obs, data]
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.66.0
+    container_name: redis-exporter
+    restart: unless-stopped
+    environment:
+      REDIS_ADDR: "redis://redis-1:6379"
+    ports:
+      - "9121:9121"
+    networks: [obs, cache]
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  obs:
+    name: obs
+  events:
+    external: true
+    name: events
+  data:
+    external: true
+    name: data
+  cache:
+    external: true
+    name: cache
