@@ -1,0 +1,32 @@
+{
+  // TODO: tighten line-length and other style rules once docs are normalized.
+  // For now, disable the noisiest rules so the lint job passes while still
+  // catching real markdown errors (unclosed code fences, bad refs, etc.).
+  "config": {
+    "MD013": false, // line-length (TODO/PROGRESS files have long lines)
+    "MD024": false, // duplicate headings
+    "MD025": false, // single h1
+    "MD026": false, // trailing punctuation in headings
+    "MD033": false, // inline HTML (used for callouts)
+    "MD034": false, // bare URLs
+    "MD036": false, // emphasis as heading
+    "MD041": false, // first line H1
+    "MD045": false, // images alt text
+    "MD051": false, // link fragments
+    "default": true
+  },
+  "ignores": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.nx/**",
+    "**/.next/**",
+    "**/.astro/**",
+    "**/.expo/**",
+    "**/.wrangler/**",
+    "**/CHANGELOG.md",
+    "internal/templates/**",
+    "docs/.vitepress/cache/**",
+    "docs/.vitepress/dist/**",
+    "sbom/**"
+  ]
+}

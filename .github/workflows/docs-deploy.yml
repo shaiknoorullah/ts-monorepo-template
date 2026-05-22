@@ -31,8 +31,26 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @app/docs-public build
 
+      - name: Check for CLOUDFLARE_API_TOKEN
+        id: cf_token
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::CLOUDFLARE_API_TOKEN secret not configured — skipping deploy."
+          fi
+
+      - name: Upload build artifact (no-deploy mode)
+        if: steps.cf_token.outputs.present == 'false'
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: docs-public-dist
+          path: apps/docs-public/dist
+          retention-days: 14
+
       - name: Publish to Cloudflare Pages (preview)
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.cf_token.outputs.present == 'true'
         uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -40,7 +58,7 @@ jobs:
           command: pages deploy apps/docs-public/dist --project-name=docs-public --branch=preview-${PR_NUMBER}
 
       - name: Publish to Cloudflare Pages (production)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.cf_token.outputs.present == 'true'
         uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
