@@ -10,6 +10,7 @@
 import { defineCommand } from 'citty'
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
+
 import { emit, fail } from '../../utils/output'
 import { repoPath } from '../../utils/paths'
 import { renderTemplate } from '../../utils/templates'
@@ -19,11 +20,11 @@ type Archetype = (typeof ARCHETYPES)[number]
 
 const TEMPLATE_DIR: Record<Archetype, string> = {
   api: 'internal/templates/app',
-  worker: 'internal/templates/app',
-  web: 'internal/templates/app-web',
-  mobile: 'internal/templates/app-mobile',
-  marketing: 'internal/templates/app-marketing',
   docs: 'internal/templates/app-docs',
+  marketing: 'internal/templates/app-marketing',
+  mobile: 'internal/templates/app-mobile',
+  web: 'internal/templates/app-web',
+  worker: 'internal/templates/app',
 }
 
 function isArchetype(value: string): value is Archetype {
@@ -31,26 +32,26 @@ function isArchetype(value: string): value is Archetype {
 }
 
 export const newApp = defineCommand({
-  meta: {
-    name: 'app',
-    description:
-      'Scaffold a new app under apps/<name>/. First positional is the archetype (api|worker|web|mobile|marketing|docs).',
-  },
   args: {
     archetype: {
-      type: 'positional',
       description: 'Archetype: api | worker | web | mobile | marketing | docs',
       required: true,
+      type: 'positional',
     },
-    name: { type: 'positional', description: 'App name (kebab-case)', required: true },
-    force: { type: 'boolean', description: 'Overwrite existing directory', default: false },
+    force: { default: false, description: 'Overwrite existing directory', type: 'boolean' },
+    name: { description: 'App name (kebab-case)', required: true, type: 'positional' },
+  },
+  meta: {
+    description:
+      'Scaffold a new app under apps/<name>/. First positional is the archetype (api|worker|web|mobile|marketing|docs).',
+    name: 'app',
   },
   run({ args }): void {
     const archetypeArg = String(args.archetype)
     if (!isArchetype(archetypeArg)) {
       fail(`Unknown archetype "${archetypeArg}". Allowed: ${ARCHETYPES.join(', ')}.`)
     }
-    const archetype = archetypeArg as Archetype
+    const archetype = archetypeArg
 
     const name = String(args.name)
     if (!/^[a-z][a-z0-9-]*$/.test(name)) {
@@ -72,15 +73,12 @@ export const newApp = defineCommand({
     const result = renderTemplate(
       srcDir,
       destDir,
-      { name, scope: '@app', archetype },
+      { archetype, name, scope: '@app' },
       { force: Boolean(args.force) },
     )
 
     emit({
-      status: 'ok',
-      message: `Scaffolded apps/${name} from archetype "${archetype}" (${result.written.length} files).`,
       data: {
-        path: destDir,
         archetype,
         files: result.written.length,
         nextSteps: [
@@ -88,7 +86,10 @@ export const newApp = defineCommand({
           `add "${name}" to commitlint.config.cjs scope-enum`,
           `add "@app/${name}" to .changeset/config.json ignore`,
         ],
+        path: destDir,
       },
+      message: `Scaffolded apps/${name} from archetype "${archetype}" (${result.written.length} files).`,
+      status: 'ok',
     })
   },
 })

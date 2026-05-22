@@ -3,18 +3,18 @@
 // Minimal Payload CMS REST client. The Astro Content Layer loader builds on
 // top of this — see ./astro-loader.ts (TODO).
 
-import { z } from 'zod'
-
-export interface PayloadConfig {
-  baseUrl: string
-  apiKey?: string
-}
+import type { z } from 'zod'
 
 export interface CollectionResponse<T> {
   docs: T[]
-  totalDocs: number
-  page: number
   hasNextPage: boolean
+  page: number
+  totalDocs: number
+}
+
+export interface PayloadConfig {
+  apiKey?: string
+  baseUrl: string
 }
 
 export function createPayloadClient(cfg: PayloadConfig) {

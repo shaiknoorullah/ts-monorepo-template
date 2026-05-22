@@ -3,15 +3,16 @@
 import { defineCommand } from 'citty'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'pathe'
+
 import { emit, fail } from '../../utils/output'
 import { repoPath } from '../../utils/paths'
 import { renderString } from '../../utils/templates'
 
 export const newRunbook = defineCommand({
-  meta: { name: 'runbook', description: 'Scaffold a new ops runbook.' },
   args: {
-    name: { type: 'positional', description: 'Runbook slug (kebab-case)', required: true },
+    name: { description: 'Runbook slug (kebab-case)', required: true, type: 'positional' },
   },
+  meta: { description: 'Scaffold a new ops runbook.', name: 'runbook' },
   run({ args }) {
     const name = String(args.name)
     const dir = repoPath('docs/runbooks')
@@ -22,9 +23,9 @@ export const newRunbook = defineCommand({
     const templatePath = repoPath('internal/templates/runbook/runbook.md')
     const template = existsSync(templatePath) ? readFileSync(templatePath, 'utf-8') : DEFAULT
     const today = new Date().toISOString().slice(0, 10)
-    writeFileSync(target, renderString(template, { name, date: today }))
+    writeFileSync(target, renderString(template, { date: today, name }))
 
-    emit({ status: 'ok', message: `Created runbook ${name}.md`, data: { path: target } })
+    emit({ data: { path: target }, message: `Created runbook ${name}.md`, status: 'ok' })
   },
 })
 

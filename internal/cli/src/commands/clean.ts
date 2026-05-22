@@ -2,27 +2,28 @@
 
 import { defineCommand } from 'citty'
 import prompts from 'prompts'
+
 import { emit, fail } from '../utils/output'
 import { run } from '../utils/run'
 
 export const cleanCommand = defineCommand({
-  meta: {
-    name: 'clean',
-    description: 'Reset Nx cache + reinstall node_modules. Destructive — prompts for confirmation.',
-  },
   args: {
-    yes: { type: 'boolean', description: 'Skip the confirmation prompt.', default: false },
+    yes: { default: false, description: 'Skip the confirmation prompt.', type: 'boolean' },
+  },
+  meta: {
+    description: 'Reset Nx cache + reinstall node_modules. Destructive — prompts for confirmation.',
+    name: 'clean',
   },
   async run({ args }) {
     if (!args.yes) {
       const { ok } = await prompts({
-        type: 'confirm',
-        name: 'ok',
-        message: 'This will reset Nx cache and reinstall node_modules. Continue?',
         initial: false,
+        message: 'This will reset Nx cache and reinstall node_modules. Continue?',
+        name: 'ok',
+        type: 'confirm',
       })
       if (!ok) {
-        emit({ status: 'warning', message: 'Aborted.' })
+        emit({ message: 'Aborted.', status: 'warning' })
         return
       }
     }
@@ -30,6 +31,6 @@ export const cleanCommand = defineCommand({
     if (a.exitCode !== 0) fail('nx reset failed')
     const b = await run('pnpm', ['install'])
     if (b.exitCode !== 0) fail('pnpm install failed')
-    emit({ status: 'ok', message: 'Clean done.' })
+    emit({ message: 'Clean done.', status: 'ok' })
   },
 })

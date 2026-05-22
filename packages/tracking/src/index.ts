@@ -1,4 +1,4 @@
 // packages/tracking/src/index.ts
 
-export { track, identify, page, configure } from './track'
-export type { TrackingConfig, EventProps } from './types'
+export { configure, identify, page, track } from './track'
+export type { EventProps, TrackingConfig } from './types'

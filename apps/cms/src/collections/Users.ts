@@ -6,64 +6,65 @@
 // the `migrationStatus` field will track per-user cutover.
 
 import type { CollectionConfig } from 'payload'
+
 import argon2 from 'argon2'
+
 import { isAdmin, isAdminOrSelf } from '../access'
 
 export const Users: CollectionConfig = {
-  slug: 'users',
-  auth: {
-    useAPIKey: true,
-    tokenExpiration: 60 * 60 * 8, // 8h
-    maxLoginAttempts: 5,
-    lockTime: 5 * 60 * 1000,
-  },
-  admin: {
-    useAsTitle: 'email',
-    defaultColumns: ['email', 'role', 'tenant'],
-  },
   access: {
-    create: isAdmin,
-    read: isAdminOrSelf,
-    update: isAdminOrSelf,
-    delete: isAdmin,
     admin: ({ req: { user } }) =>
       user?.collection === 'users' &&
       ((user as { role?: string }).role === 'admin' ||
         (user as { role?: string }).role === 'editor'),
+    create: isAdmin,
+    delete: isAdmin,
+    read: isAdminOrSelf,
+    update: isAdminOrSelf,
+  },
+  admin: {
+    defaultColumns: ['email', 'role', 'tenant'],
+    useAsTitle: 'email',
+  },
+  auth: {
+    lockTime: 5 * 60 * 1000,
+    maxLoginAttempts: 5,
+    tokenExpiration: 60 * 60 * 8, // 8h
+    useAPIKey: true,
   },
   fields: [
     {
-      name: 'role',
-      type: 'select',
-      required: true,
       defaultValue: 'editor',
+      name: 'role',
       options: [
         { label: 'Admin', value: 'admin' },
         { label: 'Editor', value: 'editor' },
         { label: 'Viewer', value: 'viewer' },
       ],
+      required: true,
+      type: 'select',
     },
     {
       name: 'tenant',
-      type: 'relationship',
       relationTo: 'tenants',
       required: false,
+      type: 'relationship',
     },
     {
+      admin: { hidden: true, readOnly: true },
       name: 'passwordHashArgon',
       type: 'text',
-      admin: { hidden: true, readOnly: true },
     },
     {
-      name: 'migrationStatus',
-      type: 'select',
-      defaultValue: 'payload',
       admin: { description: 'Auth migration tracker — Ory Kratos cutover.' },
+      defaultValue: 'payload',
+      name: 'migrationStatus',
       options: [
         { label: 'Payload (bcrypt+argon2id)', value: 'payload' },
         { label: 'Migrating', value: 'migrating' },
         { label: 'Kratos', value: 'kratos' },
       ],
+      type: 'select',
     },
   ],
   hooks: {
@@ -71,14 +72,15 @@ export const Users: CollectionConfig = {
       async ({ data, operation }) => {
         if (operation === 'create' && typeof data.password === 'string') {
           data.passwordHashArgon = await argon2.hash(data.password, {
-            type: argon2.argon2id,
             memoryCost: 19_456, // 19 MiB — OWASP 2024 recommendation
-            timeCost: 2,
             parallelism: 1,
+            timeCost: 2,
+            type: argon2.argon2id,
           })
         }
         return data
       },
     ],
   },
+  slug: 'users',
 }

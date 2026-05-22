@@ -6,12 +6,12 @@
 // across invocations on the same isolate, so the first request warms up
 // satori for everyone behind it.
 
-import { Hono } from 'hono'
 import { generateOgImage } from '@pkg/seo'
+import { Hono } from 'hono'
 
 interface Env {
   ASSETS: { fetch: (req: Request) => Promise<Response> }
-  DEFAULT_THEME?: 'light' | 'dark'
+  DEFAULT_THEME?: 'dark' | 'light'
 }
 
 const app = new Hono<{ Bindings: Env }>()
@@ -32,7 +32,7 @@ app.get('/og', async (c) => {
   const title = c.req.query('title') ?? 'Untitled'
   const subtitle = c.req.query('subtitle')
   const themeParam = c.req.query('theme')
-  const theme: 'light' | 'dark' =
+  const theme: 'dark' | 'light' =
     themeParam === 'light' || themeParam === 'dark'
       ? themeParam
       : (c.env.DEFAULT_THEME ?? 'dark')
@@ -41,15 +41,15 @@ app.get('/og', async (c) => {
   try {
     const font = await loadFont(c.env)
     return await generateOgImage({
-      title,
+      fonts: [{ data: font, name: 'Inter', style: 'normal', weight: 700 }],
+      logoUrl,
       subtitle,
       theme,
-      logoUrl,
-      fonts: [{ name: 'Inter', data: font, weight: 700, style: 'normal' }],
+      title,
     })
-  } catch (err) {
+  } catch (error) {
     return c.json(
-      { error: 'og-image-render-failed', message: (err as Error).message },
+      { error: 'og-image-render-failed', message: (error as Error).message },
       500,
     )
   }

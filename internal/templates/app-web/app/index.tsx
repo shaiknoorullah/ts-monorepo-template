@@ -9,6 +9,6 @@ export default function Home(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  c: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  c: { alignItems: 'center', flex: 1, justifyContent: 'center' },
   t: { fontSize: 32, fontWeight: '700' },
 })

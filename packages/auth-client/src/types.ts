@@ -3,30 +3,30 @@
 import { z } from 'zod'
 
 export const UserSchema = z.object({
-  id: z.string(),
   email: z.string().email(),
+  id: z.string(),
   name: z.string().optional(),
   roles: z.array(z.string()).default([]),
 })
-export type User = z.infer<typeof UserSchema>
-
-export interface Session {
-  user: User
-  token: string
-  expiresAt: string
-}
-
-export interface AuthConfig {
-  provider: 'ory' | 'keycloak'
-  baseUrl: string
-  /** Used by Keycloak only */
-  realm?: string
-  /** Used by Keycloak only */
-  clientId?: string
-}
-
 export interface AuthClient {
-  getSession: () => Promise<Session | null>
+  getSession: () => Promise<null | Session>
   signIn: (input: { email: string; password: string }) => Promise<Session>
   signOut: () => Promise<void>
 }
+
+export interface AuthConfig {
+  baseUrl: string
+  /** Used by Keycloak only */
+  clientId?: string
+  provider: 'keycloak' | 'ory'
+  /** Used by Keycloak only */
+  realm?: string
+}
+
+export interface Session {
+  expiresAt: string
+  token: string
+  user: User
+}
+
+export type User = z.infer<typeof UserSchema>

@@ -9,12 +9,12 @@ export function isValidTenantSlug(value: string): boolean {
   return TenantSlugSchema.safeParse(value).success
 }
 
-export function resolveTenantFromHostname(hostname: string, rootDomain: string): string | null {
+export function resolveTenantFromHostname(hostname: string, rootDomain: string): null | string {
   if (!hostname.endsWith(rootDomain)) return null
   const prefix = hostname.slice(0, hostname.length - rootDomain.length).replace(/\.$/, '')
   if (!prefix) return null
   // Reserved subdomains
-  if (['app', 'www', 'api', 'docs', 'admin', 'auth'].includes(prefix)) return null
+  if (['admin', 'api', 'app', 'auth', 'docs', 'www'].includes(prefix)) return null
   if (!isValidTenantSlug(prefix)) return null
   return prefix
 }

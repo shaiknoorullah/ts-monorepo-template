@@ -11,7 +11,7 @@ describe('api-gateway / app', () => {
       NODE_ENV: 'test',
       SERVICE_NAME: 'api-gateway-test',
       SERVICE_VERSION: '0.0.0-test',
-      PORT: '0',
+      PORT: '3001', // arbitrary; fastify.inject() never actually binds the port
     })
     app = await buildApp({ config })
   })

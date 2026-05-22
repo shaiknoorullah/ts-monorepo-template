@@ -1,19 +1,19 @@
 // packages/ui/src/types.ts
 
-export type ColorScheme = 'light' | 'dark' | 'system'
+export type ColorScheme = 'dark' | 'light' | 'system'
 
 export interface Theme {
-  name: 'light' | 'dark'
   colors: {
-    brand: string
-    surface: string
-    surfaceMuted: string
     border: string
-    text: string
-    textMuted: string
-    success: string
-    warning: string
+    brand: string
     danger: string
     info: string
+    success: string
+    surface: string
+    surfaceMuted: string
+    text: string
+    textMuted: string
+    warning: string
   }
+  name: 'dark' | 'light'
 }

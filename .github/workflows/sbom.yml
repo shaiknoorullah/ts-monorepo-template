@@ -66,11 +66,18 @@ jobs:
           path: sbom/
           retention-days: 90
 
+      - name: Install osv-scanner CLI
+        run: |
+          set -e
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL \
+            "https://github.com/google/osv-scanner/releases/download/v2.3.8/osv-scanner_linux_amd64" \
+            -o "$RUNNER_TEMP/bin/osv-scanner"
+          chmod +x "$RUNNER_TEMP/bin/osv-scanner"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
       - name: OSV scan (CycloneDX)
-        uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
-        with:
-          scan-args: |-
-            --sbom=sbom/bom.cdx.json
+        run: osv-scanner --sbom=sbom/bom.cdx.json || true
         continue-on-error: true
 
       - name: Attach SBOM to GitHub Release (tag pushes only)

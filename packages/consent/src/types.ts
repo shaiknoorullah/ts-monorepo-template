@@ -1,8 +1,8 @@
 // packages/consent/src/types.ts
 
-export type ConsentCategory = 'necessary' | 'functional' | 'analytics' | 'marketing'
+export type ConsentCategory = 'analytics' | 'functional' | 'marketing' | 'necessary'
 
 export interface ConsentState {
-  granted: ReadonlyArray<ConsentCategory>
   decided: boolean
+  granted: readonly ConsentCategory[]
 }

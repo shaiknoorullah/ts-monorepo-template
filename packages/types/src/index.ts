@@ -9,39 +9,35 @@
 /** Branded primitive. Use this instead of bare strings/numbers for domain IDs. */
 export type Brand<T, K extends string> = T & { readonly __brand: K }
 
+/** The shape of a healthcheck response from any service. */
+export interface HealthCheck {
+  readonly checkedAt: IsoDateTime
+  readonly service: string
+  readonly status: 'degraded' | 'down' | 'ok'
+  readonly uptimeSeconds: number
+  readonly version: string
+}
+
+/** A timestamp encoded as an ISO-8601 string in UTC. */
+export type IsoDateTime = Brand<string, 'IsoDateTime'>
+
+/** A Result type — `ok` carries data, `err` carries a typed error. */
+export type Result<T, E = Error> = { error: E; ok: false; } | { ok: true; value: T }
+
 /** Stable, opaque identifier for a tenant. */
 export type TenantId = Brand<string, 'TenantId'>
 
 /** Stable, opaque identifier for a user. */
 export type UserId = Brand<string, 'UserId'>
 
-/** A timestamp encoded as an ISO-8601 string in UTC. */
-export type IsoDateTime = Brand<string, 'IsoDateTime'>
-
-/**
- * Convert a Date to a strongly-typed ISO-8601 string.
- *
- * @example
- * ```ts
- * const ts = toIsoDateTime(new Date())
- * // ts: IsoDateTime
- * ```
- */
-export function toIsoDateTime(date: Date): IsoDateTime {
-  return date.toISOString() as IsoDateTime
+/** Construct a failed Result. */
+export function err<E>(error: E): Result<never, E> {
+  return { error, ok: false }
 }
-
-/** A Result type — `ok` carries data, `err` carries a typed error. */
-export type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E }
 
 /** Construct a successful Result. */
 export function ok<T>(value: T): Result<T, never> {
   return { ok: true, value }
-}
-
-/** Construct a failed Result. */
-export function err<E>(error: E): Result<never, E> {
-  return { ok: false, error }
 }
 
 /** Helper: convert `unknown` (catch block) to an `Error`. */
@@ -55,11 +51,15 @@ export function toError(value: unknown): Error {
   }
 }
 
-/** The shape of a healthcheck response from any service. */
-export interface HealthCheck {
-  readonly status: 'ok' | 'degraded' | 'down'
-  readonly service: string
-  readonly version: string
-  readonly uptimeSeconds: number
-  readonly checkedAt: IsoDateTime
+/**
+ * Convert a Date to a strongly-typed ISO-8601 string.
+ *
+ * @example
+ * ```ts
+ * const ts = toIsoDateTime(new Date())
+ * // ts: IsoDateTime
+ * ```
+ */
+export function toIsoDateTime(date: Date): IsoDateTime {
+  return date.toISOString() as IsoDateTime
 }

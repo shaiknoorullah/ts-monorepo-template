@@ -2,26 +2,27 @@
 
 import { defineCommand } from 'citty'
 import { readFileSync } from 'node:fs'
+
 import { emit, fail } from '../utils/output'
 import { repoPath } from '../utils/paths'
 
 export const versionCommand = defineCommand({
-  meta: { name: 'version', description: 'Print repo manifest + key dep versions.' },
+  meta: { description: 'Print repo manifest + key dep versions.', name: 'version' },
   run() {
     try {
       const pkg = JSON.parse(readFileSync(repoPath('package.json'), 'utf-8'))
       emit({
-        status: 'ok',
-        message: `${pkg.name} ${pkg.version}`,
         data: {
-          name: pkg.name,
-          version: pkg.version,
-          packageManager: pkg.packageManager,
           engines: pkg.engines,
+          name: pkg.name,
+          packageManager: pkg.packageManager,
+          version: pkg.version,
         },
+        message: `${pkg.name} ${pkg.version}`,
+        status: 'ok',
       })
-    } catch (e) {
-      fail((e as Error).message)
+    } catch (error) {
+      fail((error as Error).message)
     }
   },
 })

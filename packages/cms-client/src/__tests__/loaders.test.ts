@@ -57,11 +57,17 @@ describe('payloadLoader', () => {
     expect(ctx.entries.get('a')?.data.title).toBe('A')
   })
 
-  it('throws on non-2xx', async () => {
+  it('returns an empty entry set on non-2xx with a logged warning', async () => {
+    // The loader is intentionally fault-tolerant: a CMS hiccup must not break
+    // `astro build` / `astro check`. Verify it (a) does NOT throw, (b) leaves
+    // the store empty, and (c) emits a `logger.warn` with the HTTP code.
     vi.stubGlobal('fetch', vi.fn(async () => new Response('boom', { status: 500 })))
     const ctx = makeStore()
+    const warnSpy = vi.spyOn(ctx.logger, 'warn')
     const loader = payloadLoader({ baseUrl: 'https://x', collection: 'posts' })
-    await expect(loader.load(ctx)).rejects.toThrow(/HTTP 500/)
+    await expect(loader.load(ctx)).resolves.toBeUndefined()
+    expect(ctx.entries.size).toBe(0)
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('HTTP 500'))
   })
 })
 

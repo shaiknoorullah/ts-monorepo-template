@@ -6,7 +6,7 @@ import { dirname, resolve } from 'pathe'
 
 export function findRepoRoot(start = process.cwd()): string {
   let dir = resolve(start)
-  // eslint-disable-next-line no-constant-condition
+   
   while (true) {
     if (existsSync(resolve(dir, 'pnpm-workspace.yaml'))) return dir
     const parent = dirname(dir)

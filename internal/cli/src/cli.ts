@@ -6,60 +6,60 @@
 // command composition.
 
 import { defineCommand, runMain } from 'citty'
-import { setJsonMode } from './utils/output'
 
-// Lazy command imports keep cold-start fast.
-import { newCommand } from './commands/new'
-import { envCommand } from './commands/env'
-import { devCommand } from './commands/dev'
+import { buildCommand } from './commands/build'
+import { ciCommand } from './commands/ci'
+import { cleanCommand } from './commands/clean'
+import { completionCommand } from './commands/completion'
 import { dbCommand } from './commands/db'
 import { depsCommand } from './commands/deps'
-import { releaseCommand } from './commands/release'
-import { lintCommand } from './commands/lint'
-import { formatCommand } from './commands/format'
-import { testCommand } from './commands/test'
-import { buildCommand } from './commands/build'
-import { typeCheckCommand } from './commands/type-check'
-import { ciCommand } from './commands/ci'
+import { devCommand } from './commands/dev'
 import { doctorCommand } from './commands/doctor'
-import { cleanCommand } from './commands/clean'
+import { envCommand } from './commands/env'
+import { formatCommand } from './commands/format'
+import { lintCommand } from './commands/lint'
+// Lazy command imports keep cold-start fast.
+import { newCommand } from './commands/new'
+import { releaseCommand } from './commands/release'
+import { testCommand } from './commands/test'
+import { typeCheckCommand } from './commands/type-check'
 import { versionCommand } from './commands/version'
-import { completionCommand } from './commands/completion'
+import { setJsonMode } from './utils/output'
 
 const main = defineCommand({
-  meta: {
-    name: 'repo',
-    version: '0.0.0',
-    description:
-      'Single entry point for every dev workflow in this monorepo. Scaffold, render config, run dev stack, lint, test, release, audit.',
-  },
   args: {
     json: {
-      type: 'boolean',
-      description: 'Emit machine-readable JSON output instead of pretty logs.',
       default: false,
+      description: 'Emit machine-readable JSON output instead of pretty logs.',
+      type: 'boolean',
     },
+  },
+  meta: {
+    description:
+      'Single entry point for every dev workflow in this monorepo. Scaffold, render config, run dev stack, lint, test, release, audit.',
+    name: 'repo',
+    version: '0.0.0',
   },
   setup({ args }) {
     if (args.json) setJsonMode(true)
   },
   subCommands: {
-    new: newCommand,
-    env: envCommand,
-    dev: devCommand,
+    build: buildCommand,
+    ci: ciCommand,
+    clean: cleanCommand,
+    completion: completionCommand,
     db: dbCommand,
     deps: depsCommand,
-    release: releaseCommand,
-    lint: lintCommand,
-    format: formatCommand,
-    test: testCommand,
-    build: buildCommand,
-    'type-check': typeCheckCommand,
-    ci: ciCommand,
+    dev: devCommand,
     doctor: doctorCommand,
-    clean: cleanCommand,
+    env: envCommand,
+    format: formatCommand,
+    lint: lintCommand,
+    new: newCommand,
+    release: releaseCommand,
+    test: testCommand,
+    'type-check': typeCheckCommand,
     version: versionCommand,
-    completion: completionCommand,
   },
 })
 

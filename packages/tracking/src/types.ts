@@ -1,15 +1,15 @@
 // packages/tracking/src/types.ts
 
+export type EventProps = Record<string, boolean | null | number | string>
+
 export interface TrackingConfig {
-  umami?: {
-    websiteId: string
-    src: string
-  }
   cloudflareAnalytics?: {
     token: string
   }
   /** Consent category that gates every event. Default 'analytics'. */
-  consentCategory?: 'functional' | 'analytics' | 'marketing'
+  consentCategory?: 'analytics' | 'functional' | 'marketing'
+  umami?: {
+    src: string
+    websiteId: string
+  }
 }
-
-export type EventProps = Record<string, string | number | boolean | null>

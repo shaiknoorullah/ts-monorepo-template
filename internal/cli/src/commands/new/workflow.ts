@@ -3,15 +3,16 @@
 import { defineCommand } from 'citty'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'pathe'
+
 import { emit, fail } from '../../utils/output'
 import { repoPath } from '../../utils/paths'
 import { renderString } from '../../utils/templates'
 
 export const newWorkflow = defineCommand({
-  meta: { name: 'workflow', description: 'Scaffold a GitHub Actions workflow.' },
   args: {
-    name: { type: 'positional', description: 'Workflow file name (no extension)', required: true },
+    name: { description: 'Workflow file name (no extension)', required: true, type: 'positional' },
   },
+  meta: { description: 'Scaffold a GitHub Actions workflow.', name: 'workflow' },
   run({ args }) {
     const name = String(args.name)
     const dir = repoPath('.github/workflows')
@@ -23,7 +24,7 @@ export const newWorkflow = defineCommand({
     const template = existsSync(templatePath) ? readFileSync(templatePath, 'utf-8') : DEFAULT
     writeFileSync(target, renderString(template, { name }))
 
-    emit({ status: 'ok', message: `Created ${name}.yml`, data: { path: target } })
+    emit({ data: { path: target }, message: `Created ${name}.yml`, status: 'ok' })
   },
 })
 

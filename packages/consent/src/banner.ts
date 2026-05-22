@@ -5,8 +5,10 @@
 
 import * as CookieConsent from 'vanilla-cookieconsent'
 import 'vanilla-cookieconsent/dist/cookieconsent.css'
-import { useConsent } from './store'
+
 import type { ConsentCategory } from './types'
+
+import { useConsent } from './store'
 
 export interface MountOptions {
   categories: ConsentCategory[]
@@ -14,7 +16,7 @@ export interface MountOptions {
 }
 
 export function mountConsentBanner(opts: MountOptions): void {
-  if (typeof window === 'undefined') return
+  if (globalThis.window === undefined) return
 
   const categoryMap: Record<string, { enabled?: boolean; readOnly?: boolean }> = {}
   for (const c of opts.categories) {
@@ -31,33 +33,33 @@ export function mountConsentBanner(opts: MountOptions): void {
       translations: {
         en: {
           consentModal: {
-            title: 'We use cookies',
+            acceptAllBtn: 'Accept all',
+            acceptNecessaryBtn: 'Reject all',
             description:
               'Necessary cookies keep the site working. Optional categories are opt-in.',
-            acceptAllBtn: 'Accept all',
-            acceptNecessaryBtn: 'Reject all',
             showPreferencesBtn: 'Manage preferences',
+            title: 'We use cookies',
           },
           preferencesModal: {
-            title: 'Cookie preferences',
             acceptAllBtn: 'Accept all',
             acceptNecessaryBtn: 'Reject all',
-            savePreferencesBtn: 'Save',
             closeIconLabel: 'Close',
+            savePreferencesBtn: 'Save',
             sections: opts.categories.map((c) => ({
-              title: c[0]!.toUpperCase() + c.slice(1),
               description: `${c} cookies`,
               linkedCategory: c,
+              title: c[0]!.toUpperCase() + c.slice(1),
             })),
+            title: 'Cookie preferences',
           },
         },
       },
     },
-    onConsent: ({ cookie }) => {
+    onChange: ({ cookie }) => {
       const granted = (cookie?.categories ?? ['necessary']) as ConsentCategory[]
       useConsent.getState().setGranted(granted)
     },
-    onChange: ({ cookie }) => {
+    onConsent: ({ cookie }) => {
       const granted = (cookie?.categories ?? ['necessary']) as ConsentCategory[]
       useConsent.getState().setGranted(granted)
     },

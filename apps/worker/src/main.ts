@@ -7,20 +7,20 @@ import { type JobResult, processJob } from './processor.js'
 
 async function bootstrap(): Promise<void> {
   const config = loadWorkerConfig()
-  const logger = createLogger({ service: config.SERVICE_NAME, level: config.LOG_LEVEL })
+  const logger = createLogger({ level: config.LOG_LEVEL, service: config.SERVICE_NAME })
 
   const worker = new Worker<unknown, JobResult>(
     config.QUEUE_NAME,
     async (job: Job): Promise<JobResult> => processJob(job.data, { logger }),
     {
-      connection: { url: config.REDIS_URL },
       concurrency: config.WORKER_CONCURRENCY,
+      connection: { url: config.REDIS_URL },
     },
   )
 
-  worker.on('completed', (job) => logger.info({ jobId: job.id }, 'job completed'))
+  worker.on('completed', (job) => { logger.info({ jobId: job.id }, 'job completed'); })
   worker.on('failed', (job, err) =>
-    logger.error({ jobId: job?.id, err: toError(err) }, 'job failed'),
+    { logger.error({ err: toError(err), jobId: job?.id }, 'job failed'); },
   )
 
   const shutdown = async (signal: string): Promise<void> => {
@@ -29,8 +29,8 @@ async function bootstrap(): Promise<void> {
       await worker.close()
       logger.info('shutdown complete')
       process.exit(0)
-    } catch (e) {
-      logger.error({ err: toError(e) }, 'shutdown failed')
+    } catch (error) {
+      logger.error({ err: toError(error) }, 'shutdown failed')
       process.exit(1)
     }
   }
@@ -38,12 +38,12 @@ async function bootstrap(): Promise<void> {
   process.on('SIGINT', () => void shutdown('SIGINT'))
   process.on('SIGTERM', () => void shutdown('SIGTERM'))
 
-  logger.info({ queue: config.QUEUE_NAME, concurrency: config.WORKER_CONCURRENCY }, 'worker started')
+  logger.info({ concurrency: config.WORKER_CONCURRENCY, queue: config.QUEUE_NAME }, 'worker started')
 }
 
-bootstrap().catch((e: unknown) => {
-  const err = toError(e)
-  // eslint-disable-next-line no-console
+bootstrap().catch((error: unknown) => {
+  const err = toError(error)
+   
   console.error('FATAL: worker bootstrap failed', err)
   process.exit(1)
 })

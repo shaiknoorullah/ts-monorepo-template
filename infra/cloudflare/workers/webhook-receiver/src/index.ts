@@ -26,12 +26,12 @@ app.post('/:source', async (c) => {
 
   const body = await c.req.text()
   const headers: Record<string, string> = {}
-  c.req.raw.headers.forEach((v, k) => {
+  for (const [k, v] of c.req.raw.headers.entries()) {
     headers[k] = v
-  })
+  }
 
   if (c.env.WEBHOOKS) {
-    await c.env.WEBHOOKS.send({ source, headers, body, receivedAt: new Date().toISOString() })
+    await c.env.WEBHOOKS.send({ body, headers, receivedAt: new Date().toISOString(), source })
   }
 
   return c.json({ ok: true })

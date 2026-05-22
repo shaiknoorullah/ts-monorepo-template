@@ -1,12 +1,9 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: ['src/main.ts'],
-  format: ['esm'],
-  dts: false,
-  sourcemap: true,
   clean: true,
-  target: 'node22',
+  dts: false,
+  entry: ['src/main.ts'],
   // Services bundle their workspace deps, leave runtime deps external so the
   // container's node_modules can dedupe them.
   external: [
@@ -18,4 +15,7 @@ export default defineConfig({
     'pg',
     'drizzle-orm',
   ],
+  format: ['esm'],
+  sourcemap: true,
+  target: 'node22',
 })

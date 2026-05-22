@@ -1,36 +1,37 @@
 // apps/cms/src/collections/Posts.ts
 
 import type { CollectionConfig } from 'payload'
+
 import { isAdmin, isPublishedOrAdmin } from '../access'
 
 export const Posts: CollectionConfig = {
-  slug: 'posts',
-  versions: { drafts: true },
-  admin: {
-    useAsTitle: 'title',
-    defaultColumns: ['title', 'slug', '_status', 'publishedAt'],
-  },
   access: {
-    read: isPublishedOrAdmin,
     create: isAdmin,
-    update: isAdmin,
     delete: isAdmin,
+    read: isPublishedOrAdmin,
+    update: isAdmin,
+  },
+  admin: {
+    defaultColumns: ['title', 'slug', '_status', 'publishedAt'],
+    useAsTitle: 'title',
   },
   fields: [
-    { name: 'title', type: 'text', required: true },
-    { name: 'slug', type: 'text', required: true, unique: true, index: true },
+    { name: 'title', required: true, type: 'text' },
+    { index: true, name: 'slug', required: true, type: 'text', unique: true },
     { name: 'excerpt', type: 'textarea' },
     { name: 'body', type: 'richText' },
     { name: 'publishedAt', type: 'date' },
     {
+      fields: [{ name: 'value', type: 'text' }],
       name: 'tags',
       type: 'array',
-      fields: [{ name: 'value', type: 'text' }],
     },
     {
       name: 'coverImage',
-      type: 'upload',
       relationTo: 'media',
+      type: 'upload',
     },
   ],
+  slug: 'posts',
+  versions: { drafts: true },
 }

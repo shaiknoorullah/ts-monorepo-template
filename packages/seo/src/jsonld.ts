@@ -4,60 +4,60 @@
 
 import type { Article, BreadcrumbList, FAQPage, Organization, Product } from 'schema-dts'
 
-export function organization(input: { name: string; url: string; logo: string }): Organization {
-  return {
-    '@type': 'Organization',
-    name: input.name,
-    url: input.url,
-    logo: input.logo,
-  }
-}
-
 export function article(input: {
+  authorName: string
+  datePublished: string
   headline: string
   url: string
-  datePublished: string
-  authorName: string
 }): Article {
   return {
     '@type': 'Article',
+    author: { '@type': 'Person', name: input.authorName },
+    datePublished: input.datePublished,
     headline: input.headline,
     url: input.url,
-    datePublished: input.datePublished,
-    author: { '@type': 'Person', name: input.authorName },
-  }
-}
-
-export function faqPage(input: { questions: Array<{ q: string; a: string }> }): FAQPage {
-  return {
-    '@type': 'FAQPage',
-    mainEntity: input.questions.map((q) => ({
-      '@type': 'Question',
-      name: q.q,
-      acceptedAnswer: { '@type': 'Answer', text: q.a },
-    })),
   }
 }
 
 export function breadcrumbs(input: {
-  items: Array<{ name: string; url: string }>
+  items: { name: string; url: string }[]
 }): BreadcrumbList {
   return {
     '@type': 'BreadcrumbList',
     itemListElement: input.items.map((item, i) => ({
       '@type': 'ListItem',
-      position: i + 1,
-      name: item.name,
       item: item.url,
+      name: item.name,
+      position: i + 1,
     })),
   }
 }
 
-export function product(input: { name: string; description: string; image: string }): Product {
+export function faqPage(input: { questions: { a: string; q: string; }[] }): FAQPage {
+  return {
+    '@type': 'FAQPage',
+    mainEntity: input.questions.map((q) => ({
+      '@type': 'Question',
+      acceptedAnswer: { '@type': 'Answer', text: q.a },
+      name: q.q,
+    })),
+  }
+}
+
+export function organization(input: { logo: string; name: string; url: string; }): Organization {
+  return {
+    '@type': 'Organization',
+    logo: input.logo,
+    name: input.name,
+    url: input.url,
+  }
+}
+
+export function product(input: { description: string; image: string; name: string; }): Product {
   return {
     '@type': 'Product',
-    name: input.name,
     description: input.description,
     image: input.image,
+    name: input.name,
   }
 }
