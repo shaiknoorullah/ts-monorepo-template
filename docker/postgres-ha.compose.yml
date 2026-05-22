@@ -1,0 +1,124 @@
+# Dev-grade 1-primary + 1-replica Postgres with pgBouncer (transaction-level).
+# Mirrors the production topology used by the CloudNativePG operator on K8s,
+# but with no failover automation. For HA see docs/specs/data-eventing/postgres-ha-patroni-pgbouncer.md.
+version: "3.9"
+
+x-pg-env: &pg_env
+  POSTGRES_DB: app
+  POSTGRES_USER: app
+  POSTGRES_PASSWORD: app
+  POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+
+services:
+  pg-primary:
+    image: postgres:16
+    container_name: pg-primary
+    restart: unless-stopped
+    environment:
+      <<: *pg_env
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "max_wal_senders=10"
+      - "-c"
+      - "max_replication_slots=10"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=512MB"
+      - "-c"
+      - "synchronous_commit=on"
+      - "-c"
+      - "hot_standby=on"
+      - "-c"
+      - "log_min_duration_statement=200"
+      - "-c"
+      - "track_io_timing=on"
+    volumes:
+      - pg-primary-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  pg-replica:
+    image: postgres:16
+    container_name: pg-replica
+    restart: unless-stopped
+    depends_on:
+      pg-primary:
+        condition: service_healthy
+    environment:
+      <<: *pg_env
+      PGPASSWORD: app
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -euo pipefail
+        if [ ! -s "$$PGDATA/PG_VERSION" ]; then
+          until pg_isready -h pg-primary -U app; do sleep 1; done
+          pg_basebackup -h pg-primary -U app -D "$$PGDATA" -X stream -R -P
+          chmod 0700 "$$PGDATA"
+        fi
+        exec docker-entrypoint.sh postgres -c hot_standby=on -c primary_conninfo='host=pg-primary user=app password=app'
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      <<: *pg_env
+    volumes:
+      - pg-replica-data:/var/lib/postgresql/data
+    networks: [data]
+
+  pgbouncer-rw:
+    image: bitnami/pgbouncer:1.23.1
+    container_name: pgbouncer-rw
+    depends_on:
+      pg-primary:
+        condition: service_healthy
+    environment:
+      POSTGRESQL_HOST: pg-primary
+      POSTGRESQL_USERNAME: app
+      POSTGRESQL_PASSWORD: app
+      POSTGRESQL_DATABASE: app
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_MAX_CLIENT_CONN: "1000"
+      PGBOUNCER_DEFAULT_POOL_SIZE: "25"
+      PGBOUNCER_RESERVE_POOL_SIZE: "5"
+      PGBOUNCER_SERVER_IDLE_TIMEOUT: "60"
+      PGBOUNCER_SERVER_LIFETIME: "3600"
+      PGBOUNCER_QUERY_WAIT_TIMEOUT: "120"
+    ports:
+      - "6432:6432"
+    networks: [data]
+
+  pgbouncer-ro:
+    image: bitnami/pgbouncer:1.23.1
+    container_name: pgbouncer-ro
+    depends_on:
+      pg-replica:
+        condition: service_started
+    environment:
+      POSTGRESQL_HOST: pg-replica
+      POSTGRESQL_USERNAME: app
+      POSTGRESQL_PASSWORD: app
+      POSTGRESQL_DATABASE: app
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_MAX_CLIENT_CONN: "1000"
+      PGBOUNCER_DEFAULT_POOL_SIZE: "50"
+    ports:
+      - "6433:6432"
+    networks: [data]
+
+volumes:
+  pg-primary-data:
+  pg-replica-data:
+
+networks:
+  data:
+    name: data

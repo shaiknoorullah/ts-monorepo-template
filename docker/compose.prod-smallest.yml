@@ -1,0 +1,299 @@
+# Production-grade topology at smallest viable scale.
+# Suitable for staging or single-node POC on a 16-24 GiB host.
+# See docs/specs/edge-obs/docker-compose-variants.md for sizing rationale.
+#
+# Usage:
+#   docker compose -f docker/compose.prod-smallest.yml --env-file .env.staging up -d
+#
+# Layer dev-tools on top:
+#   docker compose -f docker/compose.prod-smallest.yml -f docker/compose.dev-tools.yml \
+#     --env-file .env.staging up -d
+name: tsm-prod-smallest
+
+x-restart: &restart
+  restart: unless-stopped
+
+x-pg-env: &pg-env
+  POSTGRES_USER: ${POSTGRES_USER:-postgres}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+  POSTGRES_DB: ${POSTGRES_DB:-app}
+
+services:
+  # ─── Edge ─────────────────────────────────────────────────────────────
+  traefik:
+    image: traefik:v3.5
+    <<: *restart
+    command:
+      - --api.dashboard=true
+      - --api.insecure=false
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http3=true
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL:?required}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.dnschallenge=true
+      - --certificatesresolvers.le.acme.dnschallenge.provider=cloudflare
+      - --tracing.otlp=true
+      - --tracing.otlp.grpc.endpoint=otel-collector:4317
+      - --tracing.otlp.grpc.insecure=true
+      - --metrics.prometheus=true
+      - --metrics.prometheus.addrouterslabels=true
+      - --accesslog=true
+      - --accesslog.format=json
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      CF_DNS_API_TOKEN_FILE: /run/secrets/cf_token
+    secrets:
+      - cf_token
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./edge/dynamic:/etc/traefik/dynamic:ro
+      - traefik-letsencrypt:/letsencrypt
+    networks: [edge, observability]
+    deploy:
+      resources:
+        limits: { cpus: "1", memory: 256M }
+
+  # ─── State: Postgres HA via Patroni + etcd ────────────────────────────
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.15
+    <<: *restart
+    environment:
+      ETCD_NAME: etcd
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd:2379
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER: etcd=http://etcd:2380
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd:2380
+    volumes: [etcd-data:/etcd-data]
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [state]
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 256M }
+
+  pg-1: &pg-base
+    image: ghcr.io/zalando/spilo-16:3.2-p3
+    <<: *restart
+    environment:
+      <<: *pg-env
+      SCOPE: tsm
+      PGVERSION: "16"
+      ETCD_HOSTS: etcd:2379
+      PATRONI_NAME: pg-1
+    volumes: [pg1-data:/home/postgres/pgdata]
+    networks: [state]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      etcd: { condition: service_healthy }
+    deploy:
+      resources:
+        limits: { cpus: "2", memory: 3G }
+
+  pg-2:
+    <<: *pg-base
+    environment:
+      <<: *pg-env
+      SCOPE: tsm
+      PGVERSION: "16"
+      ETCD_HOSTS: etcd:2379
+      PATRONI_NAME: pg-2
+    volumes: [pg2-data:/home/postgres/pgdata]
+
+  pg-3:
+    <<: *pg-base
+    environment:
+      <<: *pg-env
+      SCOPE: tsm
+      PGVERSION: "16"
+      ETCD_HOSTS: etcd:2379
+      PATRONI_NAME: pg-3
+    volumes: [pg3-data:/home/postgres/pgdata]
+
+  pgbouncer:
+    image: edoburu/pgbouncer:v1.23.1
+    <<: *restart
+    environment:
+      DB_HOST: pg-1
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: "500"
+      DEFAULT_POOL_SIZE: "40"
+      SERVER_RESET_QUERY: DISCARD ALL
+    networks: [state, app]
+    depends_on:
+      pg-1: { condition: service_healthy }
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 256M }
+
+  # ─── Cache: Redis Cluster (6 nodes, 3 masters + 3 replicas) ───────────
+  redis-node-1: &redis-node
+    image: redis:7.4-alpine
+    <<: *restart
+    command: >
+      redis-server
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    networks: [state]
+    deploy:
+      resources: { limits: { cpus: "0.5", memory: 700M } }
+  redis-node-2: { <<: *redis-node }
+  redis-node-3: { <<: *redis-node }
+  redis-node-4: { <<: *redis-node }
+  redis-node-5: { <<: *redis-node }
+  redis-node-6: { <<: *redis-node }
+  redis-cluster-init:
+    image: redis:7.4-alpine
+    profiles: ["init"]
+    entrypoint: >
+      sh -c "sleep 5 &&
+        echo 'yes' | redis-cli --cluster create
+        redis-node-1:6379 redis-node-2:6379 redis-node-3:6379
+        redis-node-4:6379 redis-node-5:6379 redis-node-6:6379
+        --cluster-replicas 1"
+    networks: [state]
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-node-4
+      - redis-node-5
+      - redis-node-6
+
+  # ─── Messaging: Kafka KRaft (single broker) ───────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    <<: *restart
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168
+      CLUSTER_ID: "tsm-staging-kraft-001"
+    volumes: [kafka-data:/var/lib/kafka/data]
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks: [state, app]
+    deploy:
+      resources:
+        limits: { cpus: "2", memory: 2G }
+
+  schema-registry:
+    image: apicurio/apicurio-registry:2.6.5.Final
+    <<: *restart
+    environment:
+      QUARKUS_PROFILE: prod
+      REGISTRY_STORAGE_KIND: kafkasql
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      kafka: { condition: service_healthy }
+    networks: [app]
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+
+  # ─── Apps ─────────────────────────────────────────────────────────────
+  api:
+    image: ${REGISTRY:-ghcr.io/shaiknoorullah/ts-monorepo-template}/api:${TAG:-latest}
+    <<: *restart
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB:-app}
+      REDIS_URL: redis://redis-node-1:6379
+      KAFKA_BROKERS: kafka:9092
+      SCHEMA_REGISTRY_URL: http://schema-registry:8080
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: api
+    depends_on:
+      pgbouncer: { condition: service_started }
+      kafka: { condition: service_healthy }
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.api.rule=Host(`api.${PUBLIC_DOMAIN:?required}`)
+      - traefik.http.routers.api.entrypoints=websecure
+      - traefik.http.routers.api.tls.certresolver=le
+      - traefik.http.routers.api.middlewares=rate-limit-tenant@file
+    networks: [app, edge]
+    deploy:
+      resources:
+        limits: { cpus: "1", memory: 768M }
+
+  worker:
+    image: ${REGISTRY:-ghcr.io/shaiknoorullah/ts-monorepo-template}/worker:${TAG:-latest}
+    <<: *restart
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB:-app}
+      KAFKA_BROKERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: worker
+    depends_on:
+      pgbouncer: { condition: service_started }
+      kafka: { condition: service_healthy }
+    networks: [app]
+    deploy:
+      resources:
+        limits: { cpus: "1", memory: 512M }
+
+  # ─── Observability edge collector ─────────────────────────────────────
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.110.0
+    <<: *restart
+    command: ["--config=/etc/otelcol/config.yml"]
+    volumes:
+      - ./observability/otel-collector.yml:/etc/otelcol/config.yml:ro
+    networks: [app, observability]
+
+secrets:
+  cf_token:
+    file: ./secrets/cf_token.txt
+
+volumes:
+  etcd-data:
+  pg1-data:
+  pg2-data:
+  pg3-data:
+  kafka-data:
+  traefik-letsencrypt:
+
+networks:
+  edge:    { driver: bridge }
+  app:     { driver: bridge }
+  state:   { driver: bridge, internal: true }
+  observability:
+    name: observability
+    driver: bridge
