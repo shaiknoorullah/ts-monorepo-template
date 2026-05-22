@@ -1,0 +1,50 @@
+# ------------------------------------------------------------------------------
+# pkg-pr-new.yml — Ephemeral npm previews per PR via pkg.pr.new
+#
+# Triggers: pull_request.
+# Purpose:  Publish per-PR snapshots of all libraries in `packages/*` to
+#           pkg.pr.new so reviewers can `pnpm add https://pkg.pr.new/...`.
+#           Apps (`apps/*`) are NOT published.
+# Safety:   - Uses pull_request (not pull_request_target). No write secrets are
+#             exposed to forked PR code.
+#           - Action pinned to 40-char SHA.
+# ------------------------------------------------------------------------------
+
+name: pkg.pr.new
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pkg-pr-new-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  publish-preview:
+    name: Publish PR preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 10.15.0
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm exec nx run-many -t build --projects=packages/*
+
+      - name: Publish ephemeral preview
+        run: pnpm dlx pkg-pr-new publish --pnpm './packages/*'

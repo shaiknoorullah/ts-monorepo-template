@@ -1,0 +1,76 @@
+# ------------------------------------------------------------------------------
+# pr-changesets.yml — Require a changeset on every PR
+#
+# Triggers: pull_request opened/synchronize/labeled/unlabeled.
+# Purpose:  Fail the check if the PR has no new file under `.changeset/*.md`
+#           AND no `no-changeset` label. Posts a sticky comment reminder.
+# Safety:   - Untrusted PR title / branch never expanded directly in `run:` —
+#             all values are read from env / outputs.
+#           - Uses pull_request (NOT pull_request_target) so forked PRs cannot
+#             access write tokens.
+# ------------------------------------------------------------------------------
+
+name: PR — Changesets
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-changesets-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  require-changeset:
+    name: Require changeset
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Check for changeset or "no-changeset" label
+        id: check
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LABELS_JSON: ${{ toJson(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+
+          ADDED=$(git diff --name-only --diff-filter=A "origin/$BASE_REF...$HEAD_SHA" -- '.changeset/*.md' \
+            | grep -v 'README.md' || true)
+
+          HAS_NO_CHANGESET_LABEL=$(printf '%s' "$LABELS_JSON" | grep -c '"no-changeset"' || true)
+
+          if [ -n "$ADDED" ]; then
+            echo "result=present" >> "$GITHUB_OUTPUT"
+            echo "Changeset file(s) added:"
+            echo "$ADDED"
+          elif [ "$HAS_NO_CHANGESET_LABEL" -gt 0 ]; then
+            echo "result=skipped" >> "$GITHUB_OUTPUT"
+            echo "no-changeset label set — skipping."
+          else
+            echo "result=missing" >> "$GITHUB_OUTPUT"
+            echo "::error::No changeset added and no-changeset label is not applied."
+            exit 1
+          fi
+
+      - name: Sticky comment — reminder
+        if: always()
+        uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 # v2.9.1
+        with:
+          header: pr-changesets
+          message: |
+            ### Changesets check: `${{ steps.check.outputs.result || 'unknown' }}`
+
+            This repo requires either:
+            1. A new `.changeset/*.md` file describing your change — run `pnpm changeset` locally, or
+            2. The `no-changeset` label if your PR truly has no user-visible / package-visible impact (refactors, docs, CI, tests).
+
+            See `CONTRIBUTING.md` for the full policy.
