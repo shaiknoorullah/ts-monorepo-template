@@ -36,7 +36,7 @@ jobs:
 
       - name: Publish to Cloudflare Pages (preview)
         if: github.event_name == 'pull_request'
-        uses: cloudflare/wrangler-action@392082e81fbedc8b0f2a04a09a91e7d2bdeaa630 # v3.14.1
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -44,7 +44,7 @@ jobs:
 
       - name: Publish to Cloudflare Pages (production)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: cloudflare/wrangler-action@392082e81fbedc8b0f2a04a09a91e7d2bdeaa630 # v3.14.1
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
