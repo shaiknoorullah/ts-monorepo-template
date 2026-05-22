@@ -1,0 +1,60 @@
+# config/base.yaml
+#
+# Shared defaults across ALL environments. Override per-env in dev/test/staging/prod.yaml.
+# Tenant overrides live in config/tenants/<tenant>.yaml and extend the env file.
+#
+# Secrets MUST NOT be inlined here. Use a SecretRef:
+#   password:
+#     provider: vault
+#     path: secret/data/<env>/db#password
+#
+# Env-var escape hatch (12-factor): values like `${DATABASE_HOST}` are read from
+# process.env at load time and substituted in place.
+
+app:
+  name: app
+  version: 0.0.0
+  env: dev          # overridden by every env file
+  port: 3000
+  logLevel: info
+
+database:
+  host: localhost
+  port: 5432
+  user: dev
+  database: app
+  schema: public
+  ssl: false
+  poolMax: 10
+
+redis:
+  host: localhost
+  port: 6379
+  cluster: false
+
+kafka:
+  bootstrapServers:
+    - localhost:9092
+  clientId: app
+  security:
+    protocol: PLAINTEXT
+
+temporal:
+  address: localhost:7233
+  namespace: default
+  taskQueue: default
+  tls: false
+
+observability:
+  otel:
+    enabled: true
+    exporter: otlp-grpc
+    serviceName: app
+
+tenancy:
+  strategy: row
+  defaultTenant: public
+  isolation: strict
+
+# secrets: bag of pointer references — never inline values
+secrets: {}

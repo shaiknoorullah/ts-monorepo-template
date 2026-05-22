@@ -31,9 +31,44 @@ corepack enable
 corepack use pnpm@10.15.0
 pnpm install
 pnpm prepare       # installs lefthook hooks
-pnpm doctor        # validates the workspace
-pnpm test
+
+# From this point on, use the `repo` CLI for everything (see below).
+repo doctor        # validates the workspace
+repo dev up        # bring up local postgres / redis / kafka
+repo test
 ```
+
+## Developer experience — the `repo` CLI
+
+> Everything a developer does in this repo **except writing business logic** runs through a single CLI: `repo`.
+
+```bash
+repo doctor                  # validate local env
+repo dev up                  # docker compose up -d (postgres/redis/kafka/...)
+repo env render dev          # YAML hierarchy -> docker/.env.rendered
+repo new package timing      # scaffold packages/timing/
+repo new adr "feature flags" # scaffold docs/adrs/000N-feature-flags.md
+repo lint && repo test       # CI mirror — what GH Actions runs
+repo deps check              # syncpack + knip + manypkg + attw + publint
+```
+
+Every command accepts `--json` and emits a machine-readable `{status, message, data}` payload — useful for agents and scripts. See [`internal/cli/README.md`](./internal/cli/README.md) for the full command reference. The motivating decisions are in [ADR-0007](./docs/adrs/0007-repo-cli-as-dev-interface.md).
+
+### Configuration
+
+YAML, not `.env`. Layered via [c12](https://github.com/unjs/c12) and validated by Zod (see [ADR-0006](./docs/adrs/0006-yaml-config-with-c12.md)).
+
+```
+config/
+├── schema.ts        # Zod — source of truth
+├── base.yaml        # defaults
+├── dev.yaml         # extends base
+├── staging.yaml
+├── prod.yaml
+└── tenants/<slug>.yaml
+```
+
+`.env` files become rendered artifacts: `repo env render <env>` writes `docker/.env.rendered` for docker-compose consumption. The renderer refuses to emit while any `SecretRef` is still unresolved — secrets must be wired to ESO/Vault/KV before they leave the YAML.
 
 ## Table of contents
 

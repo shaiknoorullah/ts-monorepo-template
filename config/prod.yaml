@@ -1,0 +1,94 @@
+# config/prod.yaml — production cluster
+#
+# Hard rules:
+#   * No raw passwords. Every secret MUST be a SecretRef.
+#   * All hostnames come from env vars (resolved from k8s ExternalSecrets / ConfigMaps).
+#   * `repo env render prod` REFUSES to emit if any required secret is unresolved.
+
+$extends: ./base.yaml
+
+app:
+  env: prod
+  port: 8080
+  logLevel: info
+
+database:
+  host: ${DATABASE_HOST}
+  port: ${DATABASE_PORT}
+  user: ${DATABASE_USER}
+  password:
+    provider: vault
+    path: secret/data/prod/db#password
+  database: app
+  ssl: true
+  poolMax: 50
+
+redis:
+  host: ${REDIS_HOST}
+  port: ${REDIS_PORT}
+  cluster: true
+  nodes:
+    - host: ${REDIS_NODE_1}
+      port: 6379
+    - host: ${REDIS_NODE_2}
+      port: 6379
+    - host: ${REDIS_NODE_3}
+      port: 6379
+    - host: ${REDIS_NODE_4}
+      port: 6379
+    - host: ${REDIS_NODE_5}
+      port: 6379
+  password:
+    provider: vault
+    path: secret/data/prod/redis#password
+
+kafka:
+  bootstrapServers:
+    - ${KAFKA_BROKER_1}
+    - ${KAFKA_BROKER_2}
+    - ${KAFKA_BROKER_3}
+  security:
+    protocol: SASL_SSL
+    saslMechanism: SCRAM-SHA-512
+    saslUsername: ${KAFKA_USER}
+    saslPassword:
+      provider: vault
+      path: secret/data/prod/kafka#password
+  schemaRegistry:
+    url: ${SCHEMA_REGISTRY_URL}
+    auth:
+      username: ${SCHEMA_REGISTRY_USER}
+      password:
+        provider: vault
+        path: secret/data/prod/schema-registry#password
+
+temporal:
+  address: ${TEMPORAL_ADDRESS}
+  namespace: prod
+  tls: true
+
+observability:
+  otel:
+    enabled: true
+    exporter: otlp-grpc
+    endpoint: ${OTEL_ENDPOINT}
+    serviceName: app-prod
+  signoz:
+    endpoint: ${SIGNOZ_ENDPOINT}
+    ingestionKey:
+      provider: vault
+      path: secret/data/prod/signoz#key
+
+auth:
+  issuer: ${OIDC_ISSUER}
+  audience: app
+  jwksUri: ${OIDC_JWKS_URI}
+  clientId: app
+  clientSecret:
+    provider: vault
+    path: secret/data/prod/oidc#client-secret
+
+tenancy:
+  strategy: row
+  defaultTenant: public
+  isolation: strict

@@ -14,18 +14,35 @@ references:
 
 # docker-compose Variants
 
-Three compose files live under `docker/` and are designed to be **merged**, not used in isolation. The pattern is borrowed from the official Docker docs ([merge multiple compose files](https://docs.docker.com/compose/multiple-compose-files/merge/)):
+Three compose files live under `docker/` and are designed to be **merged**, not used in isolation. The pattern is borrowed from the official Docker docs ([merge multiple compose files](https://docs.docker.com/compose/multiple-compose-files/merge/)).
+
+> **Config note (ADR-0006):** `.env` files are now **rendered artifacts**. The source of truth is the YAML hierarchy under `config/`. Use `repo env render <env>` to produce the `.env` that compose consumes.
 
 ```bash
+# Render the YAML hierarchy first (config/dev.yaml + config/base.yaml -> docker/.env.rendered)
+repo env render dev
+
+# developer laptop
+repo dev up
+# (equivalent to: docker compose -f docker/compose.dev.yml --env-file docker/.env.rendered up -d)
+
 # staging on a single node, with dev-tools UIs available
+repo env render staging --out docker/.env.staging.rendered
 docker compose \
   -f docker/compose.prod-smallest.yml \
   -f docker/compose.dev-tools.yml \
-  --env-file .env.staging up -d
-
-# developer laptop
-docker compose -f docker/compose.dev.yml up -d
+  --env-file docker/.env.staging.rendered up -d
 ```
+
+For the SaaS-commons stack (Keycloak/Unleash/Lago/Chatwoot/etc.):
+
+```bash
+repo env render saas-commons --out docker/.env.saas-commons.rendered
+docker compose -f docker/compose.saas-commons.yml \
+  --env-file docker/.env.saas-commons.rendered up -d
+```
+
+The legacy `.env.saas-commons.example` is preserved for backward compatibility but is **deprecated** — see [ADR-0006](../../adrs/0006-yaml-config-with-c12.md).
 
 ## Files at a glance
 

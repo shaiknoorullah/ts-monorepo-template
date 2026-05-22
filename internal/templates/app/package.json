@@ -1,0 +1,28 @@
+{
+  "name": "{{scope}}/{{name}}",
+  "version": "0.0.0",
+  "private": true,
+  "description": "{{name}} — TODO describe this microservice",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "type-check": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "@pkg/config": "workspace:*",
+    "@pkg/logger": "workspace:*",
+    "@pkg/types": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

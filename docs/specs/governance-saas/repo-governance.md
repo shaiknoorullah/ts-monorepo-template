@@ -244,7 +244,47 @@ See `docs/adrs/` for examples. The `adr-tools` CLI is optional but recommended f
 
 ---
 
-## 13. Where this document fits
+## 13. Developer workflow — the `repo` CLI
+
+Every workflow described above is exposed via the `repo` CLI (defined in `internal/cli/`). Use it as the canonical entry point — `pnpm run <script>` is retained for backward compatibility but is no longer the documented path.
+
+### Setup (first time)
+
+```bash
+corepack enable
+corepack use pnpm@10.15.0
+pnpm install
+repo doctor                # validates node / pnpm / docker / config files
+```
+
+### Daily
+
+```bash
+repo dev up                # bring up postgres / redis / kafka / temporal locally
+repo env render dev        # YAML -> docker/.env.rendered (compose consumes this)
+repo new package <name>    # scaffold a new shared library
+repo new adr "<title>"     # capture a decision before merging it
+repo lint                  # ESLint + Prettier + markdownlint + cspell
+repo test                  # vitest via nx
+repo ci                    # mirror of the CI gate — run before pushing
+```
+
+### Release
+
+```bash
+repo new changeset                   # describe the change
+git add .changeset && git commit -m "chore(release): add changeset"
+repo release version                 # bumps + updates CHANGELOGs
+repo release publish                 # changeset publish (npm + provenance)
+```
+
+### Why a CLI
+
+See [ADR-0007](../../adrs/0007-repo-cli-as-dev-interface.md). TL;DR: composition, discoverability, and a `--json` mode for agents.
+
+---
+
+## 14. Where this document fits
 
 - `AGENTS.md` is the **lighthouse** for AI agents. It points here for the rules.
 - `CONTRIBUTING.md` is the **lighthouse** for human contributors. It points here for the rules.

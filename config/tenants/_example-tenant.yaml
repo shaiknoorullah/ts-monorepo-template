@@ -1,0 +1,31 @@
+# config/tenants/_example-tenant.yaml
+#
+# Tenant overrides extend the env file (NOT base directly).
+# Use this when a specific tenant needs its own database, feature flags,
+# rate limits, or branded auth realm.
+#
+# Filename rules:
+#   * One file per tenant: <tenant-slug>.yaml
+#   * Files starting with `_` are templates / not auto-loaded.
+
+$extends: ../dev.yaml
+
+app:
+  name: app-acme
+
+database:
+  schema: tenant_acme
+
+tenancy:
+  strategy: schema
+  defaultTenant: acme
+  isolation: strict
+
+features:
+  unleash:
+    url: http://localhost:4242/api
+    apiKey:
+      provider: vault
+      path: secret/data/dev/unleash#acme-token
+    appName: app-acme
+    environment: development

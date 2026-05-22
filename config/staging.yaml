@@ -1,0 +1,72 @@
+# config/staging.yaml — pre-prod cluster (mirrors prod topology, scaled down)
+
+$extends: ./base.yaml
+
+app:
+  env: staging
+  port: 8080
+  logLevel: info
+
+database:
+  host: ${DATABASE_HOST}
+  port: ${DATABASE_PORT}
+  user: ${DATABASE_USER}
+  password:
+    provider: vault
+    path: secret/data/staging/db#password
+  database: app
+  ssl: true
+  poolMax: 20
+
+redis:
+  host: ${REDIS_HOST}
+  port: ${REDIS_PORT}
+  cluster: true
+  nodes:
+    - host: ${REDIS_NODE_1}
+      port: 6379
+    - host: ${REDIS_NODE_2}
+      port: 6379
+    - host: ${REDIS_NODE_3}
+      port: 6379
+
+kafka:
+  bootstrapServers:
+    - ${KAFKA_BROKER_1}
+    - ${KAFKA_BROKER_2}
+    - ${KAFKA_BROKER_3}
+  security:
+    protocol: SASL_SSL
+    saslMechanism: SCRAM-SHA-512
+    saslUsername: ${KAFKA_USER}
+    saslPassword:
+      provider: vault
+      path: secret/data/staging/kafka#password
+  schemaRegistry:
+    url: ${SCHEMA_REGISTRY_URL}
+
+temporal:
+  address: ${TEMPORAL_ADDRESS}
+  namespace: staging
+  tls: true
+
+observability:
+  otel:
+    enabled: true
+    exporter: otlp-grpc
+    endpoint: ${OTEL_ENDPOINT}
+    serviceName: app-staging
+  signoz:
+    endpoint: ${SIGNOZ_ENDPOINT}
+    ingestionKey:
+      provider: vault
+      path: secret/data/staging/signoz#key
+
+auth:
+  issuer: ${OIDC_ISSUER}
+  audience: app
+  jwksUri: ${OIDC_JWKS_URI}
+  clientId: app
+  clientSecret:
+    provider: vault
+    path: secret/data/staging/oidc#client-secret

@@ -1,0 +1,63 @@
+# config/saas-commons.yaml
+#
+# Declarative replacement for .env.saas-commons.example. Render with:
+#   repo env render saas-commons
+# which produces docker/.env.saas-commons.rendered (consumed by
+# docker/compose.saas-commons.yml).
+#
+# Secrets MUST be wired to a provider (vault/eso/azure-kv/aws-sm) or — for
+# strictly local development — supplied via env vars and referenced as ${VAR}.
+#
+# DEPRECATION: .env.saas-commons.example is preserved for backward-compat but
+# is no longer the canonical source. Tracker: see docs/adrs/0006-yaml-config-with-c12.md.
+
+app:
+  name: saas-commons
+  env: dev
+  port: 0         # not an app — config bundle for the SaaS sidecar stack
+
+# ---- Lago ----
+saas:
+  lago:
+    frontUrl: http://localhost:8101
+    apiUrl: http://localhost:8102
+  umami:
+    endpoint: http://localhost:8103
+  keycloak:
+    url: http://localhost:8104
+    realm: master
+  meilisearch:
+    host: http://localhost:7700
+  chatwoot:
+    frontendUrl: http://localhost:8106
+  uptimeKuma:
+    url: http://localhost:8105
+
+secrets:
+  lago_secret_key_base:
+    provider: env
+    path: LAGO_SECRET_KEY_BASE
+  lago_encryption_primary_key:
+    provider: env
+    path: LAGO_ENCRYPTION_PRIMARY_KEY
+  lago_encryption_deterministic_key:
+    provider: env
+    path: LAGO_ENCRYPTION_DETERMINISTIC_KEY
+  lago_encryption_key_derivation_salt:
+    provider: env
+    path: LAGO_ENCRYPTION_KEY_DERIVATION_SALT
+  lago_rsa_private_key:
+    provider: env
+    path: LAGO_RSA_PRIVATE_KEY
+  umami_app_secret:
+    provider: env
+    path: UMAMI_APP_SECRET
+  keycloak_admin_password:
+    provider: env
+    path: KEYCLOAK_ADMIN_PASSWORD
+  meili_master_key:
+    provider: env
+    path: MEILI_MASTER_KEY
+  chatwoot_secret_key_base:
+    provider: env
+    path: CHATWOOT_SECRET_KEY_BASE

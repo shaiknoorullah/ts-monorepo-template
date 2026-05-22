@@ -19,6 +19,9 @@
     "node": ">=22.0.0",
     "pnpm": ">=10.15.0"
   },
+  "bin": {
+    "repo": "./internal/cli/dist/cli.mjs"
+  },
   "scripts": {
     "build": "nx run-many -t build",
     "test": "nx run-many -t test",
