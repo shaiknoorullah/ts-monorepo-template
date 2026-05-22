@@ -34,6 +34,7 @@ docker compose -f docker/compose.dev.yml up -d
 | `compose.prod-smallest.yml` | Production-grade topology at smallest viable scale | Multi-broker Kafka, 3-node Postgres HA, 6-node Redis cluster | Single beefy node (16+ GiB), staging, POC |
 | `compose.dev.yml` | Single-instance everything, ports exposed, hot reload | Single broker, single Postgres, single Redis | Developer laptop |
 | `compose.dev-tools.yml` | Web UIs and inspection tools | n/a | Layered on top of either of the above |
+| `compose.saas-commons.yml` | Foundational SaaS tools: Keycloak, Unleash, Meilisearch, Lago, Chatwoot, Umami, Uptime Kuma — each with a dedicated Postgres/Redis where required | 7 tools, ~10 GiB resident at idle | Layered on top of `prod-smallest`; see [governance-saas/saas-commons.md §17](../governance-saas/saas-commons.md#17-compose-recipes) |
 
 Where this template overlaps with `data-eventing` (Kafka, Schema Registry, Connect), we **import** by symlink to avoid duplication. See "Cross-spec composition" below.
 
@@ -487,6 +488,34 @@ docker compose \
 ```
 
 The merge rule ([docs.docker.com merge](https://docs.docker.com/compose/multiple-compose-files/merge/)) is: services are deep-merged by name; later files override earlier ones; lists are replaced, not concatenated. Networks named identically across files are de-duped.
+
+### `compose.saas-commons.yml` — layered SaaS tooling
+
+The SaaS-commons file groups seven foundational tools (identity, feature flags, search, billing, support, analytics, status page). It uses the [`include:` directive](https://docs.docker.com/compose/compose-file/14-include/) to pull in each tool's individual compose file — so you can either run the master, or pick one tool in isolation via `-f docker/<tool>.compose.yml`.
+
+```bash
+# Foundation + SaaS-commons together
+docker compose \
+  -f docker/compose.prod-smallest.yml \
+  -f docker/compose.saas-commons.yml \
+  --env-file .env.saas-commons \
+  up -d
+
+# Or just one tool — useful for iterating on a single integration
+docker compose \
+  -f docker/keycloak.compose.yml \
+  --env-file .env.saas-commons \
+  up -d
+```
+
+Networks: each SaaS-commons tool joins the external `saas-commons` network and (where HTTP-exposing) the `obs` network so the existing OTel collector / Prometheus can scrape. Create both networks once:
+
+```bash
+docker network create saas-commons
+docker network create obs   # if not already created by observability-deps.compose.yml
+```
+
+Why each SaaS tool ships its own Postgres/Redis instead of reusing the Patroni cluster: each upstream pins a specific Postgres major (Lago → 14, Chatwoot → 12) and runs migrations that own the schema. Sharing the app's PG 16 cluster would force a version drift and create schema-ownership confusion. The duplication cost is ~3 idle Postgres containers; the simplicity gain is worth it for a self-host template.
 
 ## Resource limits — the numbers are non-arbitrary
 

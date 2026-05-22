@@ -1,0 +1,90 @@
+# Keycloak — identity / OIDC / SSO (Apache 2.0).
+# Reference: https://www.keycloak.org/getting-started/getting-started-docker
+#            https://www.keycloak.org/server/containers
+#
+# We pick Keycloak as primary identity provider for this template. Ory (Kratos +
+# Hydra) is the alternate path documented in saas-commons.md §5; switch by
+# replacing this compose with `ory.compose.yml`.
+#
+# Default port: container :8080 → host :8104
+# Override: KEYCLOAK_PORT=<port>
+#
+# Production-mode flags applied here (start --optimized + KC_HOSTNAME). For a
+# zero-config first boot, switch the command to `start-dev` and unset KC_HOSTNAME.
+version: "3.9"
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-db
+    <<: *restart
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_POSTGRES_DB:-keycloak}
+      POSTGRES_USER: ${KEYCLOAK_POSTGRES_USER:-keycloak}
+      POSTGRES_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - keycloak-postgres-data:/var/lib/postgresql/data
+    networks: [saas-commons]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_POSTGRES_USER:-keycloak}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: keycloak
+    <<: *restart
+    depends_on:
+      keycloak-db: { condition: service_healthy }
+    command: ["start", "--optimized"]
+    environment:
+      # --- DB ---
+      KC_DB: postgres
+      KC_DB_URL: "jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_POSTGRES_DB:-keycloak}"
+      KC_DB_USERNAME: ${KEYCLOAK_POSTGRES_USER:-keycloak}
+      KC_DB_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-changeme}
+      # --- Bootstrap admin (only used on first start) ---
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD is required}
+      # --- Hostname / proxy (production mode requires both) ---
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME:-localhost}
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY: edge
+      # --- Health/metrics on management port :9000 ---
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      # --- Logging ---
+      KC_LOG_LEVEL: ${KEYCLOAK_LOG_LEVEL:-INFO}
+    ports:
+      - "${KEYCLOAK_PORT:-8104}:8080"
+    networks: [saas-commons, obs]
+    healthcheck:
+      # Management endpoint is on :9000 by default in 25.x (KC_HEALTH_ENABLED=true)
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/health/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    deploy:
+      resources:
+        limits: { cpus: "1", memory: 1G }
+
+volumes:
+  keycloak-postgres-data:
+
+networks:
+  saas-commons:
+    external: true
+    name: saas-commons
+  obs:
+    external: true
+    name: obs

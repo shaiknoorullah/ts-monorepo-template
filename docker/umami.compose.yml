@@ -1,0 +1,64 @@
+# Umami — privacy-friendly web analytics (MIT).
+# Adapted from https://github.com/umami-software/umami/blob/master/docker-compose.yml
+#
+# Default port: container :3000 → host :8103
+# Override: UMAMI_PORT=<port> in .env.saas-commons
+#
+# Dedicated Postgres because Umami owns its schema with Prisma migrations.
+# Sharing the app DB is technically possible but creates schema-ownership conflicts.
+version: "3.9"
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  umami-db:
+    image: postgres:16-alpine
+    container_name: umami-db
+    <<: *restart
+    environment:
+      POSTGRES_DB: ${UMAMI_POSTGRES_DB:-umami}
+      POSTGRES_USER: ${UMAMI_POSTGRES_USER:-umami}
+      POSTGRES_PASSWORD: ${UMAMI_POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - umami-postgres-data:/var/lib/postgresql/data
+    networks: [saas-commons]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${UMAMI_POSTGRES_USER:-umami}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-v2.13.0
+    container_name: umami
+    <<: *restart
+    depends_on:
+      umami-db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: "postgresql://${UMAMI_POSTGRES_USER:-umami}:${UMAMI_POSTGRES_PASSWORD:-changeme}@umami-db:5432/${UMAMI_POSTGRES_DB:-umami}"
+      DATABASE_TYPE: postgresql
+      APP_SECRET: "${UMAMI_APP_SECRET:?UMAMI_APP_SECRET is required (>=64 chars)}"
+      DISABLE_TELEMETRY: "1"
+    ports:
+      - "${UMAMI_PORT:-8103}:3000"
+    networks: [saas-commons]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/heartbeat >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+
+volumes:
+  umami-postgres-data:
+
+networks:
+  saas-commons:
+    external: true
+    name: saas-commons

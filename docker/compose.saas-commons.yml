@@ -1,0 +1,49 @@
+# Master compose for the SaaS-commons toolkit.
+# Pulls in the 7 individual compose files via the `include:` directive
+# (Docker Compose 2.20+ — https://docs.docker.com/compose/compose-file/14-include/).
+#
+# Each tool is also runnable in isolation via:
+#   docker compose -f docker/<tool>.compose.yml --env-file .env.saas-commons up -d
+#
+# Networks created here (saas-commons) and reused-from-other-stacks (obs, data,
+# cache, events) MUST exist before `up`. Bootstrap with:
+#
+#   docker network create saas-commons
+#   docker network create obs           # if not already created by observability-deps
+#
+# Full stack:
+#   docker compose \
+#     -f docker/compose.prod-smallest.yml \
+#     -f docker/compose.saas-commons.yml \
+#     --env-file .env.saas-commons \
+#     up -d
+#
+# Layering note: `include:` and `-f <file>` are alternative composition paths.
+# Use `include:` when you want a single entry point; use `-f` when you want to
+# pick-and-choose tools and override service definitions at merge time.
+name: tsm-saas-commons
+
+include:
+  - path: ./keycloak.compose.yml
+  - path: ./unleash.compose.yml
+  - path: ./meilisearch.compose.yml
+  - path: ./lago.compose.yml
+  - path: ./chatwoot.compose.yml
+  - path: ./umami.compose.yml
+  - path: ./uptime-kuma.compose.yml
+
+# A no-op service so `docker compose config` is happy when run on this file
+# alone. Compose 2.x permits an empty `services:` block; some older 2.x point
+# releases (pre-2.24) error out — the placeholder below keeps us portable.
+services:
+  saas-commons-meta:
+    image: alpine:3.20
+    container_name: saas-commons-meta
+    command: ["sh", "-c", "echo 'saas-commons stack loaded'; sleep infinity"]
+    restart: "no"
+    profiles: ["meta"]   # only runs with `--profile meta`
+    networks: [saas-commons]
+
+networks:
+  saas-commons:
+    name: saas-commons

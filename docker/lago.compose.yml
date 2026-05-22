@@ -1,0 +1,175 @@
+# Lago — open-source billing & metering (AGPL-3.0).
+# Adapted from https://github.com/getlago/lago/blob/main/docker-compose.yml
+#
+# Services:
+#   lago-front     UI            host :8101 → container :80
+#   lago-api       REST/GraphQL  host :8102 → container :3000
+#   lago-worker    background jobs
+#   lago-clock     scheduler
+#   lago-db        dedicated Postgres 14 (Lago requires its own schema/migrations,
+#                  we run a separate instance instead of poisoning the app DB)
+#   lago-redis     dedicated Redis 7
+#
+# Why dedicated Postgres + Redis:
+#   Lago bundles Rails migrations that own the schema and pin to PG 14.
+#   Sharing the app's Patroni-managed PG 16 cluster would create version drift
+#   and ownership confusion. Dedicated instances are the upstream recommendation.
+#
+# Override ports via .env.saas-commons:
+#   LAGO_FRONT_PORT=8101  LAGO_API_PORT=8102
+version: "3.9"
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  lago-db:
+    image: postgres:14-alpine
+    container_name: lago-db
+    <<: *restart
+    environment:
+      POSTGRES_DB: ${LAGO_POSTGRES_DB:-lago}
+      POSTGRES_USER: ${LAGO_POSTGRES_USER:-lago}
+      POSTGRES_PASSWORD: ${LAGO_POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - lago-postgres-data:/var/lib/postgresql/data
+    networks: [saas-commons]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${LAGO_POSTGRES_USER:-lago} -d ${LAGO_POSTGRES_DB:-lago}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits: { cpus: "1", memory: 1G }
+
+  lago-redis:
+    image: redis:7.4-alpine
+    container_name: lago-redis
+    <<: *restart
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - lago-redis-data:/data
+    networks: [saas-commons]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+
+  lago-api:
+    image: getlago/api:v1.18.0
+    container_name: lago-api
+    <<: *restart
+    depends_on:
+      lago-db:    { condition: service_healthy }
+      lago-redis: { condition: service_healthy }
+    command: ["./scripts/start.api.sh"]
+    environment:
+      LAGO_DATABASE_URL: "postgres://${LAGO_POSTGRES_USER:-lago}:${LAGO_POSTGRES_PASSWORD:-changeme}@lago-db:5432/${LAGO_POSTGRES_DB:-lago}"
+      LAGO_REDIS_URL: "redis://lago-redis:6379"
+      LAGO_FRONT_URL: "${LAGO_FRONT_URL:-http://localhost:8101}"
+      LAGO_API_URL: "${LAGO_API_URL:-http://localhost:8102}"
+      SECRET_KEY_BASE: "${LAGO_SECRET_KEY_BASE:?LAGO_SECRET_KEY_BASE is required (rails secret)}"
+      LAGO_ENCRYPTION_PRIMARY_KEY: "${LAGO_ENCRYPTION_PRIMARY_KEY:?required}"
+      LAGO_ENCRYPTION_DETERMINISTIC_KEY: "${LAGO_ENCRYPTION_DETERMINISTIC_KEY:?required}"
+      LAGO_ENCRYPTION_KEY_DERIVATION_SALT: "${LAGO_ENCRYPTION_KEY_DERIVATION_SALT:?required}"
+      LAGO_RSA_PRIVATE_KEY: "${LAGO_RSA_PRIVATE_KEY:?required (base64 -w0 of PEM)}"
+      RAILS_ENV: production
+      RAILS_LOG_TO_STDOUT: "true"
+    ports:
+      - "${LAGO_API_PORT:-8102}:3000"
+    networks: [saas-commons, obs]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits: { cpus: "1", memory: 1G }
+
+  lago-front:
+    image: getlago/front:v1.18.0
+    container_name: lago-front
+    <<: *restart
+    depends_on:
+      lago-api: { condition: service_started }
+    environment:
+      API_URL: "${LAGO_API_URL:-http://localhost:8102}"
+      APP_ENV: production
+      LAGO_DISABLE_SIGNUP: "${LAGO_DISABLE_SIGNUP:-true}"
+    ports:
+      - "${LAGO_FRONT_PORT:-8101}:80"
+    networks: [saas-commons]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/ >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+
+  lago-worker:
+    image: getlago/api:v1.18.0
+    container_name: lago-worker
+    <<: *restart
+    depends_on:
+      lago-api: { condition: service_healthy }
+    command: ["./scripts/start.worker.sh"]
+    environment:
+      LAGO_DATABASE_URL: "postgres://${LAGO_POSTGRES_USER:-lago}:${LAGO_POSTGRES_PASSWORD:-changeme}@lago-db:5432/${LAGO_POSTGRES_DB:-lago}"
+      LAGO_REDIS_URL: "redis://lago-redis:6379"
+      SECRET_KEY_BASE: "${LAGO_SECRET_KEY_BASE:?required}"
+      LAGO_ENCRYPTION_PRIMARY_KEY: "${LAGO_ENCRYPTION_PRIMARY_KEY:?required}"
+      LAGO_ENCRYPTION_DETERMINISTIC_KEY: "${LAGO_ENCRYPTION_DETERMINISTIC_KEY:?required}"
+      LAGO_ENCRYPTION_KEY_DERIVATION_SALT: "${LAGO_ENCRYPTION_KEY_DERIVATION_SALT:?required}"
+      LAGO_RSA_PRIVATE_KEY: "${LAGO_RSA_PRIVATE_KEY:?required}"
+      RAILS_ENV: production
+      RAILS_LOG_TO_STDOUT: "true"
+    networks: [saas-commons, obs]
+    healthcheck:
+      test: ["CMD-SHELL", "ps -ef | grep -v grep | grep -q sidekiq || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits: { cpus: "1", memory: 1G }
+
+  lago-clock:
+    image: getlago/api:v1.18.0
+    container_name: lago-clock
+    <<: *restart
+    depends_on:
+      lago-api: { condition: service_healthy }
+    command: ["./scripts/start.clock.sh"]
+    environment:
+      LAGO_DATABASE_URL: "postgres://${LAGO_POSTGRES_USER:-lago}:${LAGO_POSTGRES_PASSWORD:-changeme}@lago-db:5432/${LAGO_POSTGRES_DB:-lago}"
+      LAGO_REDIS_URL: "redis://lago-redis:6379"
+      SECRET_KEY_BASE: "${LAGO_SECRET_KEY_BASE:?required}"
+      LAGO_ENCRYPTION_PRIMARY_KEY: "${LAGO_ENCRYPTION_PRIMARY_KEY:?required}"
+      LAGO_ENCRYPTION_DETERMINISTIC_KEY: "${LAGO_ENCRYPTION_DETERMINISTIC_KEY:?required}"
+      LAGO_ENCRYPTION_KEY_DERIVATION_SALT: "${LAGO_ENCRYPTION_KEY_DERIVATION_SALT:?required}"
+      LAGO_RSA_PRIVATE_KEY: "${LAGO_RSA_PRIVATE_KEY:?required}"
+      RAILS_ENV: production
+      RAILS_LOG_TO_STDOUT: "true"
+    networks: [saas-commons]
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 256M }
+
+volumes:
+  lago-postgres-data:
+  lago-redis-data:
+
+networks:
+  saas-commons:
+    name: saas-commons
+  obs:
+    external: true
+    name: obs
