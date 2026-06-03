@@ -44,11 +44,21 @@ jobs:
         run: npm install -g ajv-cli@5
 
       - name: Install crossplane CLI v1.17.3
+        # install.sh is flaky on GHA runners (CDN returns 403 to plain
+        # curl UAs in the runner egress range, leaving no binary for the
+        # subsequent install step). Pull the static `crank` binary
+        # directly with a browser User-Agent and curl-native retry,
+        # matching the pattern in profile-validate.yml.
         run: |
           set -euo pipefail
-          curl -sL https://raw.githubusercontent.com/crossplane/crossplane/release-1.17/install.sh \
-            | XP_CHANNEL=stable XP_VERSION=v1.17.3 sh
-          sudo install -m 0755 crossplane /usr/local/bin/crossplane
+          XP_VERSION=v1.17.3
+          curl --fail --silent --show-error --location \
+               --retry 6 --retry-all-errors --retry-delay 4 \
+               --connect-timeout 20 \
+               -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" \
+               -o /tmp/crank \
+               "https://releases.crossplane.io/stable/${XP_VERSION}/bin/linux_amd64/crank"
+          sudo install -m 0755 /tmp/crank /usr/local/bin/crossplane
           crossplane --help >/dev/null
 
       - name: Install bats
