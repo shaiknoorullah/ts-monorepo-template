@@ -1,6 +1,118 @@
 version: '3'
 
+includes:
+  api: { taskfile: apps/api/Taskfile.yml, dir: apps/api, optional: true }
+  web: { taskfile: apps/web/Taskfile.yml, dir: apps/web, optional: true }
+  worker: { taskfile: apps/worker-py/Taskfile.yml, dir: apps/worker-py, optional: true }
+
+vars:
+  CLI: 'pnpm --filter @internal/cli exec ts-monorepo'
+
 tasks:
+  # --- bootstrap ---
+  install:
+    desc: Bootstrap the dev shell
+    cmds:
+      - bash scripts/dev/install.sh
+
+  # --- nx delegates ---
+  dev:
+    desc: Run all apps in dev (Nx run-many)
+    cmds: [pnpm nx run-many --target=dev --all]
+  test:
+    desc: Nx affected test
+    cmds: [pnpm nx affected --target=test]
+  lint:
+    desc: Nx affected lint
+    cmds: [pnpm nx affected --target=lint]
+  format:
+    desc: Nx affected format
+    cmds: [pnpm nx affected --target=format]
+  ci:
+    desc: install + lint + test + build
+    deps: [install]
+    cmds:
+      - task lint
+      - task test
+      - pnpm nx affected --target=build
+  clean:
+    desc: Nx reset + scrub caches
+    cmds:
+      - pnpm nx reset
+      - rm -rf node_modules .venv target .nx
+
+  # --- data plane (delegates to docker-compose; stubs land in Phase 5) ---
+  data:up:
+    desc: docker-compose up postgres + redis
+    cmds: [bash scripts/dev/data-up.sh minimal]
+  data:up:full:
+    cmds: [bash scripts/dev/data-up.sh full]
+  data:up:kafka:
+    cmds: [bash scripts/dev/data-up.sh kafka]
+  data:up:storage:
+    cmds: [bash scripts/dev/data-up.sh storage]
+  data:down:
+    cmds: [bash scripts/dev/data-down.sh]
+  tools:up:
+    cmds: [bash scripts/dev/tools-up.sh]
+  tools:down:
+    cmds: [bash scripts/dev/tools-down.sh]
+
+  # --- db (delegated to per-app Taskfiles) ---
+  db:migrate:
+    cmds: [pnpm nx run-many --target=db:migrate --all]
+  db:seed:
+    cmds: [pnpm nx run-many --target=db:seed --all]
+  db:reset:
+    cmds:
+      - task data:down
+      - task data:up
+      - task db:migrate
+      - task db:seed
+
+  # --- commit ---
+  commit:
+    desc: Constrained AI commit
+    cmds: [bash scripts/dev/task-commit.sh]
+
+  # --- env / secrets / profiles (delegate to CLI) ---
+  env:reconcile:
+    cmds: [bash scripts/dev/env-reconcile.sh --write]
+  env:check:
+    cmds: [bash scripts/dev/env-reconcile.sh --check]
+  secrets:check:
+    cmds:
+      ['{{.CLI}} secrets:check --file secretspec.toml --profile {{.PROFILE | default "p-solo"}}']
+  secrets:bootstrap:
+    cmds: [bash scripts/dev/bootstrap-secrets.sh]
+  secrets:where:
+    cmds: ['{{.CLI}} secrets:where']
+  profile:list:
+    cmds: ['{{.CLI}} profile:list']
+  profile:select:
+    cmds: ['{{.CLI}} profile:select']
+  profile:diff:
+    cmds: ['{{.CLI}} profile:diff {{.CLI_ARGS}}']
+  profile:fork:
+    cmds: ['{{.CLI}} profile:fork {{.CLI_ARGS}}']
+  profile:validate:
+    cmds: ['{{.CLI}} profile:validate {{.CLI_ARGS}}']
+
+  # --- scaffolding ---
+  new:backend:
+    cmds: ['{{.CLI}} new:backend']
+  new:lib:
+    cmds: ['{{.CLI}} new:lib']
+  new:frontend:
+    cmds: ['{{.CLI}} new:frontend']
+
+  # --- launcher ---
+  init:
+    cmds: ['{{.CLI}} init']
+  launch:
+    cmds: ['{{.CLI}} launch']
+
+  # --- ADRs (Phase 1) ---
   adr:new:
     desc: Create a new ADR from docs/adrs/_template.md
     cmds:
