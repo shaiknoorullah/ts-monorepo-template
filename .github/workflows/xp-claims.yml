@@ -1,0 +1,59 @@
+name: xp-claims
+on:
+  pull_request:
+    paths:
+      - 'infra/crossplane/claims/**'
+      - 'infra/crossplane/xrds/**'
+      - 'infra/crossplane/compositions/**'
+      - 'infra/crossplane/functions/**'
+      - 'infra/crossplane/environment-configs/**'
+      - '.github/workflows/xp-claims.yml'
+  workflow_call: {}
+
+permissions:
+  contents: read
+
+jobs:
+  xp-claims:
+    name: Crossplane claim parse + render
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install yq (mikefarah v4)
+        uses: mikefarah/yq-action@v4
+
+      - name: Verify yq is on PATH
+        run: yq --version
+
+      - name: Install Node.js for ajv-cli
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli@5
+
+      - name: Install crossplane CLI v1.17.3
+        run: |
+          set -euo pipefail
+          curl -sL https://raw.githubusercontent.com/crossplane/crossplane/release-1.17/install.sh \
+            | XP_CHANNEL=stable XP_VERSION=v1.17.3 sh
+          sudo install -m 0755 crossplane /usr/local/bin/crossplane
+          crossplane --help >/dev/null
+
+      - name: Install bats
+        run: sudo apt-get update && sudo apt-get install -y bats
+
+      - name: Parse claims (yq + JSON Schema)
+        run: bash infra/crossplane/claims/tests/parse_claims.sh
+
+      - name: Render claims (crossplane render)
+        run: bash infra/crossplane/claims/tests/render_all.sh
+
+      - name: Run claim bats suite
+        run: |
+          for f in infra/crossplane/claims/tests/test_*.bats; do
+            bats "${f}"
+          done
