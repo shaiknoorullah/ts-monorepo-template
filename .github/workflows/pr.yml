@@ -146,3 +146,31 @@ jobs:
     # conftest plan-gating logic.
     uses: ./.github/workflows/terraform.yml
     secrets: inherit
+
+  mcp-validate:
+    name: mcp-validate
+    # Phase 12 (Commit 12) — per-commit gate for internal/mcp-server.
+    # Spec Section 13.3 (Gate matrix). Builds the mcp-server package,
+    # runs the full vitest suite, then re-runs the contract tests as
+    # a separate step so a failed contract gate is loud in the run UI.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install workspace
+        run: pnpm install --frozen-lockfile
+      - name: Build mcp-server
+        run: pnpm --filter @ts-monorepo-template/mcp-server build
+      - name: Run mcp-validate suite
+        run: pnpm --filter @ts-monorepo-template/mcp-server test
+      - name: Deferred-stub conformance gate
+        working-directory: internal/mcp-server
+        run: pnpm exec vitest run test/contract
