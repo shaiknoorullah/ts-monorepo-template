@@ -39,20 +39,15 @@ export function buildValidatePlan(
   const profileDir = resolve(repoRoot, 'profiles', profileId)
   const libChartDir = resolve(repoRoot, 'infra', 'helm', 'lib-chart')
   const renderedDir = resolve(repoRoot, '.cache', 'profile-validate', profileId)
+  // `lib-chart` is a Helm `type: library` chart and can't be `helm template`d
+  // directly. We `helm lint` it as the equivalent dry-run so the step name in
+  // the materializer plan stays consistent with the other charts.
   const helmStep = (chart: string): ValidateStep => ({
     name: `helm-template-${chart}`,
     cmd: 'helm',
     args:
       chart === 'lib-chart'
-        ? [
-            'template',
-            'lib-chart',
-            libChartDir,
-            '-f',
-            resolve(profileDir, 'helm-values', `${chart}.values.yaml`),
-            '--output-dir',
-            resolve(renderedDir, chart),
-          ]
+        ? ['lint', libChartDir]
         : [
             'template',
             chart,
@@ -91,15 +86,17 @@ export function buildValidatePlan(
         ],
         cwd: repoRoot,
       },
+      // composition-pins.yaml maps XRDs -> composition revisions; it isn't an
+      // XR claim, so `crossplane render` doesn't apply. We instead lint the
+      // pins YAML for parseability and check every pinned composition exists
+      // under infra/crossplane/compositions/.
       {
         name: 'crossplane-render-compositions',
-        cmd: 'crossplane',
+        cmd: 'node',
         args: [
-          'beta',
-          'render',
+          resolve(repoRoot, 'tools', 'ci', 'check-composition-pins.mjs'),
           resolve(profileDir, 'crossplane', 'composition-pins.yaml'),
           resolve(repoRoot, 'infra', 'crossplane', 'compositions'),
-          resolve(repoRoot, 'infra', 'crossplane', 'functions'),
         ],
         cwd: repoRoot,
       },
