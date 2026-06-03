@@ -1,0 +1,33 @@
+# .github/workflows/pr.yml
+# Phase 2 green gate: prove that the Launcher CLI + Taskfile + devenv shell
+# all evaluate cleanly on a fresh GH-hosted runner.
+name: pr
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  cli-test:
+    name: cli-test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v14
+      - uses: cachix/cachix-action@v15
+        with:
+          name: devenv
+      - name: Install devenv
+        run: nix profile install nixpkgs#devenv
+      - name: Install task
+        run: nix profile install nixpkgs#go-task
+      - name: pnpm install
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+      - name: task --list smoke
+        run: task --list
+      - name: vitest internal/cli
+        run: pnpm vitest run internal/cli
+      - name: devenv test (shell evaluates)
+        run: devenv test
