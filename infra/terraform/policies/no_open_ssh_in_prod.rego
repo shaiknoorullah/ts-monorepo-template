@@ -3,7 +3,7 @@ package main
 import rego.v1
 
 deny contains msg if {
-	input.configuration.root_module.variables.env.default == "prod"
+	input.configuration.root_module.variables.env["default"] == "prod"
 	some rc in input.resource_changes
 	rc.type == "hcloud_firewall"
 	some rule in rc.change.after.rule
