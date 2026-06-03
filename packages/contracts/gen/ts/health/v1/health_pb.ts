@@ -5,54 +5,49 @@
 // @generated from file health/v1/health.proto (package health.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv1'
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv1'
-import type { Message } from '@bufbuild/protobuf'
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv1";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file health/v1/health.proto.
  */
-export const file_health_v1_health: GenFile =
-  /*@__PURE__*/
-  fileDesc(
-    'ChZoZWFsdGgvdjEvaGVhbHRoLnByb3RvEgloZWFsdGgudjEiJQoSSGVhbHRoQ2hlY2tSZXF1ZXN0Eg8KB3NlcnZpY2UYASABKAkiwAEKE0hlYWx0aENoZWNrUmVzcG9uc2USPAoGc3RhdHVzGAEgASgOMiwuaGVhbHRoLnYxLkhlYWx0aENoZWNrUmVzcG9uc2UuU2VydmluZ1N0YXR1cyJrCg1TZXJ2aW5nU3RhdHVzEh4KGlNFUlZJTkdfU1RBVFVTX1VOU1BFQ0lGSUVEEAASGgoWU0VSVklOR19TVEFUVVNfU0VSVklORxABEh4KGlNFUlZJTkdfU1RBVFVTX05PVF9TRVJWSU5HEAIyVQoLSGVhbHRoQ2hlY2sSRgoFQ2hlY2sSHS5oZWFsdGgudjEuSGVhbHRoQ2hlY2tSZXF1ZXN0Gh4uaGVhbHRoLnYxLkhlYWx0aENoZWNrUmVzcG9uc2VCpgEKDWNvbS5oZWFsdGgudjFCC0hlYWx0aFByb3RvUAFaQ2dpdGh1Yi5jb20vdHMtbW9ub3JlcG8tdGVtcGxhdGUvY29udHJhY3RzL2dlbi9nby9oZWFsdGgvdjE7aGVhbHRodjGiAgNIWFiqAglIZWFsdGguVjHKAglIZWFsdGhcVjHiAhVIZWFsdGhcVjFcR1BCTWV0YWRhdGHqAgpIZWFsdGg6OlYxYgZwcm90bzM',
-  )
+export const file_health_v1_health: GenFile = /*@__PURE__*/
+  fileDesc("ChZoZWFsdGgvdjEvaGVhbHRoLnByb3RvEgloZWFsdGgudjEiJQoSSGVhbHRoQ2hlY2tSZXF1ZXN0Eg8KB3NlcnZpY2UYASABKAkiwAEKE0hlYWx0aENoZWNrUmVzcG9uc2USPAoGc3RhdHVzGAEgASgOMiwuaGVhbHRoLnYxLkhlYWx0aENoZWNrUmVzcG9uc2UuU2VydmluZ1N0YXR1cyJrCg1TZXJ2aW5nU3RhdHVzEh4KGlNFUlZJTkdfU1RBVFVTX1VOU1BFQ0lGSUVEEAASGgoWU0VSVklOR19TVEFUVVNfU0VSVklORxABEh4KGlNFUlZJTkdfU1RBVFVTX05PVF9TRVJWSU5HEAIyVQoLSGVhbHRoQ2hlY2sSRgoFQ2hlY2sSHS5oZWFsdGgudjEuSGVhbHRoQ2hlY2tSZXF1ZXN0Gh4uaGVhbHRoLnYxLkhlYWx0aENoZWNrUmVzcG9uc2VCpgEKDWNvbS5oZWFsdGgudjFCC0hlYWx0aFByb3RvUAFaQ2dpdGh1Yi5jb20vdHMtbW9ub3JlcG8tdGVtcGxhdGUvY29udHJhY3RzL2dlbi9nby9oZWFsdGgvdjE7aGVhbHRodjGiAgNIWFiqAglIZWFsdGguVjHKAglIZWFsdGhcVjHiAhVIZWFsdGhcVjFcR1BCTWV0YWRhdGHqAgpIZWFsdGg6OlYxYgZwcm90bzM");
 
 /**
  * @generated from message health.v1.HealthCheckRequest
  */
-export type HealthCheckRequest = Message<'health.v1.HealthCheckRequest'> & {
+export type HealthCheckRequest = Message<"health.v1.HealthCheckRequest"> & {
   /**
    * @generated from field: string service = 1;
    */
-  service: string
-}
+  service: string;
+};
 
 /**
  * Describes the message health.v1.HealthCheckRequest.
  * Use `create(HealthCheckRequestSchema)` to create a new message.
  */
-export const HealthCheckRequestSchema: GenMessage<HealthCheckRequest> =
-  /*@__PURE__*/
-  messageDesc(file_health_v1_health, 0)
+export const HealthCheckRequestSchema: GenMessage<HealthCheckRequest> = /*@__PURE__*/
+  messageDesc(file_health_v1_health, 0);
 
 /**
  * @generated from message health.v1.HealthCheckResponse
  */
-export type HealthCheckResponse = Message<'health.v1.HealthCheckResponse'> & {
+export type HealthCheckResponse = Message<"health.v1.HealthCheckResponse"> & {
   /**
    * @generated from field: health.v1.HealthCheckResponse.ServingStatus status = 1;
    */
-  status: HealthCheckResponse_ServingStatus
-}
+  status: HealthCheckResponse_ServingStatus;
+};
 
 /**
  * Describes the message health.v1.HealthCheckResponse.
  * Use `create(HealthCheckResponseSchema)` to create a new message.
  */
-export const HealthCheckResponseSchema: GenMessage<HealthCheckResponse> =
-  /*@__PURE__*/
-  messageDesc(file_health_v1_health, 1)
+export const HealthCheckResponseSchema: GenMessage<HealthCheckResponse> = /*@__PURE__*/
+  messageDesc(file_health_v1_health, 1);
 
 /**
  * @generated from enum health.v1.HealthCheckResponse.ServingStatus
@@ -77,9 +72,8 @@ export enum HealthCheckResponse_ServingStatus {
 /**
  * Describes the enum health.v1.HealthCheckResponse.ServingStatus.
  */
-export const HealthCheckResponse_ServingStatusSchema: GenEnum<HealthCheckResponse_ServingStatus> =
-  /*@__PURE__*/
-  enumDesc(file_health_v1_health, 1, 0)
+export const HealthCheckResponse_ServingStatusSchema: GenEnum<HealthCheckResponse_ServingStatus> = /*@__PURE__*/
+  enumDesc(file_health_v1_health, 1, 0);
 
 /**
  * @generated from service health.v1.HealthCheck
@@ -89,8 +83,10 @@ export const HealthCheck: GenService<{
    * @generated from rpc health.v1.HealthCheck.Check
    */
   check: {
-    methodKind: 'unary'
-    input: typeof HealthCheckRequestSchema
-    output: typeof HealthCheckResponseSchema
-  }
-}> = /*@__PURE__*/ serviceDesc(file_health_v1_health, 0)
+    methodKind: "unary";
+    input: typeof HealthCheckRequestSchema;
+    output: typeof HealthCheckResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_health_v1_health, 0);
+
