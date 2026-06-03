@@ -54,9 +54,17 @@ echo "::endgroup::"
 
 if require_or_warn argocd; then
   echo "::group::argocd appset generate (offline render)"
+  # `argocd appset generate` always tries to talk to a server even when
+  # given a local file ("Argo CD server address unspecified"). Until
+  # argocd ships a true `--local` mode for ApplicationSets we degrade
+  # this step to a warning — the kubeconform pass on the raw appset
+  # YAML (already run above) plus `argocd app manifests --local`
+  # (below) cover the structural checks.
   for appset in infra/argocd/appset-apps.yaml infra/argocd/appset-platform.yaml; do
     echo "rendering ${appset}"
-    argocd appset generate "${appset}" -o yaml > "/tmp/$(basename "${appset}" .yaml).rendered.yaml"
+    if ! argocd appset generate "${appset}" -o yaml > "/tmp/$(basename "${appset}" .yaml).rendered.yaml" 2>&1; then
+      echo "::warning::argocd appset generate cannot render ${appset} offline (informational)"
+    fi
   done
   echo "::endgroup::"
 
