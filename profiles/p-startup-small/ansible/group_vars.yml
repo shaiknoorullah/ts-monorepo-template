@@ -1,0 +1,9 @@
+profile_id: p-startup-small
+cni: calico
+addons:
+  - metrics-server
+  - cert-manager
+  - longhorn
+kernel_params:
+  vm.max_map_count: 262144
+  fs.inotify.max_user_watches: 524288

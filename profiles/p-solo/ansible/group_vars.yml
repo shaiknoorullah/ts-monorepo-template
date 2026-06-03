@@ -1,0 +1,6 @@
+profile_id: p-solo
+cni: flannel
+addons:
+  - metrics-server
+kernel_params:
+  vm.max_map_count: 262144
