@@ -35,6 +35,12 @@
     "internal/templates/**",
     "docs/.vitepress/cache/**",
     "docs/.vitepress/dist/**",
+    // Plans + specs + research are AI-agent-generated planning artifacts —
+    // hundreds of pages of structured-but-non-standard markdown (decision
+    // trees, fenced narrative, agent-emitted emphasis). Not user-facing
+    // documentation; not worth normalizing prose-style.
+    "docs/superpowers/**",
+    "docs/research/**",
     "sbom/**",
   ],
 }
