@@ -1,0 +1,45 @@
+---
+// apps/marketing/src/pages/pricing.astro — /pricing
+// Phase 16 Task 16.7. Generated from profiles/*/profile.env.
+import Layout from '../layouts/Layout.astro'
+import { loadProfiles } from '../lib/profile-loader'
+
+const profiles = await loadProfiles()
+---
+
+<Layout
+  title="Pricing — pick the profile that matches your stage"
+  description="5 profiles from local hacking to multi-region production. Pick the one that matches where you are; switch later with one command."
+>
+  <section data-testid="pricing">
+    <h1>Pick the profile that matches your stage</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Founder label</th>
+          <th>Machine ID</th>
+          <th>$/mo</th>
+          <th>Tagline</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          profiles.map((p) => (
+            <tr>
+              <td>{p.founderLabel}</td>
+              <td>
+                <code>{p.machineId}</code>
+              </td>
+              <td>{p.costBand}</td>
+              <td>{p.tagline}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p>
+      Pricing is read at build time from <code>profiles/&lt;id&gt;/profile.env</code> — the same source of truth the launcher
+      CLI and MCP server use. To change a band, edit the YAML; this page picks up the change on the next deploy.
+    </p>
+  </section>
+</Layout>

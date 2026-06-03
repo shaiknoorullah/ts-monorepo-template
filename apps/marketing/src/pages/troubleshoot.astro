@@ -1,0 +1,30 @@
+---
+// apps/marketing/src/pages/troubleshoot.astro — /troubleshoot
+// Phase 16 Task 16.7. Reads internal/errors/catalog.yaml at build time.
+import Layout from '../layouts/Layout.astro'
+import { loadErrors } from '../lib/errors-loader'
+
+const errors = await loadErrors()
+---
+
+<Layout
+  title="Troubleshoot — top 20 errors with plain-English fixes"
+  description="Same source as the launcher CLI error renderer and the MCP errors.lookup tool. Plain English first; engineer detail one click in."
+>
+  <section data-testid="troubleshoot">
+    <h1>Top errors and how to fix them</h1>
+    <p>Same source as the launcher CLI and the MCP <code>errors.lookup</code> tool.</p>
+    <dl>
+      {
+        errors.map((e) => (
+          <div>
+            <dt>
+              <code>{e.code}</code>
+            </dt>
+            <dd>{e.founder}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+</Layout>
