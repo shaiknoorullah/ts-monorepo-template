@@ -1,0 +1,58 @@
+# contracts-codegen — asserts `buf generate` is a no-op on every PR.
+# If a .proto file changed without regenerating bindings, this job turns the PR red.
+# Spec: docs/superpowers/specs/2026-06-03-platform-foundation-design.md §13.3 row C3.
+name: contracts-codegen
+on:
+  pull_request:
+    paths:
+      - 'packages/contracts/**'
+      - 'packages/contracts-py/**'
+      - 'packages/contracts-rs/**'
+      - '.github/workflows/contracts-codegen.yml'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contracts-codegen-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  codegen-drift:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install buf
+        uses: bufbuild/buf-setup-action@9672cee01808979ea1249f81d6d321217b9a10f6 # v1.50.0
+        with:
+          version: 1.47.2
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: buf lint
+        working-directory: packages/contracts
+        run: buf lint
+
+      - name: buf breaking
+        working-directory: packages/contracts
+        run: buf breaking --against "https://github.com/${{ github.repository }}.git#branch=main,subdir=packages/contracts"
+
+      - name: Regenerate bindings
+        working-directory: packages/contracts
+        run: buf generate
+
+      - name: Sync Python bindings into wheel
+        run: bash packages/contracts-py/scripts/sync-gen.sh
+
+      - name: Assert no drift
+        run: |
+          if ! git diff --exit-code -- packages/contracts/gen packages/contracts-py/src packages/contracts-rs/src; then
+            echo "::error::buf generate produced a diff. Run 'task contracts:gen' and commit the result."
+            exit 1
+          fi
