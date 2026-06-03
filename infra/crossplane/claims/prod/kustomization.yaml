@@ -13,3 +13,6 @@ resources:
   - rs-hello-redis.yaml
   - shared-topics.yaml
   - shared-bucket.yaml
+  - go-hello-obs.yaml
+  - py-hello-obs.yaml
+  - rs-hello-obs.yaml
