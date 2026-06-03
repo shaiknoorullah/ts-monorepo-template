@@ -43,6 +43,19 @@ jobs:
         # tsx ...`. pnpm exec needs node_modules populated; without this
         # step `tsx` can't be found and `task profile:select` exits 254.
         run: devenv shell -- pnpm install --frozen-lockfile
+      - name: Build helm chart dependencies (lib-chart)
+        # Each apps/<svc>/Chart.yaml depends on `file://../../lib-chart`.
+        # `helm template` inside `profile:validate` needs the dep staged
+        # under each chart's `charts/` directory; only `helm dependency
+        # build` populates that.
+        run: |
+          devenv shell -- bash -c '
+            set -euo pipefail
+            for chart_dir in infra/helm/apps/*/; do
+              echo "==> helm dependency build ${chart_dir}"
+              helm dependency build "${chart_dir}"
+            done
+          '
       - name: Install k3d 5.x
         run: |
           curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/v5.7.4/install.sh | bash
