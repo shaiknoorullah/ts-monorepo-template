@@ -279,3 +279,16 @@ tasks:
         if [ -x scripts/audit-log-append.sh ]; then
           scripts/audit-log-append.sh terraform:apply env={{.ENV}} profile={{.PROFILE}}
         fi
+
+  # --- Docs generation (Phase 16) ---
+  docs:gen:
+    desc: Regenerate apps/docs-public reference pages from code (spec Section 15.4).
+    cmds:
+      - pnpm --filter @app/docs-public docs:gen
+
+  docs:quickstart-verify:
+    desc: CI gate — assert the documented 3-command Quickstart appears in marketing.
+    cmds:
+      - grep -F 'npx create-platform@latest' apps/marketing/src/pages/quickstart.astro
+      - grep -F 'task launch' apps/marketing/src/pages/quickstart.astro
+      - grep -F 'task open' apps/marketing/src/pages/quickstart.astro

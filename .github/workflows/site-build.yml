@@ -1,0 +1,53 @@
+# .github/workflows/site-build.yml
+# Phase 16 Task 16.8 — gate marketing + docs-public builds and assert that
+# task docs:gen output is in sync with code (spec Section 15.4).
+name: site-build
+on:
+  pull_request:
+    paths:
+      - apps/marketing/**
+      - apps/docs-public/**
+      - docs/**
+      - profiles/**
+      - infra/crossplane/xrds/**
+      - infra/helm/apps/**
+      - internal/errors/**
+      - internal/glossary/**
+      - Taskfile.yml
+      - .github/workflows/site-build.yml
+permissions:
+  contents: read
+jobs:
+  astro:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with: { version: 10 }
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with: { node-version: '22', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - name: Regenerate docs and assert no drift
+        run: |
+          pnpm --filter @app/docs-public docs:gen
+          git diff --exit-code apps/docs-public/src/content/docs/reference
+      - name: astro check (docs-public)
+        run: pnpm --filter @app/docs-public type-check
+      - name: astro build (docs-public)
+        run: pnpm --filter @app/docs-public build
+      - name: astro build (marketing)
+        run: pnpm --filter @app/marketing build
+      - name: broken-link check (docs-public)
+        run: pnpm dlx linkinator apps/docs-public/dist --skip 'localhost|127.0.0.1|github.com|kubernetes.io|kubectl|sigstore.dev|cncf' --recurse || true
+      # lighthouse-ci budget — opt-in once a Lighthouse config lands (CI cost cap).
+      # - name: lighthouse-ci budget
+      #   run: pnpm dlx @lhci/cli@0.13.x autorun --collect.staticDistDir=apps/docs-public/dist --assert.preset=lighthouse:recommended
+  quickstart-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install Task
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+      - name: Verify documented Quickstart matches launcher pages
+        run: task docs:quickstart-verify

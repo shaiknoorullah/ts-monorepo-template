@@ -1,0 +1,26 @@
+---
+title: p-startup-scale — Scaling Startup
+---
+
+```yaml
+# DEVENV_PROFILE=p-startup-scale
+schemaVersion: profile-v1
+machineId: p-startup-scale
+founderLabel: Scaling Startup
+costBandUsdMonthly:
+  min: 300
+  max: 1500
+axes:
+  team_size: mid
+  env_count: 3
+  target_budget_usd: '<2k'
+  compliance_floor: SOC2-ready
+  workload_shape: mixed
+  ha_level: multi-AZ
+  cluster_substrate: managed-K8s
+  mesh: linkerd
+  observability_depth: '+traces'
+  secret_backend: akv
+  registry: acr
+  cdn_edge: cloudflare
+```
