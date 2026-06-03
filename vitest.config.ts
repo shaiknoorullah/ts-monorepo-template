@@ -8,6 +8,7 @@ export default defineConfig({
       'apps/*',
       'packages/*',
       'internal/cli',
+      'internal/schemas',
       'internal/test-utils',
       // NOTE: internal/templates/* are scaffolding stubs, NOT real projects.
       // They contain placeholder {{name}} markers and broken tsconfig extends.
