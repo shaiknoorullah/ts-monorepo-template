@@ -1,0 +1,54 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xkafkaprotocolfilter-kroxylicious-kcl
+  labels:
+    pn.cloud/bundle: schema-gov
+    pn.cloud/variant: kcl
+spec:
+  compositeTypeRef:
+    apiVersion: pn.cloud/v1alpha1
+    kind: XKafkaProtocolFilter
+  mode: Pipeline
+  pipeline:
+    - step: load-env
+      functionRef: { name: function-environment-configs }
+      input:
+        apiVersion: environmentconfigs.fn.crossplane.io/v1beta1
+        kind: Input
+        spec:
+          environmentConfigs:
+            - type: Reference
+              ref: { name: env-dev }
+            - type: Reference
+              ref: { name: env-staging }
+            - type: Reference
+              ref: { name: env-prod }
+    - step: render-filter-chain
+      functionRef: { name: function-kcl }
+      input:
+        apiVersion: krm.kcl.dev/v1alpha1
+        kind: KCLRun
+        spec:
+          source: |
+            oxr = option("params").oxr
+            items = [{
+                apiVersion = "v1"
+                kind = "ConfigMap"
+                metadata.name = "{}-kroxy-cm".format(oxr.spec.proxyPlane)
+                metadata.namespace = "kafka-proxy"
+                data = {
+                    "filter-{}".format(oxr.spec.name) = json.encode({
+                        type = oxr.spec.type
+                        config = oxr.spec.config
+                    })
+                }
+            }]
+    - step: patch
+      functionRef: { name: function-patch-and-transform }
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        resources: []
+    - step: ready
+      functionRef: { name: function-auto-ready }

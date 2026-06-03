@@ -1,0 +1,51 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xrecordencryptionfilter-kroxylicious
+  labels:
+    pn.cloud/bundle: schema-gov
+    pn.cloud/variant: default
+spec:
+  compositeTypeRef:
+    apiVersion: pn.cloud/v1alpha1
+    kind: XRecordEncryptionFilter
+  mode: Pipeline
+  pipeline:
+    - step: load-env
+      functionRef: { name: function-environment-configs }
+      input:
+        apiVersion: environmentconfigs.fn.crossplane.io/v1beta1
+        kind: Input
+        spec:
+          environmentConfigs:
+            - type: Reference
+              ref: { name: env-dev }
+            - type: Reference
+              ref: { name: env-staging }
+            - type: Reference
+              ref: { name: env-prod }
+    - step: render
+      functionRef: { name: function-go-templating }
+      input:
+        apiVersion: gotemplating.fn.crossplane.io/v1beta1
+        kind: GoTemplate
+        source: Inline
+        inline:
+          template: |
+            apiVersion: kubernetes.crossplane.io/v1alpha2
+            kind: Object
+            metadata:
+              annotations:
+                crossplane.io/external-name: {{ .observed.composite.resource.metadata.name }}
+              name: {{ .observed.composite.resource.metadata.name }}
+              namespace: {{ index .observed.composite.resource.spec "claimRef" "namespace" | default "default" }}
+            spec:
+              variant: "default"
+    - step: patch
+      functionRef: { name: function-patch-and-transform }
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        resources: []
+    - step: ready
+      functionRef: { name: function-auto-ready }

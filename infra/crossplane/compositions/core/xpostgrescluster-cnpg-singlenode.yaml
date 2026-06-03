@@ -1,0 +1,99 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xpostgrescluster-cnpg-singlenode
+  labels:
+    pn.cloud/bundle: core
+    pn.cloud/variant: singlenode
+spec:
+  compositeTypeRef:
+    apiVersion: pn.cloud/v1alpha1
+    kind: XPostgresCluster
+  mode: Pipeline
+  pipeline:
+    - step: load-env
+      functionRef: { name: function-environment-configs }
+      input:
+        apiVersion: environmentconfigs.fn.crossplane.io/v1beta1
+        kind: Input
+        spec:
+          environmentConfigs:
+            - type: Reference
+              ref: { name: env-dev }
+            - type: Reference
+              ref: { name: env-staging }
+            - type: Reference
+              ref: { name: env-prod }
+    - step: lookup-existing
+      functionRef: { name: function-extra-resources }
+      input:
+        apiVersion: extra-resources.fn.crossplane.io/v1beta1
+        kind: Input
+        spec:
+          extraResources:
+            - apiVersion: v1
+              kind: Secret
+              into: backupBucketCreds
+              type: Reference
+              ref:
+                name: pg-backup-bucket-creds
+    - step: render
+      functionRef: { name: function-go-templating }
+      input:
+        apiVersion: gotemplating.fn.crossplane.io/v1beta1
+        kind: GoTemplate
+        source: Inline
+        inline:
+          template: |
+            {{- $env := .observed.composite.resource.spec.env }}
+            {{- $instances := 1 }}
+            {{- $storage := "10Gi" }}
+            {{- $claimRef := .observed.composite.resource.spec.claimRef }}
+            {{- $ns := "default" }}
+            {{- if $claimRef }}{{- $ns = $claimRef.namespace }}{{- end }}
+            apiVersion: postgresql.cnpg.io/v1
+            kind: Cluster
+            metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: cnpg-cluster
+                crossplane.io/external-name: {{ .observed.composite.resource.metadata.name }}
+              name: {{ .observed.composite.resource.metadata.name }}
+              namespace: {{ $ns }}
+            spec:
+              instances: {{ $instances }}
+              storage:
+                size: {{ $storage }}
+              bootstrap:
+                initdb:
+                  database: {{ (index .observed.composite.resource.spec.databases 0).name }}
+                  owner: {{ (index .observed.composite.resource.spec.databases 0).owner }}
+    - step: patch
+      functionRef: { name: function-patch-and-transform }
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        resources:
+          - name: connection-secret
+            base:
+              apiVersion: kubernetes.crossplane.io/v1alpha2
+              kind: Object
+              spec:
+                forProvider:
+                  manifest:
+                    apiVersion: v1
+                    kind: Secret
+                    metadata: { name: placeholder, namespace: placeholder }
+                    type: Opaque
+                providerConfigRef: { name: default }
+            patches:
+              - fromFieldPath: spec.claimRef.namespace
+                toFieldPath: spec.forProvider.manifest.metadata.namespace
+              - fromFieldPath: spec.connectionSecret
+                toFieldPath: spec.forProvider.manifest.metadata.name
+                transforms:
+                  - type: string
+                    string:
+                      type: Format
+                      fmt: '%s-conn'
+    - step: ready
+      functionRef: { name: function-auto-ready }
