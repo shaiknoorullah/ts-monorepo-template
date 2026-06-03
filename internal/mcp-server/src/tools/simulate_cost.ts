@@ -1,3 +1,4 @@
+import { simulateCost as simulateCostFromPackage } from '@internal/cost-simulator'
 import { loadProfile, type ProfileDoc } from '../core/profile-loader.js'
 import { loadPrices, latestPricesAsOf, toUsd, type PriceFile } from '../core/cost-prices.js'
 
@@ -79,7 +80,7 @@ export interface Output {
   prices_as_of: string
 }
 
-export async function handler(input: Input, ctx: Ctx): Promise<Output> {
+function handleWithCtx(input: Input, ctx: Ctx): Output {
   const profile = loadProfile(ctx.profilesDir, input.profile)
   const prices = loadPrices(ctx.pricesDir)
   const sizing = SIZING[profile.id]
@@ -142,4 +143,13 @@ export async function handler(input: Input, ctx: Ctx): Promise<Output> {
     ],
     prices_as_of: latestPricesAsOf(prices),
   }
+}
+
+export async function handler(input: Input, ctx?: Ctx): Promise<Output> {
+  if (ctx) {
+    return handleWithCtx(input, ctx);
+  }
+  // Phase 15: delegate to the deterministic @internal/cost-simulator package.
+  const result = simulateCostFromPackage({ profile: input.profile })
+  return result;
 }

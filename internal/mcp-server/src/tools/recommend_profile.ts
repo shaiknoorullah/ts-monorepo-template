@@ -1,3 +1,4 @@
+import { score as scoreFromPackage } from '@internal/recommender'
 import { loadProfiles, type ProfileDoc } from '../core/profile-loader.js'
 import { loadRubric } from '../core/rubric-loader.js'
 
@@ -33,6 +34,11 @@ export interface Output {
   rubric_version: string
   rubric_sha256: string
 }
+
+// Legacy ctx-driven scoring — preserved so Phase 12 fixture tests continue to pass.
+// The Phase 15 implementation in @internal/recommender uses a different rubric
+// schema (rubric.yaml with profile_priors) than the Phase 12 fixture rubric
+// (rubric.yaml with questions[]). Both must be supported for backward compat.
 
 const TEAM_FIT: Record<string, Record<ProfileDoc['id'], number>> = {
   '1': {
@@ -104,7 +110,7 @@ function budgetFit(budget: number, band: { min: number; max: number }): number {
   return Math.max(0.5, 1 - Math.abs(budget - mid) / (band.max - band.min + 1))
 }
 
-export async function handler(input: Input, ctx: Ctx): Promise<Output> {
+function handleWithCtx(input: Input, ctx: Ctx): Output {
   const rubric = loadRubric(ctx.rubricPath)
   const profiles = loadProfiles(ctx.profilesDir)
   const wTeam = rubric.questions.find((q) => q.id === 'team_size')?.weight ?? 0.2
@@ -157,4 +163,18 @@ export async function handler(input: Input, ctx: Ctx): Promise<Output> {
     rubric_version: rubric.version,
     rubric_sha256: rubric.sha256,
   }
+}
+
+export async function handler(input: Input, ctx?: Ctx): Promise<Output> {
+  if (ctx) {
+    return handleWithCtx(input, ctx);
+  }
+  // Phase 15: delegate to the deterministic @internal/recommender package.
+  const result = scoreFromPackage(input.answers)
+  return {
+    ranked: result.ranked,
+    recommended: result.recommended,
+    rubric_version: result.rubric_version,
+    rubric_sha256: result.rubric_sha256,
+  };
 }

@@ -795,6 +795,12 @@ importers:
 
   internal/mcp-server:
     dependencies:
+      '@internal/cost-simulator':
+        specifier: workspace:*
+        version: link:../cost-simulator
+      '@internal/recommender':
+        specifier: workspace:*
+        version: link:../recommender
       '@modelcontextprotocol/sdk':
         specifier: 1.18.1
         version: 1.18.1
