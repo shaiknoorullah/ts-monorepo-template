@@ -1,0 +1,8 @@
+{
+  "name": "@internal/adrs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Architecture Decision Records. Each ADR has YAML frontmatter per spec section 15.9 (id, date, status, context, decision, alternatives, consequences).",
+  "license": "MIT",
+  "type": "module"
+}
