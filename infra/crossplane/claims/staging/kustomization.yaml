@@ -4,4 +4,7 @@ namespace: staging
 commonLabels:
   app.kubernetes.io/part-of: platform-foundation
   pn.cloud/env: staging
-resources: []
+resources:
+  - go-hello-pg.yaml
+  - py-hello-pg.yaml
+  - rs-hello-pg.yaml

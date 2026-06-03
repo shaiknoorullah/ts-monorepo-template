@@ -4,4 +4,7 @@ namespace: prod
 commonLabels:
   app.kubernetes.io/part-of: platform-foundation
   pn.cloud/env: prod
-resources: []
+resources:
+  - go-hello-pg.yaml
+  - py-hello-pg.yaml
+  - rs-hello-pg.yaml

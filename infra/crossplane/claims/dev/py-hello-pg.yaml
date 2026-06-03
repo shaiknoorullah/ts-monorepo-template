@@ -1,0 +1,28 @@
+apiVersion: pn.cloud/v1alpha1
+kind: PostgresClusterClaim
+metadata:
+  name: py-hello
+  namespace: dev
+  labels:
+    app.kubernetes.io/name: py-hello
+    app.kubernetes.io/component: postgres
+spec:
+  env: dev
+  size: xs
+  version: '16'
+  databases:
+    - { name: py_hello, owner: py_hello_app }
+  pooler:
+    enabled: true
+    replicas: 1
+    mode: transaction
+  backup:
+    enabled: false
+    retentionDays: 0
+  observability:
+    prometheus: true
+    dashboard: true
+  connectionSecret: py-hello-pg-conn
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: singlenode
