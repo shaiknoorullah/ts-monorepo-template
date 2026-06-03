@@ -1,0 +1,48 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xk8sclusters.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XK8sCluster, plural: xk8sclusters }
+  claimNames: { kind: K8sClusterClaim, plural: k8sclusterclaims }
+  defaultCompositionRef: { name: xk8scluster-default }
+  connectionSecretKeys: [kubeconfig, apiserver, ca]
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [provider, region, version]
+              properties:
+                provider: { type: string, enum: [aks, eks, gke, hetzner, contabo] }
+                region: { type: string }
+                version: { type: string }
+                nodePools:
+                  type: array
+                  items:
+                    type: object
+                    required: [name, size, count]
+                    properties:
+                      name: { type: string }
+                      size: { type: string }
+                      count: { type: integer }
+                      labels:
+                        type: object
+                        additionalProperties: { type: string }
+                      taints:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            key: { type: string }
+                            value: { type: string }
+                            effect: { type: string }
+                network:
+                  type: object
+                  additionalProperties: true

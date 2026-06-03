@@ -1,0 +1,29 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xkeyvaults.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XKeyVault, plural: xkeyvaults }
+  claimNames: { kind: KeyVaultClaim, plural: keyvaultclaims }
+  defaultCompositionRef: { name: xkeyvault-default }
+  connectionSecretKeys: [endpoint, credentials]
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [provider, name]
+              properties:
+                provider: { type: string, enum: [akv, asm, gsm, vault] }
+                name: { type: string }
+                accessPolicies:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true
