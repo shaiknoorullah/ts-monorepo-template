@@ -52,7 +52,7 @@ if ! command -v zizmor >/dev/null 2>&1; then
   echo "zizmor: skip (not installed)"
   echo "zizmor: ok"
 else
-  if zizmor --format plain --no-progress "${FILES[@]}"; then
+  if zizmor --format plain "${FILES[@]}"; then
     echo "zizmor: ok"
   else
     echo "zizmor: FAIL"
