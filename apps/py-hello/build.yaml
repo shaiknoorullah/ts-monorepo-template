@@ -1,0 +1,8 @@
+# Per-app container build flags (spec Section 5.5 + 5.10).
+language: python
+template: internal/templates/dockerfiles/python.Dockerfile.template
+package: py_hello
+platforms:
+  - linux/amd64
+# arm64 opt-in is wheel-availability gated (spec Section 2.7).
+# - linux/arm64
