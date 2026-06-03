@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: apps-prod
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/self-heal: 'false'
+  annotations:
+    argocd.argoproj.io/sync-wave: '-80'
+spec:
+  description: Per-env app project for env=prod
+  sourceRepos:
+    - https://github.com/REPLACE_ORG/REPLACE_REPO.git
+  destinations:
+    - namespace: '*-prod'
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  orphanedResources:
+    warn: true
