@@ -1,0 +1,10 @@
+# Rendered by `task bootstrap:init` from profile state_backend block.
+# Founders never edit this file directly.
+terraform {
+  backend "${TF_BACKEND_TYPE}" {
+    resource_group_name  = "${TF_BACKEND_RG}"
+    storage_account_name = "${TF_BACKEND_SA}"
+    container_name       = "${TF_BACKEND_CONTAINER}"
+    key                  = "${TF_BACKEND_KEY}"
+  }
+}
