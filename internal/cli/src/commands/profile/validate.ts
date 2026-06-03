@@ -15,6 +15,8 @@ import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { parse } from 'yaml'
 
+import { findRepoRoot } from '../../lib/profile-repo-root.js'
+
 const requireFn = createRequire(import.meta.url)
 const schema = requireFn('@internal/schemas/profile-v1.schema.json') as object
 
@@ -172,7 +174,10 @@ export default class ProfileValidate extends Command {
   }
   async run(): Promise<void> {
     const { args, flags } = await this.parse(ProfileValidate)
-    const code = runValidateCommand(args.profile, { dryRun: flags['dry-run'] })
+    const code = runValidateCommand(args.profile, {
+      dryRun: flags['dry-run'],
+      cwd: findRepoRoot(),
+    })
     if (code !== 0) this.exit(code)
   }
 }

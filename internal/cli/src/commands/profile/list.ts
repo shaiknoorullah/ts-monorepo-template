@@ -5,9 +5,10 @@
 // of a sixth profile shows up too. Sorted by cost-band min so the table flows
 // from "Just Me" -> "Production at Scale".
 import { Command } from '@oclif/core'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { readdirSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { parse } from 'yaml'
+import { findRepoRoot } from '../../lib/profile-repo-root.js'
 
 export interface ProfileDoc {
   schemaVersion: 'profile-v1'
@@ -17,24 +18,8 @@ export interface ProfileDoc {
   axes: Record<string, unknown>
 }
 
-// Walk up from `start` until a `profiles/p-solo/profile.env` is found; used so
-// `repo profile:list` works regardless of cwd (e.g., invoked from internal/cli).
-function findProfilesDir(start: string = process.cwd()): string {
-  let cur = resolve(start)
-  while (true) {
-    const candidate = resolve(cur, 'profiles')
-    if (existsSync(resolve(candidate, 'p-solo', 'profile.env'))) return candidate
-    const parent = dirname(cur)
-    if (parent === cur) {
-      // Fall back to cwd-relative path so callers get a clear ENOENT instead of an infinite loop.
-      return resolve(start, 'profiles')
-    }
-    cur = parent
-  }
-}
-
 export function profilesRoot(): string {
-  return findProfilesDir()
+  return resolve(findRepoRoot(), 'profiles')
 }
 
 export function listProfiles(root: string = profilesRoot()): ProfileDoc[] {

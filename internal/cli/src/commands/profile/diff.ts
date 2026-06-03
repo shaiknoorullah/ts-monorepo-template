@@ -6,6 +6,7 @@
 import { Args, Command, Flags } from '@oclif/core'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
+import { findRepoRoot } from '../../lib/profile-repo-root.js'
 
 interface FileDiff {
   path: string
@@ -120,7 +121,7 @@ export default class ProfileDiffCmd extends Command {
   }
   async run(): Promise<void> {
     const { args, flags } = await this.parse(ProfileDiffCmd)
-    const code = runDiffCommand(args.from, args.to, { json: flags.json })
+    const code = runDiffCommand(args.from, args.to, { json: flags.json, cwd: findRepoRoot() })
     if (code !== 0) this.exit(code)
   }
 }

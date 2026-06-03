@@ -7,6 +7,7 @@
 import { Args, Command } from '@oclif/core'
 import { cpSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { findRepoRoot } from '../../lib/profile-repo-root.js'
 
 export function runForkCommand(src: string, dst: string, cwd: string = process.cwd()): number {
   if (!/^p-[a-z0-9-]+$/.test(dst)) {
@@ -44,7 +45,7 @@ export default class ProfileFork extends Command {
   }
   async run(): Promise<void> {
     const { args } = await this.parse(ProfileFork)
-    const code = runForkCommand(args.src, args.dst)
+    const code = runForkCommand(args.src, args.dst, findRepoRoot())
     if (code !== 0) this.exit(code)
   }
 }

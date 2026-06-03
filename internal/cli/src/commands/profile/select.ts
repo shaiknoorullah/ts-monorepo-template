@@ -7,6 +7,7 @@
 import { Args, Command } from '@oclif/core'
 import { existsSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { findRepoRoot } from '../../lib/profile-repo-root.js'
 
 const VALID_IDS = new Set([
   'p-enterprise',
@@ -40,7 +41,7 @@ export default class ProfileSelect extends Command {
   }
   async run(): Promise<void> {
     const { args } = await this.parse(ProfileSelect)
-    const code = runSelectCommand(args.profile)
+    const code = runSelectCommand(args.profile, findRepoRoot())
     if (code !== 0) this.exit(code)
   }
 }
