@@ -6,6 +6,9 @@ packages:
   - internal/*
   - infra/cloudflare/workers/*
   - docs
+  # Schema-validation tests for the hand-maintained cloud-prices/*.yaml tables
+  # consumed by @internal/cost-simulator.
+  - data/cloud-prices/__tests__
 
 catalog:
   '@opentelemetry/api': ^1.10.0

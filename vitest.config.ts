@@ -13,11 +13,14 @@ export default defineConfig({
       'docs/architecture',
       'packages/*/vitest.config.ts',
       'internal/cli',
+      'internal/cost-simulator',
+      'internal/recommender',
       'internal/schemas',
       'internal/scripts',
       'internal/test-utils',
       // NOTE: internal/templates/* are scaffolding stubs, NOT real projects.
       // They contain placeholder {{name}} markers and broken tsconfig extends.
+      'data/cloud-prices/__tests__',
       'tests',
     ],
     coverage: {
