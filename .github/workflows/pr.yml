@@ -78,3 +78,28 @@ jobs:
       - name: go build go-hello
         working-directory: apps/go-hello
         run: go build ./...
+
+  xp-validate:
+    name: crossplane validate + render
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install crossplane CLI
+        run: |
+          curl -sL https://raw.githubusercontent.com/crossplane/crossplane/release-1.17/install.sh | env XP_CHANNEL=stable XP_VERSION=v1.17.3 sh
+          sudo mv crossplane /usr/local/bin/
+      - name: Install kustomize
+        run: |
+          curl -sL https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          sudo mv kustomize /usr/local/bin/
+      - name: Install chainsaw
+        run: |
+          curl -sL https://github.com/kyverno/chainsaw/releases/download/v0.2.12/chainsaw_linux_amd64.tar.gz | tar xz
+          sudo mv chainsaw /usr/local/bin/
+      - name: Install kcl
+        run: |
+          curl -sL https://kcl-lang.io/script/install-cli.sh | bash
+      - name: crossplane beta validate + render + kcl vet + chainsaw
+        # Runs: crossplane beta validate, crossplane render, kcl vet,
+        # and: chainsaw test infra/crossplane/tests/chainsaw
+        run: bash scripts/ci/crossplane-validate.sh

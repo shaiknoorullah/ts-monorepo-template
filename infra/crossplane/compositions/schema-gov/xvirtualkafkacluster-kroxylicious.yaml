@@ -32,20 +32,19 @@ spec:
         source: Inline
         inline:
           template: |
+            {{- $name := .observed.composite.resource.metadata.name }}
+            {{- $claimRef := .observed.composite.resource.spec.claimRef }}
+            {{- $ns := "default" }}
+            {{- if $claimRef }}{{- $ns = $claimRef.namespace }}{{- end }}
             apiVersion: kubernetes.crossplane.io/v1alpha2
             kind: Object
             metadata:
               annotations:
-                crossplane.io/external-name: {{ .observed.composite.resource.metadata.name }}
-              name: {{ .observed.composite.resource.metadata.name }}
-              namespace: {{ index .observed.composite.resource.spec "claimRef" "namespace" | default "default" }}
+                gotemplating.fn.crossplane.io/composition-resource-name: vkafka-obj
+                crossplane.io/external-name: {{ $name }}
+              name: {{ $name }}
+              namespace: {{ $ns }}
             spec:
               variant: "default"
-    - step: patch
-      functionRef: { name: function-patch-and-transform }
-      input:
-        apiVersion: pt.fn.crossplane.io/v1beta1
-        kind: Resources
-        resources: []
     - step: ready
       functionRef: { name: function-auto-ready }

@@ -1,0 +1,22 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: render-kafka-prod
+spec:
+  steps:
+    - try:
+        - script:
+            content: |
+              FN_DIR=$(mktemp -d)
+              cp ../../../functions/patch-and-transform.yaml \
+                 ../../../functions/go-templating.yaml \
+                 ../../../functions/environment-configs.yaml \
+                 ../../../functions/auto-ready.yaml "$FN_DIR/"
+              crossplane render \
+                ./01-claim.yaml \
+                ../../../compositions/core/xkafkacluster-strimzi-kraft-ha.yaml \
+                "$FN_DIR" \
+                -e ../../../environment-configs \
+                -x \
+                > /tmp/render-kafka-prod.yaml
+              test "$(grep -c 'kind: Kafka$' /tmp/render-kafka-prod.yaml)" -ge 1

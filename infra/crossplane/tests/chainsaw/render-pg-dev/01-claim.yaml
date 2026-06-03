@@ -1,0 +1,14 @@
+apiVersion: pn.cloud/v1alpha1
+kind: XPostgresCluster
+metadata:
+  name: pg-aegis
+spec:
+  env: dev
+  size: xs
+  databases:
+    - { name: aegis, owner: aegis_app }
+  pooler:
+    enabled: true
+    replicas: 1
+    mode: transaction
+  connectionSecret: aegis-conn

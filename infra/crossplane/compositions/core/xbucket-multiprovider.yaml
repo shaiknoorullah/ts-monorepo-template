@@ -38,6 +38,8 @@ spec:
             apiVersion: s3.aws.upbound.io/v1beta2
             kind: Bucket
             metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: s3-bucket
               name: {{ $name }}
             spec:
               forProvider:
@@ -46,6 +48,8 @@ spec:
             apiVersion: storage.azure.upbound.io/v1beta2
             kind: Account
             metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: azureblob-account
               name: {{ $name }}
             spec:
               forProvider:
@@ -54,6 +58,8 @@ spec:
             apiVersion: cloudflare.upbound.io/v1alpha1
             kind: R2Bucket
             metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: r2-bucket
               name: {{ $name }}
             spec:
               forProvider:
@@ -62,16 +68,12 @@ spec:
             apiVersion: storage.gcp.upbound.io/v1beta2
             kind: Bucket
             metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: gcs-bucket
               name: {{ $name }}
             spec:
               forProvider:
                 location: US
             {{- end }}
-    - step: patch
-      functionRef: { name: function-patch-and-transform }
-      input:
-        apiVersion: pt.fn.crossplane.io/v1beta1
-        kind: Resources
-        resources: []
     - step: ready
       functionRef: { name: function-auto-ready }

@@ -1,0 +1,22 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: render-bucket-r2
+spec:
+  steps:
+    - try:
+        - script:
+            content: |
+              FN_DIR=$(mktemp -d)
+              cp ../../../functions/patch-and-transform.yaml \
+                 ../../../functions/go-templating.yaml \
+                 ../../../functions/environment-configs.yaml \
+                 ../../../functions/auto-ready.yaml "$FN_DIR/"
+              crossplane render \
+                ./01-claim.yaml \
+                ../../../compositions/core/xbucket-multiprovider.yaml \
+                "$FN_DIR" \
+                -e ../../../environment-configs \
+                -x \
+                > /tmp/render-bucket-r2.yaml
+              grep -q "kind: R2Bucket" /tmp/render-bucket-r2.yaml

@@ -32,22 +32,21 @@ spec:
         source: Inline
         inline:
           template: |
+            {{- $claimRef := .observed.composite.resource.spec.claimRef }}
+            {{- $ns := "default" }}
+            {{- if $claimRef }}{{- $ns = $claimRef.namespace }}{{- end }}
             apiVersion: apps.kubeblocks.io/v1alpha1
             kind: Cluster
             metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: kubeblocks-cluster
               name: {{ .observed.composite.resource.metadata.name }}
-              namespace: {{ index .observed.composite.resource.spec "claimRef" "namespace" | default "default" }}
+              namespace: {{ $ns }}
             spec:
               clusterDefinitionRef: redis
               componentSpecs:
                 - name: redis
                   componentDefRef: redis
                   replicas: 1
-    - step: patch
-      functionRef: { name: function-patch-and-transform }
-      input:
-        apiVersion: pt.fn.crossplane.io/v1beta1
-        kind: Resources
-        resources: []
     - step: ready
       functionRef: { name: function-auto-ready }

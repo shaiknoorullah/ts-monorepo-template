@@ -32,20 +32,19 @@ spec:
         source: Inline
         inline:
           template: |
+            {{- $name := .observed.composite.resource.metadata.name }}
+            {{- $claimRef := .observed.composite.resource.spec.claimRef }}
+            {{- $ns := "default" }}
+            {{- if $claimRef }}{{- $ns = $claimRef.namespace }}{{- end }}
             apiVersion: pn.cloud/v1alpha1
             kind: XSchemaArtifact
             metadata:
               annotations:
-                crossplane.io/external-name: {{ .observed.composite.resource.metadata.name }}
-              name: {{ .observed.composite.resource.metadata.name }}
-              namespace: {{ index .observed.composite.resource.spec "claimRef" "namespace" | default "default" }}
+                gotemplating.fn.crossplane.io/composition-resource-name: contract-artifact
+                crossplane.io/external-name: {{ $name }}
+              name: {{ $name }}
+              namespace: {{ $ns }}
             spec:
               variant: "default"
-    - step: patch
-      functionRef: { name: function-patch-and-transform }
-      input:
-        apiVersion: pt.fn.crossplane.io/v1beta1
-        kind: Resources
-        resources: []
     - step: ready
       functionRef: { name: function-auto-ready }

@@ -47,15 +47,18 @@ spec:
         source: Inline
         inline:
           template: |
-            {{- $instances := index .ctx "apiextensions.crossplane.io/environment" "pg" "instances" | default 3 }}
-            {{- $storage := printf "%dGi" (index .ctx "apiextensions.crossplane.io/environment" "pg" "storageGi" | default 100) }}
+            {{- $storage := "100Gi" }}
+            {{- $claimRef := .observed.composite.resource.spec.claimRef }}
+            {{- $ns := "default" }}
+            {{- if $claimRef }}{{- $ns = $claimRef.namespace }}{{- end }}
             apiVersion: postgresql.cnpg.io/v1
             kind: Cluster
             metadata:
               annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: cnpg-cluster
                 crossplane.io/external-name: {{ .observed.composite.resource.metadata.name }}
               name: {{ .observed.composite.resource.metadata.name }}
-              namespace: {{ index .observed.composite.resource.spec "claimRef" "namespace" | default "default" }}
+              namespace: {{ $ns }}
             spec:
               instances: 3
               storage:

@@ -1,0 +1,9 @@
+apiVersion: pn.cloud/v1alpha1
+kind: XBucket
+metadata:
+  name: app-uploads
+spec:
+  provider: r2
+  name: app-uploads
+  versioning: true
+  publicRead: false

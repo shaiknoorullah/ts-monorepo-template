@@ -44,11 +44,5 @@ spec:
                     })
                 }
             }]
-    - step: patch
-      functionRef: { name: function-patch-and-transform }
-      input:
-        apiVersion: pt.fn.crossplane.io/v1beta1
-        kind: Resources
-        resources: []
     - step: ready
       functionRef: { name: function-auto-ready }

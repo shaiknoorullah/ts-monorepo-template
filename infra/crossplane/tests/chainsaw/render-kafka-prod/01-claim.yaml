@@ -1,0 +1,12 @@
+apiVersion: pn.cloud/v1alpha1
+kind: XKafkaCluster
+metadata:
+  name: kafka-shared
+spec:
+  env: prod
+  size: m
+  brokerReplicas: 3
+  controllerReplicas: 3
+  storage: { class: ssd, size: 200Gi }
+  listeners: { plain: false, tls: true, external: false }
+  authentication: { type: scram-sha-512 }
