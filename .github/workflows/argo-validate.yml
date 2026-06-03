@@ -1,0 +1,67 @@
+name: argo-validate
+
+on:
+  pull_request:
+    paths:
+      - 'infra/argocd/**'
+      - 'infra/kargo/**'
+      - 'infra/helm/apps/**'
+      - 'scripts/ci/argo-validate.sh'
+      - '.github/workflows/argo-validate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'infra/argocd/**'
+      - 'infra/kargo/**'
+
+permissions:
+  contents: read
+
+jobs:
+  argo-validate:
+    name: argo-validate
+    runs-on: ubuntu-22.04
+    env:
+      KUBECONFORM_VERSION: v0.6.7
+      ARGOCD_VERSION: v2.13.1
+      KARGO_VERSION: v1.1.1
+      KUBECTL_VERSION: v1.31.3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        run: |
+          curl -fsSLo /usr/local/bin/kubectl \
+            "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+          chmod +x /usr/local/bin/kubectl
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL \
+            "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin kubeconform
+          kubeconform -v
+
+      - name: Install argocd CLI
+        run: |
+          curl -fsSLo /usr/local/bin/argocd \
+            "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
+          chmod +x /usr/local/bin/argocd
+          argocd version --client
+
+      - name: Install kargo CLI
+        run: |
+          curl -fsSLo /usr/local/bin/kargo \
+            "https://github.com/akuity/kargo/releases/download/${KARGO_VERSION}/kargo-linux-amd64"
+          chmod +x /usr/local/bin/kargo
+          kargo version
+
+      - name: Install yq
+        run: |
+          curl -fsSLo /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+          chmod +x /usr/local/bin/yq
+
+      - name: Run argo-validate script
+        run: scripts/ci/argo-validate.sh
