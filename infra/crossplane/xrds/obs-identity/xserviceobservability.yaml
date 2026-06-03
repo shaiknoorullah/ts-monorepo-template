@@ -1,0 +1,42 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xserviceobservabilities.pn.cloud
+spec:
+  group: pn.cloud
+  names:
+    kind: XServiceObservability
+    plural: xserviceobservabilities
+  claimNames:
+    kind: ServiceObservabilityClaim
+    plural: serviceobservabilityclaims
+  defaultCompositionRef:
+    name: xserviceobservability-default
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [selector, dashboardJSON]
+              properties:
+                selector:
+                  type: object
+                  additionalProperties: { type: string }
+                metricsPath: { type: string, default: '/metrics' }
+                slos:
+                  type: array
+                  items:
+                    type: object
+                    required: [name, objective]
+                    properties:
+                      name: { type: string }
+                      objective: { type: number }
+                      window: { type: string }
+                      indicator: { type: string }
+                dashboardJSON: { type: string }
+                alertingTo: { type: string, default: 'pager-default' }

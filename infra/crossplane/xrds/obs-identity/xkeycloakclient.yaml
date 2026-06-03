@@ -1,0 +1,50 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xkeycloakclients.pn.cloud
+spec:
+  group: pn.cloud
+  names:
+    kind: XKeycloakClient
+    plural: xkeycloakclients
+  claimNames:
+    kind: KeycloakClientClaim
+    plural: keycloakclientclaims
+  defaultCompositionRef:
+    name: xkeycloakclient-default
+  connectionSecretKeys: [clientId, clientSecret]
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [realm, clientId]
+              properties:
+                realm: { type: string }
+                clientId: { type: string }
+                redirectUris:
+                  type: array
+                  items: { type: string }
+                scopes:
+                  type: array
+                  items: { type: string }
+                groupMappers:
+                  type: array
+                  items:
+                    type: object
+                    required: [group, claim]
+                    properties:
+                      group: { type: string }
+                      claim: { type: string }
+                serviceAccount:
+                  type: object
+                  properties:
+                    enabled: { type: boolean, default: false }
+                    roles:
+                      type: array
+                      items: { type: string }
