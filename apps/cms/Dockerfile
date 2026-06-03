@@ -2,11 +2,11 @@
 # Multi-stage build for self-hosted Payload 3.
 
 FROM node:20-bookworm-slim AS base
-# hadolint ignore=DL3008
 # Tracking distro-shipped versions intentionally — every Debian point release
 # bumps these packages and explicit pins would break security updates on a
 # rolling `node:20-bookworm-slim` base. The base image is already pinned by
 # digest in deploy manifests; runtime upgrades are handled by image rebuilds.
+# hadolint ignore=DL3008
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
       ca-certificates curl tini libvips && \
     rm -rf /var/lib/apt/lists/*
@@ -29,8 +29,8 @@ RUN pnpm --filter @app/cms run build
 
 # ---- runtime ----
 FROM node:20-bookworm-slim AS runtime
-# hadolint ignore=DL3008
 # Same rationale as the base stage above — tracking distro-shipped versions.
+# hadolint ignore=DL3008
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
       ca-certificates tini libvips && \
     rm -rf /var/lib/apt/lists/*
