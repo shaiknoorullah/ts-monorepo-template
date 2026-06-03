@@ -82,3 +82,6 @@ docs/api/
 # Helm: file:// chart dependency vendor and lock
 infra/helm/apps/*/charts/
 infra/helm/apps/*/Chart.lock
+
+# chainsaw render reports (xp-validate)
+xp-render*.json
