@@ -1,0 +1,25 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xglobalrulesets.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XGlobalRuleSet, plural: xglobalrulesets }
+  claimNames: { kind: GlobalRuleSetClaim, plural: globalrulesetclaims }
+  defaultCompositionRef: { name: xglobalruleset-apicurio-http }
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [registry]
+              properties:
+                registry: { type: string }
+                compatibility:
+                  { type: string, enum: [BACKWARD, FORWARD, FULL, NONE], default: BACKWARD }
+                validity: { type: string, enum: [NONE, SYNTAX_ONLY, FULL], default: FULL }

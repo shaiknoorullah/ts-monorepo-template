@@ -1,0 +1,29 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xvirtualkafkaclusters.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XVirtualKafkaCluster, plural: xvirtualkafkaclusters }
+  claimNames: { kind: VirtualKafkaClusterClaim, plural: virtualkafkaclusterclaims }
+  defaultCompositionRef: { name: xvirtualkafkacluster-kroxylicious }
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [proxyPlane, name, targetCluster]
+              properties:
+                proxyPlane: { type: string }
+                name: { type: string }
+                targetCluster: { type: string }
+                clientBootstrap: { type: string }
+                tls:
+                  type: object
+                  properties:
+                    enabled: { type: boolean, default: true }

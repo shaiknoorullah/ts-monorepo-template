@@ -1,0 +1,27 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xkafkaprotocolfilters.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XKafkaProtocolFilter, plural: xkafkaprotocolfilters }
+  claimNames: { kind: KafkaProtocolFilterClaim, plural: kafkaprotocolfilterclaims }
+  defaultCompositionRef: { name: xkafkaprotocolfilter-kroxylicious-kcl }
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [proxyPlane, name, type]
+              properties:
+                proxyPlane: { type: string }
+                name: { type: string }
+                type: { type: string }
+                config:
+                  type: object
+                  additionalProperties: true

@@ -1,0 +1,33 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xkafkaproxyplanes.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XKafkaProxyPlane, plural: xkafkaproxyplanes }
+  claimNames: { kind: KafkaProxyPlaneClaim, plural: kafkaproxyplaneclaims }
+  defaultCompositionRef: { name: xkafkaproxyplane-kroxylicious }
+  connectionSecretKeys: [bootstrap, adminEndpoint]
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [env, name, upstreamKafka]
+              properties:
+                env: { type: string, enum: [dev, staging, prod] }
+                name: { type: string }
+                upstreamKafka: { type: string }
+                replicas: { type: integer, default: 2 }
+                image: { type: string, default: 'quay.io/kroxylicious/kroxylicious:0.10.0' }
+                virtualClusters:
+                  type: array
+                  items: { type: string }
+                filters:
+                  type: array
+                  items: { type: string }

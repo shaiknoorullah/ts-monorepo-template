@@ -1,0 +1,27 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xauthorizationfilters.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XAuthorizationFilter, plural: xauthorizationfilters }
+  claimNames: { kind: AuthorizationFilterClaim, plural: authorizationfilterclaims }
+  defaultCompositionRef: { name: xauthorizationfilter-kroxylicious }
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [proxyPlane, name, policy]
+              properties:
+                proxyPlane: { type: string }
+                name: { type: string }
+                policy: { type: string }
+                topics:
+                  type: array
+                  items: { type: string }

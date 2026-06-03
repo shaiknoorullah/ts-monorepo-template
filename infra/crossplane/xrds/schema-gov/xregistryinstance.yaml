@@ -1,0 +1,30 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xregistryinstances.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XRegistryInstance, plural: xregistryinstances }
+  claimNames: { kind: RegistryInstanceClaim, plural: registryinstanceclaims }
+  defaultCompositionRef: { name: xregistryinstance-apicurio }
+  connectionSecretKeys: [url, adminUsername, adminPassword]
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [env, name]
+              properties:
+                env: { type: string, enum: [dev, staging, prod] }
+                name: { type: string }
+                image: { type: string, default: 'apicurio/apicurio-registry:3.0.6' }
+                backingPostgres:
+                  type: object
+                  properties:
+                    size: { type: string, enum: [xs, s, m, l], default: s }
+                ingressHost: { type: string }
