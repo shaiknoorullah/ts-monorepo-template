@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "team_size": "1",
+    "env_count": 2,
+    "target_budget_usd": 15,
+    "compliance_floor": "none",
+    "workload_shape": "mixed",
+    "ha_level": "single-az",
+    "observability_depth": "logs+metrics",
+    "secret_backend": "vault",
+    "registry": "ghcr",
+    "cdn_edge": "cloudflare"
+  }
+}

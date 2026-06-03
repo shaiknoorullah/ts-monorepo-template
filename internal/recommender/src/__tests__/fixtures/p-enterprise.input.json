@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "team_size": "20+",
+    "env_count": 5,
+    "target_budget_usd": 5000,
+    "compliance_floor": "hipaa",
+    "workload_shape": "mixed",
+    "ha_level": "multi-region",
+    "observability_depth": "+ebpf",
+    "secret_backend": "vault",
+    "registry": "cloud-native",
+    "cdn_edge": "cloud-native"
+  }
+}

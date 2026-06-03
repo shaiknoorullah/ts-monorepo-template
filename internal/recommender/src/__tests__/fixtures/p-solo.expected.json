@@ -1,0 +1,25 @@
+{
+  "recommended": "p-solo",
+  "ranked": [
+    {
+      "profile": "p-solo",
+      "score": 1
+    },
+    {
+      "profile": "p-hobby",
+      "score": 0.942
+    },
+    {
+      "profile": "p-startup-small",
+      "score": 0.7971
+    },
+    {
+      "profile": "p-startup-scale",
+      "score": 0.7971
+    },
+    {
+      "profile": "p-enterprise",
+      "score": 0.7029
+    }
+  ]
+}
