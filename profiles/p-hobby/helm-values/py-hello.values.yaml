@@ -1,0 +1,17 @@
+image:
+  registry: ghcr.io
+  repository: ts-monorepo-template/py-hello
+replicas: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+autoscaling:
+  enabled: false
+podDisruptionBudget:
+  enabled: false
+monitoring:
+  enabled: true

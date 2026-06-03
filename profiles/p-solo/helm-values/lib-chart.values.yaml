@@ -1,0 +1,14 @@
+image:
+  registry: ghcr.io
+  repository: ts-monorepo-template/lib-chart
+  digest: ''
+secrets:
+  backend: keyring
+  refreshInterval: 1h
+networkPolicy:
+  defaultDeny: false
+replicas: 1
+autoscaling:
+  enabled: false
+podDisruptionBudget:
+  enabled: false
