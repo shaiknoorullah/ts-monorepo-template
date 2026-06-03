@@ -157,12 +157,16 @@ export default tseslint.config(
   },
 
   // Test files — disable type-checked AND parser project (tests live
-  // outside the typed-project graph; ESLint project-service can't find them)
+  // outside the typed-project graph; ESLint project-service can't find them).
+  // Phase 4 added the workspace-root tests/ tree (Nx polyglot wiring tests,
+  // cross-lang smoke harness, etc.); its fixtures/helpers also live outside
+  // the typed-project graph so we cover the whole tree.
   {
     files: [
       '**/*.{test,spec}.{ts,tsx}',
       '**/__tests__/**/*.{ts,tsx}',
       '**/*.{test,spec}.{js,mjs,cjs}',
+      'tests/**/*.{ts,tsx}',
     ],
     languageOptions: {
       parserOptions: {

@@ -38,6 +38,7 @@
     "prepare": "lefthook install",
     "publint": "nx run-many -t publint",
     "release": "pnpm build && changeset publish",
+    "smoke": "vitest run tests/smoke",
     "sync": "syncpack fix-mismatches && syncpack format",
     "test": "nx run-many -t test",
     "test:affected": "nx affected -t test --base=origin/main",
