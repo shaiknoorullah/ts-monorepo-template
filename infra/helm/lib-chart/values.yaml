@@ -1,0 +1,7 @@
+# lib-chart has no default values of its own; app charts supply them.
+# Placeholder image/service block satisfies values.schema.json required fields
+# so `helm lint infra/helm/lib-chart` exits 0. Consumers always override.
+image:
+  repository: placeholder
+service:
+  port: 8080

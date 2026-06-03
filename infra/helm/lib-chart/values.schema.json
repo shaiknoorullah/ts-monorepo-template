@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["image", "service"],
+  "additionalProperties": true,
+  "properties": {
+    "image": {
+      "type": "object",
+      "required": ["repository"],
+      "properties": {
+        "repository": { "type": "string", "pattern": "^[a-z0-9./_-]+$" },
+        "tag": { "type": "string" },
+        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "pullPolicy": { "enum": ["Always", "IfNotPresent", "Never"] }
+      }
+    },
+    "workload": {
+      "type": "object",
+      "properties": {
+        "kind": { "enum": ["Deployment", "Rollout"] },
+        "replicas": { "type": "integer", "minimum": 0, "maximum": 1000 },
+        "strategy": { "type": "object" }
+      }
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "headless": {
+          "type": "object",
+          "properties": { "enabled": { "type": "boolean" } }
+        }
+      }
+    },
+    "pod": {
+      "type": "object",
+      "properties": {
+        "securityContext": {
+          "type": "object",
+          "properties": {
+            "runAsUser": { "type": "integer", "minimum": 1000 },
+            "runAsNonRoot": { "const": true },
+            "privileged": { "const": false }
+          }
+        }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "properties": {
+        "tracing": {
+          "type": "object",
+          "properties": {
+            "runtime": { "enum": ["go", "py", "node", "rust"] },
+            "sampler": { "type": "string" },
+            "samplerArg": { "type": "string" },
+            "exporterEndpoint": { "type": "string", "format": "uri" }
+          }
+        }
+      }
+    },
+    "networkPolicy": {
+      "type": "object",
+      "properties": {
+        "egress": {
+          "type": "object",
+          "properties": {
+            "external": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["host", "port"],
+                "properties": {
+                  "host": { "type": "string", "not": { "const": "0.0.0.0/0" } },
+                  "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
