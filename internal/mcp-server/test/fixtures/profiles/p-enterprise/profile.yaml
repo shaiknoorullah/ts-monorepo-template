@@ -1,0 +1,17 @@
+id: p-enterprise
+name: Production at Scale
+tagline: Multi-region, multi-cloud, full compliance.
+cost_band_usd:
+  min: 5000
+  max: 50000
+dimensions:
+  team_size: '20+'
+  ha_level: multi-region
+  observability_depth: +ebpf
+layer_defaults:
+  nx: { cloud: powerpack-self-host }
+  helm: { replicaCount: 5 }
+  crossplane: { providers: [aws, azure, gcp, cloudflare] }
+  terraform: { clouds: [aws, azure, gcp, cloudflare] }
+  ansible: { hosts: [region-1-cp, region-2-cp, region-3-cp] }
+  secretspec: { provider: vault }

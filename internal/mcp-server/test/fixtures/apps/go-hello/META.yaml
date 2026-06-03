@@ -1,0 +1,9 @@
+name: go-hello
+language: go
+path: apps/go-hello
+chart: infra/helm/apps/go-hello
+envs: [dev, staging, prod]
+capabilities:
+  http: true
+  grpc: false
+  background_jobs: false

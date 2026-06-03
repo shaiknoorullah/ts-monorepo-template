@@ -1,0 +1,8 @@
+provider: grafana-cloud
+currency: USD
+last_updated: 2026-05-28
+source: https://grafana.com/pricing/
+skus:
+  - id: pro
+    price_monthly: 29.00
+    notes: Includes traces + 50GB logs

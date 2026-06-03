@@ -1,0 +1,22 @@
+version: 1.0.0
+questions:
+  - id: team_size
+    weight: 0.20
+  - id: env_count
+    weight: 0.10
+  - id: target_budget_usd
+    weight: 0.25
+  - id: compliance_floor
+    weight: 0.15
+  - id: workload_shape
+    weight: 0.05
+  - id: ha_level
+    weight: 0.10
+  - id: observability_depth
+    weight: 0.05
+  - id: secret_backend
+    weight: 0.05
+  - id: registry
+    weight: 0.03
+  - id: cdn_edge
+    weight: 0.02
