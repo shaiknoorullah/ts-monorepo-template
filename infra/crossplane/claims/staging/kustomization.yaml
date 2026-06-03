@@ -12,3 +12,4 @@ resources:
   - py-hello-redis.yaml
   - rs-hello-redis.yaml
   - shared-topics.yaml
+  - shared-bucket.yaml
