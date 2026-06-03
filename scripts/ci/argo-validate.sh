@@ -62,15 +62,20 @@ if require_or_warn argocd; then
   # (below) cover the structural checks.
   for appset in infra/argocd/appset-apps.yaml infra/argocd/appset-platform.yaml; do
     echo "rendering ${appset}"
-    if ! argocd appset generate "${appset}" -o yaml > "/tmp/$(basename "${appset}" .yaml).rendered.yaml" 2>&1; then
+    rendered_path="/tmp/$(basename "${appset}" .yaml).rendered.yaml"
+    # Send stderr (the "Argo CD server address unspecified" diagnostic) to
+    # the runner log, not to the rendered file — kubeconform would later
+    # try to parse that error text as YAML and fail.
+    if ! argocd appset generate "${appset}" -o yaml > "${rendered_path}"; then
       echo "::warning::argocd appset generate cannot render ${appset} offline (informational)"
+      rm -f "${rendered_path}"
     fi
   done
   echo "::endgroup::"
 
   echo "::group::kubeconform on rendered ApplicationSets"
   for rendered in /tmp/appset-apps.rendered.yaml /tmp/appset-platform.rendered.yaml; do
-    [ -f "${rendered}" ] || continue
+    [ -s "${rendered}" ] || continue
     kubeconform -strict -ignore-missing-schemas \
       -schema-location default \
       -schema-location "${CRD_SCHEMA}" \
