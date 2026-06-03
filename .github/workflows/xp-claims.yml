@@ -51,25 +51,31 @@ jobs:
         run: npm install -g ajv-cli@5
 
       - name: Install crossplane CLI v1.17.3
-        # install.sh is flaky on GHA runners (CDN returns 403 to plain
-        # curl UAs in the runner egress range, leaving no binary for the
-        # subsequent install step). Pull the static `crank` binary
-        # directly with a browser User-Agent and curl-native retry,
-        # matching the pattern in profile-validate.yml. Soft-fail at
-        # step level so the check turns green when the CDN blocks us
-        # entirely (downstream `Parse claims` / `Render claims` are
-        # also stepwise soft-failed below).
-        id: crossplane_install
-        continue-on-error: true
+        # Two-source install — same pattern as profile-validate.yml.
+        # Try `releases.crossplane.io` with curl retries + browser UA;
+        # on persistent CDN refusal, extract the binary from the
+        # official Docker image (different registry, reliably reachable
+        # from runner IPs). The step fails LOUDLY if both sources fail,
+        # so the required-check gate stays honest.
         run: |
           set -euo pipefail
           XP_VERSION=v1.17.3
-          curl --fail --silent --show-error --location \
+
+          if curl --fail --silent --show-error --location \
                --retry 6 --retry-all-errors --retry-delay 4 \
                --connect-timeout 20 \
                -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" \
                -o /tmp/crank \
-               "https://releases.crossplane.io/stable/${XP_VERSION}/bin/linux_amd64/crank"
+               "https://releases.crossplane.io/stable/${XP_VERSION}/bin/linux_amd64/crank"; then
+            echo "::notice::crossplane CLI fetched from releases.crossplane.io"
+          else
+            echo "::warning::releases.crossplane.io blocked; falling back to docker image"
+            docker pull "crossplane/crossplane:${XP_VERSION}"
+            cid=$(docker create "crossplane/crossplane:${XP_VERSION}")
+            docker cp "${cid}:/usr/local/bin/crossplane" /tmp/crank
+            docker rm "${cid}"
+          fi
+
           sudo install -m 0755 /tmp/crank /usr/local/bin/crossplane
           crossplane --help >/dev/null
 
@@ -77,18 +83,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y bats
 
       - name: Parse claims (yq + JSON Schema)
-        # Independent of crossplane CLI — runs unconditionally.
         run: bash infra/crossplane/claims/tests/parse_claims.sh
 
       - name: Render claims (crossplane render)
-        # Depends on `crossplane` being on PATH. If the install step
-        # above failed (CDN block), skip this step instead of erroring.
-        if: steps.crossplane_install.outcome == 'success'
         run: bash infra/crossplane/claims/tests/render_all.sh
 
       - name: Run claim bats suite
-        # Same: skipped when crossplane install failed.
-        if: steps.crossplane_install.outcome == 'success'
         run: |
           for f in infra/crossplane/claims/tests/test_*.bats; do
             bats "${f}"

@@ -46,23 +46,34 @@ jobs:
           sudo tar -xzf /tmp/kc.tgz -C /usr/local/bin kubeconform
       - name: Install crossplane CLI
         # releases.crossplane.io returns 403 to plain `curl/x.y.z` UAs from
-        # the GHA runner egress IP range. Use a browser-style User-Agent
-        # to get past the CDN rule and add curl-native retry on the off
-        # chance the asset is transiently 5xx. Even with the UA the CDN
-        # is stochastic about which runner IPs it serves, so allow this
-        # step to soft-fail; the dependent `profile:validate` step below
-        # is then skipped for that matrix entry.
-        id: crossplane_install
-        continue-on-error: true
+        # the GHA runner egress IP range. Try the CDN first with curl-
+        # native retry + a browser User-Agent; if the CDN refuses every
+        # attempt (intermittent runner-IP block), fall back to extracting
+        # the binary from the official `crossplane/crossplane` Docker
+        # image, which pulls from a different registry (Docker Hub /
+        # GHCR mirror) the runner can reach reliably. Either path
+        # produces /usr/local/bin/crossplane; if neither does, the step
+        # fails LOUDLY so the required-check gate stays honest (no fail-
+        # open via continue-on-error).
         run: |
           set -euo pipefail
           XP_VERSION=v1.17.3
-          curl --fail --silent --show-error --location \
+
+          if curl --fail --silent --show-error --location \
                --retry 6 --retry-all-errors --retry-delay 4 \
                --connect-timeout 20 \
                -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" \
                -o /tmp/crank \
-               "https://releases.crossplane.io/stable/${XP_VERSION}/bin/linux_amd64/crank"
+               "https://releases.crossplane.io/stable/${XP_VERSION}/bin/linux_amd64/crank"; then
+            echo "::notice::crossplane CLI fetched from releases.crossplane.io"
+          else
+            echo "::warning::releases.crossplane.io blocked; falling back to docker image"
+            docker pull "crossplane/crossplane:${XP_VERSION}"
+            cid=$(docker create "crossplane/crossplane:${XP_VERSION}")
+            docker cp "${cid}:/usr/local/bin/crossplane" /tmp/crank
+            docker rm "${cid}"
+          fi
+
           sudo install -m 0755 /tmp/crank /usr/local/bin/crossplane
           crossplane --help >/dev/null
       - run: pnpm install --frozen-lockfile
@@ -78,8 +89,4 @@ jobs:
             helm dependency build "${chart_dir}"
           done
       - name: Run profile:validate
-        # Skip when the crossplane CLI install failed (CDN block); the
-        # other matrix entries provide independent coverage of the same
-        # validation surface.
-        if: steps.crossplane_install.outcome == 'success'
         run: ./tools/ci/profile-validate.sh ${{ matrix.profile }}
