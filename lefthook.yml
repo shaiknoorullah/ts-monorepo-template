@@ -13,7 +13,11 @@ pre-commit:
       stage_fixed: true
     types:
       glob: '*.{ts,tsx}'
-      run: pnpm exec tsc -b --noEmit
+      # `tsc -b --noEmit` is incompatible with composite project references
+      # (TS6310: referenced projects can't disable emit). Use `tsc -b` so
+      # composite projects emit their .d.ts as intended, and pre-existing
+      # references continue to type-check.
+      run: pnpm exec tsc -b
 
 commit-msg:
   commands:
