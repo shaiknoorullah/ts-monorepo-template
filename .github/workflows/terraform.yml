@@ -1,0 +1,103 @@
+name: terraform
+
+on:
+  pull_request:
+    paths:
+      - 'infra/terraform/**'
+      - '.github/workflows/terraform.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'infra/terraform/**'
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Target env (dev|staging|prod)'
+        required: true
+        default: 'dev'
+      profile:
+        description: 'Profile id'
+        required: true
+        default: 'p-solo'
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+jobs:
+  tf-validate:
+    name: tf-validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+          terraform_wrapper: false
+      - name: terraform fmt -check
+        run: terraform -chdir=infra/terraform fmt -check -recursive
+      - name: terraform validate per env
+        run: |
+          set -euo pipefail
+          for e in dev staging prod; do
+            (cd infra/terraform/envs/$e && terraform init -backend=false -input=false && terraform validate -no-color)
+          done
+      - uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.53.0
+      - name: tflint
+        run: |
+          set -euo pipefail
+          tflint --init --config=$(pwd)/infra/terraform/.tflint.hcl
+          for d in infra/terraform/modules/* infra/terraform/envs/*; do
+            [ -d "$d" ] || continue
+            tflint --chdir="$d" --config=$(pwd)/infra/terraform/.tflint.hcl
+          done
+      - uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: infra/terraform
+          soft_fail: false
+      - name: terraform plan (mock backend) for every env
+        run: |
+          set -euo pipefail
+          for e in dev staging prod; do
+            (cd infra/terraform/envs/$e \
+              && terraform init -backend=false -input=false \
+              && terraform plan -lock=false -input=false -no-color \
+                  -var-file=terraform.tfvars \
+                  -out=plan.tfplan \
+              && terraform show -json plan.tfplan > plan.tfplan.json)
+          done
+      - name: conftest test plans
+        run: |
+          set -euo pipefail
+          curl -sL https://github.com/open-policy-agent/conftest/releases/download/v0.56.0/conftest_0.56.0_Linux_x86_64.tar.gz | tar xz
+          sudo mv conftest /usr/local/bin/
+          for e in dev staging prod; do
+            conftest test --policy infra/terraform/policies infra/terraform/envs/$e/plan.tfplan.json
+          done
+
+  tf-apply:
+    name: tf-apply
+    needs: tf-validate
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.env }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+          terraform_wrapper: false
+      - name: terraform apply
+        env:
+          ENV: ${{ inputs.env }}
+          PROFILE: ${{ inputs.profile }}
+        run: |
+          set -euo pipefail
+          stack=infra/terraform/envs/$ENV
+          (cd "$stack" \
+            && terraform init -input=false \
+            && terraform apply -input=false -auto-approve \
+                -var-file="$(pwd)/../../../profiles/$PROFILE/terraform.tfvars")
