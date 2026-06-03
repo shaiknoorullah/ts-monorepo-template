@@ -10,16 +10,16 @@
       "score": 0.8986
     },
     {
-      "profile": "p-solo",
-      "score": 0.8696
-    },
-    {
       "profile": "p-startup-scale",
-      "score": 0.8188
+      "score": 0.7174
     },
     {
       "profile": "p-enterprise",
-      "score": 0.7246
+      "score": 0.7101
+    },
+    {
+      "profile": "p-solo",
+      "score": 0.6232
     }
   ]
 }

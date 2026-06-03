@@ -7,19 +7,19 @@
     },
     {
       "profile": "p-startup-scale",
-      "score": 0.9855
+      "score": 0.8841
     },
     {
       "profile": "p-startup-small",
-      "score": 0.7681
+      "score": 0.4638
     },
     {
       "profile": "p-hobby",
-      "score": 0.7536
+      "score": 0.4493
     },
     {
       "profile": "p-solo",
-      "score": 0.7246
+      "score": 0.4203
     }
   ]
 }

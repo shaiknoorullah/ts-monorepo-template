@@ -65,7 +65,7 @@ profile_priors:
     team_size_fit: ['20+']
     env_count_fit: { min: 3, max: 10 }
     ha_level_fit: ['multi-az', 'multi-region']
-    compliance_fit: ['soc2', 'hipaa', 'fedramp']
+    compliance_fit: ['none', 'soc2', 'hipaa', 'fedramp']
     workload_shape_fit: ['stateless-web', 'streaming', 'mixed', 'batch']
     observability_fit: ['logs+metrics+traces', '+ebpf']
     secret_backend_fit: ['vault', 'cloud-kms']
@@ -76,12 +76,12 @@ profile_priors:
 # Lower bound stronger than upper bound, since underspending is fixable but undercapacity is not.
 penalties:
   budget_under_band: 0.40
-  budget_over_band: 0.10
+  budget_over_band: 0.80
   team_size_mismatch: 0.30
   env_count_under: 0.15
-  env_count_over: 0.20
-  ha_level_mismatch: 0.30
-  compliance_mismatch: 0.60
+  env_count_over: 0.50
+  ha_level_mismatch: 1.00
+  compliance_mismatch: 1.00
   workload_shape_mismatch: 0.10
   observability_mismatch: 0.10
   secret_backend_mismatch: 0.10
