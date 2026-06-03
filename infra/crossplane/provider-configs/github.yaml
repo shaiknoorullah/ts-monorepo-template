@@ -1,0 +1,29 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: provider-github-creds
+  namespace: crossplane-system
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: platform-store
+    kind: ClusterSecretStore
+  target:
+    name: provider-github-creds
+    creationPolicy: Owner
+  data:
+    - secretKey: token
+      remoteRef:
+        key: crossplane/github-pat
+---
+apiVersion: github.upbound.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: provider-github-creds
+      key: token

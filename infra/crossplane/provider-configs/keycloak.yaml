@@ -1,0 +1,29 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: provider-keycloak-creds
+  namespace: crossplane-system
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: platform-store
+    kind: ClusterSecretStore
+  target:
+    name: provider-keycloak-creds
+    creationPolicy: Owner
+  data:
+    - secretKey: credentials
+      remoteRef:
+        key: crossplane/keycloak-admin
+---
+apiVersion: keycloak.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: provider-keycloak-creds
+      key: credentials

@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - kubernetes-incluster.yaml
+  - helm-incluster.yaml
+  - azure.yaml
+  - azuread.yaml
+  - aws.yaml
+  - gcp.yaml
+  - cloudflare.yaml
+  - grafana.yaml
+  - vault.yaml
+  - keycloak.yaml
+  - github.yaml
+  - http-apicurio.yaml
