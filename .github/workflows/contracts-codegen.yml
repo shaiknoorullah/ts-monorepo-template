@@ -39,7 +39,22 @@ jobs:
         working-directory: packages/contracts
         run: buf lint
 
+      - name: Check whether main has any .proto files yet
+        id: main_has_protos
+        run: |
+          set -euo pipefail
+          # `buf breaking` errors with "had no .proto files" on bootstrap PRs
+          # (main has no contracts yet). Skip until main is seeded; subsequent
+          # PRs gate against the merged baseline.
+          if git ls-tree -r origin/main --name-only -- 'packages/contracts/src/proto' 2>/dev/null | grep -q '\.proto$'; then
+            echo "result=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=no" >> "$GITHUB_OUTPUT"
+            echo "::notice::main has no packages/contracts/src/proto/**/*.proto yet — skipping buf breaking baseline check."
+          fi
+
       - name: buf breaking
+        if: steps.main_has_protos.outputs.result == 'yes'
         working-directory: packages/contracts
         run: buf breaking --against "https://github.com/${{ github.repository }}.git#branch=main,subdir=packages/contracts"
 
