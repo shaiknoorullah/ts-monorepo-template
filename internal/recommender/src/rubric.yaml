@@ -1,0 +1,89 @@
+version: '1.0.0'
+# Weight tiers map to numeric coefficients in score.ts.
+# high=1.0, medium=0.5, low=0.2
+weights:
+  team_size: high
+  env_count: high
+  target_budget_usd: high
+  compliance_floor: high
+  workload_shape: medium
+  ha_level: high
+  observability_depth: medium
+  secret_backend: medium
+  registry: low
+  cdn_edge: low
+
+# Per-profile band/floor data driving scoring. Bands are inclusive ranges; "open" = no ceiling.
+# budget_band_usd is the $/mo band from Section 1.5.
+profile_priors:
+  p-solo:
+    budget_band_usd: { min: 0, max: 5 }
+    team_size_fit: ['1']
+    env_count_fit: { min: 1, max: 1 }
+    ha_level_fit: ['best-effort']
+    compliance_fit: ['none']
+    workload_shape_fit: ['stateless-web', 'batch']
+    observability_fit: ['logs']
+    secret_backend_fit: ['keyring', 'auto']
+    registry_fit: ['ghcr', 'auto']
+    cdn_edge_fit: ['none', 'cloudflare']
+  p-hobby:
+    budget_band_usd: { min: 5, max: 20 }
+    team_size_fit: ['1', '2-5']
+    env_count_fit: { min: 1, max: 2 }
+    ha_level_fit: ['best-effort', 'single-az']
+    compliance_fit: ['none']
+    workload_shape_fit: ['stateless-web', 'batch', 'mixed']
+    observability_fit: ['logs', 'logs+metrics']
+    secret_backend_fit: ['keyring', 'vault', 'auto']
+    registry_fit: ['ghcr', 'auto']
+    cdn_edge_fit: ['none', 'cloudflare']
+  p-startup-small:
+    budget_band_usd: { min: 30, max: 150 }
+    team_size_fit: ['2-5', '6-20']
+    env_count_fit: { min: 2, max: 3 }
+    ha_level_fit: ['single-az', 'multi-az']
+    compliance_fit: ['none', 'soc2']
+    workload_shape_fit: ['stateless-web', 'mixed', 'streaming']
+    observability_fit: ['logs+metrics', 'logs+metrics+traces']
+    secret_backend_fit: ['vault', 'cloud-kms', 'auto']
+    registry_fit: ['ghcr', 'harbor', 'cloud-native', 'auto']
+    cdn_edge_fit: ['cloudflare', 'cloud-native']
+  p-startup-scale:
+    budget_band_usd: { min: 300, max: 1500 }
+    team_size_fit: ['6-20', '20+']
+    env_count_fit: { min: 3, max: 5 }
+    ha_level_fit: ['multi-az', 'multi-region']
+    compliance_fit: ['none', 'soc2', 'hipaa']
+    workload_shape_fit: ['stateless-web', 'streaming', 'mixed', 'batch']
+    observability_fit: ['logs+metrics+traces', '+ebpf']
+    secret_backend_fit: ['vault', 'cloud-kms']
+    registry_fit: ['cloud-native', 'harbor', 'ghcr']
+    cdn_edge_fit: ['cloudflare', 'cloud-native']
+  p-enterprise:
+    budget_band_usd: { min: 2000, max: 0 }
+    team_size_fit: ['20+']
+    env_count_fit: { min: 3, max: 10 }
+    ha_level_fit: ['multi-az', 'multi-region']
+    compliance_fit: ['soc2', 'hipaa', 'fedramp']
+    workload_shape_fit: ['stateless-web', 'streaming', 'mixed', 'batch']
+    observability_fit: ['logs+metrics+traces', '+ebpf']
+    secret_backend_fit: ['vault', 'cloud-kms']
+    registry_fit: ['cloud-native', 'harbor']
+    cdn_edge_fit: ['cloudflare', 'cloud-native']
+
+# Penalties applied when an answer falls outside a profile's fit set.
+# Lower bound stronger than upper bound, since underspending is fixable but undercapacity is not.
+penalties:
+  budget_under_band: 0.40
+  budget_over_band: 0.10
+  team_size_mismatch: 0.30
+  env_count_under: 0.15
+  env_count_over: 0.20
+  ha_level_mismatch: 0.30
+  compliance_mismatch: 0.60
+  workload_shape_mismatch: 0.10
+  observability_mismatch: 0.10
+  secret_backend_mismatch: 0.10
+  registry_mismatch: 0.05
+  cdn_edge_mismatch: 0.05
