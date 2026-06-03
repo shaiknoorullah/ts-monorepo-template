@@ -1,0 +1,56 @@
+name: profile-validate
+
+on:
+  pull_request:
+    paths:
+      - 'profiles/**'
+      - 'infra/helm/**'
+      - 'infra/crossplane/**'
+      - 'internal/cli/src/commands/profile/**'
+      - 'internal/schemas/**'
+      - '.github/workflows/profile-validate.yml'
+      - 'tools/ci/profile-validate.sh'
+      - 'tools/ci/check-composition-pins.mjs'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  profile-validate:
+    name: profile-validate (${{ matrix.profile }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        profile:
+          - p-solo
+          - p-hobby
+          - p-startup-small
+          - p-startup-scale
+          - p-enterprise
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.11.0'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.15.0'
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.16.3'
+      - name: Install kubeconform
+        run: |
+          curl -fsSL -o /tmp/kc.tgz https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          sudo tar -xzf /tmp/kc.tgz -C /usr/local/bin kubeconform
+      - name: Install crossplane CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/crossplane/crossplane/release-1.17/install.sh \
+            | XP_CHANNEL=stable XP_VERSION=v1.17.3 sh
+          sudo mv crossplane /usr/local/bin/crossplane
+      - run: pnpm install --frozen-lockfile
+      - name: Run profile:validate
+        run: ./tools/ci/profile-validate.sh ${{ matrix.profile }}
