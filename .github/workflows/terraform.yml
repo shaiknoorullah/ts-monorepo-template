@@ -72,8 +72,29 @@ jobs:
           working_directory: infra/terraform
           soft_fail: false
       - name: terraform plan (mock backend) for every env
+        # Provide dummy values for every cloud provider's required env
+        # auth — terraform plan does not call any cloud APIs (no resources
+        # are actually created), but the provider blocks still validate
+        # that *some* credential variable is present. Real credentials
+        # are wired up at tf-apply time via OIDC / repo secrets.
+        env:
+          HCLOUD_TOKEN: ci-plan-dummy
+          CLOUDFLARE_API_TOKEN: ci-plan-dummy
+          OVH_ENDPOINT: ovh-eu
+          OVH_APPLICATION_KEY: ci-plan-dummy
+          OVH_APPLICATION_SECRET: ci-plan-dummy
+          OVH_CONSUMER_KEY: ci-plan-dummy
+          AWS_ACCESS_KEY_ID: ci-plan-dummy
+          AWS_SECRET_ACCESS_KEY: ci-plan-dummy
+          AWS_REGION: us-east-1
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-dummy.json
+          ARM_CLIENT_ID: ci-plan-dummy
+          ARM_CLIENT_SECRET: ci-plan-dummy
+          ARM_SUBSCRIPTION_ID: 00000000-0000-0000-0000-000000000000
+          ARM_TENANT_ID: 00000000-0000-0000-0000-000000000000
         run: |
           set -euo pipefail
+          echo '{"type":"service_account"}' > /tmp/gcp-dummy.json
           for e in dev staging prod; do
             (cd infra/terraform/envs/$e \
               && terraform init -backend=false -input=false \
