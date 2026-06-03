@@ -103,6 +103,11 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      - name: Install go-task
+        # @internal/schemas + @internal/scripts integration tests shell out to
+        # `task` (meta:validate, adr:new, adr:index). Match the install pattern
+        # used in site-build.yml's quickstart-verify job.
+        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:coverage
 
@@ -125,6 +130,10 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      - name: Install uv
+        # @nxlv/python's build target shells out to `uv` to install Python deps.
+        # Without it, py-hello:build fails: "UV is not installed."
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec nx run-many -t build
 
