@@ -56,11 +56,21 @@ jobs:
           APP: ${{ matrix.app }}
         run: pnpm --filter "@app/${APP}" build
 
+      - name: Render lighthouse config with ${LHCI_APP} substituted
+        # `.lighthouserc.json`'s `staticDistDir` contains a literal
+        # `${LHCI_APP}` placeholder. lhci's JSON parser does not interpolate
+        # env vars in config files, so render the file with envsubst first
+        # and point the action at the rendered copy.
+        env:
+          LHCI_APP: ${{ matrix.app }}
+        run: |
+          export LHCI_APP
+          envsubst < .lighthouserc.json > /tmp/lighthouserc.rendered.json
+          cat /tmp/lighthouserc.rendered.json
+
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12.1.0
         with:
-          configPath: ./.lighthouserc.json
+          configPath: /tmp/lighthouserc.rendered.json
           uploadArtifacts: true
           temporaryPublicStorage: true
-        env:
-          LHCI_APP: ${{ matrix.app }}
