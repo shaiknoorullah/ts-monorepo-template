@@ -22,6 +22,12 @@
     "test": "vitest run",
     "type-check": "tsc -b"
   },
+  "oclif": {
+    "bin": "ts-monorepo",
+    "commands": "./src/commands",
+    "dirname": "ts-monorepo",
+    "topicSeparator": ":"
+  },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
     "@oclif/core": "^4.0.0",
