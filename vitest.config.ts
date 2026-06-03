@@ -5,6 +5,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     projects: [
+      '.audit',
       'apps/*',
       'packages/*',
       'internal/cli',
