@@ -37,6 +37,13 @@ jobs:
         language: [javascript, typescript]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # CodeQL's diff-aware analysis needs the merge base on `main`; the
+          # default fetch-depth: 1 leaves it shallow and `codeql resolve
+          # extensions-by-pack` aborts with
+          #   git call failed. Cannot fetch main. Error: fatal: error
+          #   processing shallow info: 4
+          fetch-depth: 0
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@4f3212b61783c3c68e8309a0f18a699764811cda # v3.27.5
