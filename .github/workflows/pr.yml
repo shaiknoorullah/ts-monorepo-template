@@ -138,3 +138,11 @@ jobs:
           for f in infra/crossplane/claims/tests/test_*.bats; do
             bats "${f}"
           done
+
+  tf-validate:
+    name: tf-validate
+    # Phase 10 (Commit 10) — per-commit gate matrix entry. Delegates to the
+    # full terraform workflow so we share the same fmt/validate/tflint/tfsec/
+    # conftest plan-gating logic.
+    uses: ./.github/workflows/terraform.yml
+    secrets: inherit

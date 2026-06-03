@@ -208,6 +208,29 @@ tasks:
         done
         echo "All META.yaml files valid."
 
+  # --- Per-commit gate matrix (Phase 10 §13.3) ---
+  ci:gates-for-commit:
+    desc: Run gates appropriate to the current HEAD commit subject.
+    cmds:
+      - |
+        set -euo pipefail
+        sha=$(git rev-parse HEAD)
+        subject=$(git log -1 --format=%s "$sha")
+        case "$subject" in
+          *terraform*|*"infra/terraform"*)
+            task terraform:fmt -- -check
+            task terraform:validate
+            for e in dev staging prod; do
+              (cd infra/terraform/envs/$e \
+                && terraform init -backend=false -input=false >/dev/null \
+                && terraform plan -lock=false -input=false -no-color \
+                    -var-file=terraform.tfvars -out=plan.tfplan >/dev/null \
+                && terraform show -json plan.tfplan > plan.tfplan.json)
+              conftest test --policy infra/terraform/policies "infra/terraform/envs/$e/plan.tfplan.json"
+            done
+            ;;
+        esac
+
   # --- Terraform (Phase 10) ---
   terraform:fmt:
     desc: Run terraform fmt across modules + envs (cumulative -check on CI).
