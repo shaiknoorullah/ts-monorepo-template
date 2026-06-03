@@ -1,0 +1,10 @@
+---
+- name: Apply Longhorn node label
+  ansible.builtin.command:
+    cmd: >-
+      kubectl --kubeconfig=/etc/kubernetes/admin.conf label node
+      {{ inventory_hostname }}
+      {{ item.key }}={{ item.value }} --overwrite
+  loop: '{{ longhorn_node_label | dict2items }}'
+  delegate_to: "{{ groups['control_plane'][0] }}"
+  changed_when: true

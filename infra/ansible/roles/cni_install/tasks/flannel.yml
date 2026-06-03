@@ -1,0 +1,6 @@
+---
+- name: Scaffolded — apply flannel manifest
+  ansible.builtin.debug:
+    msg: 'flannel apply at version {{ flannel_version }} (scaffolded; Day-1 supports calico only)'
+  run_once: true
+  delegate_to: "{{ groups['control_plane'][0] }}"

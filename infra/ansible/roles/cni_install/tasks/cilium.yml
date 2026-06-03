@@ -1,0 +1,6 @@
+---
+- name: Scaffolded — install cilium via helm
+  ansible.builtin.debug:
+    msg: 'cilium install via helm at version {{ cilium_version }} (scaffolded; Day-1 supports calico only)'
+  run_once: true
+  delegate_to: "{{ groups['control_plane'][0] }}"

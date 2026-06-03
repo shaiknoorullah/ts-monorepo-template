@@ -1,0 +1,21 @@
+# Managed by Ansible role: cni_install
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+  calicoNetwork:
+    ipPools:
+      - blockSize: 26
+        cidr: "{{ pod_cidr }}"
+{% if calico_vxlan_crosszone_fix %}
+        encapsulation: VXLAN
+        natOutgoing: Enabled
+        nodeSelector: all()
+{% else %}
+        encapsulation: IPIPCrossSubnet
+        natOutgoing: Enabled
+        nodeSelector: all()
+{% endif %}
+    mtu: {{ calico_mtu }}
+    bgp: Disabled

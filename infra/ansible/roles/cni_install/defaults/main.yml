@@ -1,0 +1,8 @@
+---
+kube_network_plugin: 'calico'
+calico_version: 'v3.28.2'
+cilium_version: '1.16.4'
+flannel_version: 'v0.26.1'
+calico_vxlan_crosszone_fix: true
+calico_mtu: 1450
+pod_cidr: '10.244.0.0/16'

@@ -1,0 +1,19 @@
+---
+- name: Gather disk facts
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - 'hardware'
+
+- name: Compute per-node free GB on longhorn_disk
+  ansible.builtin.set_fact:
+    longhorn_disk_size_gb: >-
+      {{ (ansible_devices[longhorn_disk | basename].size | regex_replace(' .*', '') | float) | round(0) }}
+
+- name: Warn on asymmetric per-node free disk (ovh SC-zone-audit forensic borrow)
+  ansible.builtin.debug:
+    msg: >-
+      WARNING: per-node free disk on {{ inventory_hostname }} differs from
+      cluster median by more than {{ longhorn_asymmetric_warn_pct }}%.
+      Longhorn SC will SPOF on smallest node — audit before bulk I/O.
+  when: longhorn_disk_size_gb | float < longhorn_min_free_gb
