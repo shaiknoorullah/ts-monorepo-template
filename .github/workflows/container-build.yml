@@ -1,0 +1,189 @@
+# .github/workflows/container-build.yml
+# Spec Section 5 — BuildKit + cosign keyless + syft SBOM + Trivy SARIF + GHCR push.
+# Matrix over apps/* with per-app build.yaml driving platforms (amd64 always, arm64 opt-in).
+name: container-build
+
+on:
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'internal/templates/dockerfiles/**'
+      - 'infra/build/**'
+      - '.github/workflows/container-build.yml'
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: container-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    name: detect apps
+    runs-on: ubuntu-24.04
+    outputs:
+      apps: ${{ steps.list.outputs.apps }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - id: list
+        run: |
+          set -euo pipefail
+          apps=$(find apps -mindepth 2 -maxdepth 2 -name Dockerfile -printf '%h\n' \
+            | xargs -I {} basename {} \
+            | jq -R . | jq -sc .)
+          echo "apps=${apps}" >> "$GITHUB_OUTPUT"
+
+  hadolint:
+    name: hadolint ${{ matrix.app }}
+    needs: detect
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.detect.outputs.apps) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: hadolint apps/${{ matrix.app }}/Dockerfile
+        uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
+        with:
+          dockerfile: apps/${{ matrix.app }}/Dockerfile
+          config: internal/templates/dockerfiles/_hadolint.yaml
+          failure-threshold: warning
+
+  build:
+    name: build ${{ matrix.app }}
+    needs: [detect, hadolint]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.detect.outputs.apps) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: resolve platforms from apps/${{ matrix.app }}/build.yaml
+        id: platforms
+        run: |
+          set -euo pipefail
+          plats=$(python3 -c "
+          import yaml
+          d = yaml.safe_load(open('apps/${{ matrix.app }}/build.yaml'))
+          print(','.join(d.get('platforms', ['linux/amd64'])))
+          ")
+          echo "platforms=${plats}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
+        if: contains(steps.platforms.outputs.platforms, 'arm64')
+      - uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
+
+      - uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: derive tags (spec Section 5.9)
+        id: meta
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}
+          tags: |
+            type=raw,value=sha-${{ github.sha }}
+            type=raw,value=${{ github.ref_name }},enable=${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=pr-${{ github.event.pull_request.number }}-sha-${{ github.sha }},enable=${{ github.event_name == 'pull_request' }}
+            type=semver,pattern=v{{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+      - name: buildx build + push
+        id: build
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          platforms: ${{ steps.platforms.outputs.platforms }}
+          push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.app }}-${{ runner.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}-${{ runner.arch }}
+          provenance: true
+          sbom: true
+
+      - name: trivy image scan (CRITICAL gate)
+        if: steps.build.outputs.digest != ''
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}@${{ steps.build.outputs.digest }}
+          format: sarif
+          output: trivy-image-${{ matrix.app }}.sarif
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+          trivy-config: infra/build/trivy-image.yaml
+
+      - name: trivy dockerfile config scan (HIGH gate)
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        with:
+          scan-type: config
+          scan-ref: apps/${{ matrix.app }}/Dockerfile
+          format: sarif
+          output: trivy-dockerfile-${{ matrix.app }}.sarif
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          trivy-config: internal/templates/dockerfiles/_trivy-dockerfile.yaml
+
+      - name: upload trivy SARIF to GH Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@4f3212b61783c3c68e8309a0f18a699764811cda # v3.27.1
+        with:
+          sarif_file: .
+          category: trivy-${{ matrix.app }}
+
+      - name: syft CycloneDX SBOM
+        if: steps.build.outputs.digest != ''
+        uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.7
+        with:
+          image: ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}@${{ steps.build.outputs.digest }}
+          format: cyclonedx-json
+          output-file: sbom-${{ matrix.app }}.cdx.json
+          upload-artifact: true
+          upload-artifact-retention: 30
+
+      - name: cosign install
+        if: steps.build.outputs.digest != '' && github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
+        with:
+          cosign-release: v2.4.1
+
+      - name: cosign sign (keyless OIDC, Rekor)
+        if: steps.build.outputs.digest != '' && github.event_name != 'pull_request'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          COSIGN_EXPERIMENTAL: '1'
+        run: |
+          set -euo pipefail
+          cosign sign --yes \
+            --oidc-issuer=https://token.actions.githubusercontent.com \
+            --rekor-url=https://rekor.sigstore.dev \
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}@${DIGEST}
+
+      - name: cosign attach SBOM
+        if: steps.build.outputs.digest != '' && github.event_name != 'pull_request'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          cosign attach sbom --sbom sbom-${{ matrix.app }}.cdx.json \
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}@${DIGEST}
