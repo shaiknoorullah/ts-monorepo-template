@@ -1,0 +1,8 @@
+{
+  "name": "@internal/agent-docs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Agent-facing documentation (Aegis MCP-consumer contract, etc.). Tested via vitest contract tests for tool catalog drift.",
+  "license": "MIT",
+  "type": "module"
+}
