@@ -154,7 +154,10 @@ tasks:
   profile:list:
     cmds: ['{{.CLI}} profile:list']
   profile:select:
-    cmds: ['{{.CLI}} profile:select']
+    # Accept either a `PROFILE=<id>` task var (used by the e2e
+    # workflows) or a positional via `task profile:select -- <id>`
+    # (CLI_ARGS).
+    cmds: ['{{.CLI}} profile:select {{.PROFILE | default ""}} {{.CLI_ARGS}}']
   profile:diff:
     cmds: ['{{.CLI}} profile:diff {{.CLI_ARGS}}']
   profile:fork:
