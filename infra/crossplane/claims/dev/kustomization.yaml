@@ -16,3 +16,6 @@ resources:
   - go-hello-obs.yaml
   - py-hello-obs.yaml
   - rs-hello-obs.yaml
+  - go-hello-keycloak.yaml
+  - py-hello-keycloak.yaml
+  - rs-hello-keycloak.yaml

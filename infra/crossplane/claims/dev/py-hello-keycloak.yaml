@@ -1,0 +1,27 @@
+apiVersion: pn.cloud/v1alpha1
+kind: KeycloakClientClaim
+metadata:
+  name: py-hello
+  namespace: dev
+  labels:
+    app.kubernetes.io/name: py-hello
+    app.kubernetes.io/component: identity
+spec:
+  env: dev
+  realm: platform
+  clientId: py-hello-dev
+  redirectUris:
+    - http://py-hello.localtest.me/callback
+  scopes:
+    - openid
+    - profile
+    - email
+  groupMappers:
+    - { group: dev-engineers, claim: groups }
+  serviceAccount:
+    enabled: false
+    roles: []
+  connectionSecret: py-hello-oidc-conn
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: default

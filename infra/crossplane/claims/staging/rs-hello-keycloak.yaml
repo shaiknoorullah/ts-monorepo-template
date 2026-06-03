@@ -1,0 +1,27 @@
+apiVersion: pn.cloud/v1alpha1
+kind: KeycloakClientClaim
+metadata:
+  name: rs-hello
+  namespace: staging
+  labels:
+    app.kubernetes.io/name: rs-hello
+    app.kubernetes.io/component: identity
+spec:
+  env: staging
+  realm: platform
+  clientId: rs-hello-staging
+  redirectUris:
+    - https://rs-hello.staging.pn.cloud/callback
+  scopes:
+    - openid
+    - profile
+    - email
+  groupMappers:
+    - { group: platform-users, claim: groups }
+  serviceAccount:
+    enabled: false
+    roles: []
+  connectionSecret: rs-hello-oidc-conn
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: default
