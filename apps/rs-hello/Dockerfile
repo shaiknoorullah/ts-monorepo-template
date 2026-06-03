@@ -35,6 +35,9 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry,id=cargo-registry-${TARG
     cargo build --release --bin rs-hello && \
     cp /src/target/release/rs-hello /out/app
 
+# hadolint ignore=DL3006
+# RUNTIME ARG already pins the explicit `:nonroot` tag at the top of this file;
+# hadolint can't see through the variable substitution.
 FROM ${RUNTIME} AS runtime
 WORKDIR /app
 COPY --from=build /out/app /app/app

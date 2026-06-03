@@ -21,6 +21,9 @@ RUN --mount=type=cache,target=/go/pkg/mod,id=go-mod-${TARGETARCH} \
     CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
       go build -trimpath -ldflags="-s -w" -o /out/app ./cmd/server
 
+# hadolint ignore=DL3006
+# RUNTIME ARG already pins the explicit `:nonroot` tag at the top of this file;
+# hadolint can't see through the variable substitution.
 FROM ${RUNTIME} AS runtime
 WORKDIR /app
 COPY --from=build /out/app /app/app

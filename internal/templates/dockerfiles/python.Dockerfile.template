@@ -17,6 +17,9 @@ COPY . .
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv-${TARGETARCH} \
     uv sync --frozen --no-dev --compile-bytecode
 
+# hadolint ignore=DL3006
+# RUNTIME ARG already pins the explicit `:nonroot` tag at the top of this file;
+# hadolint can't see through the variable substitution.
 FROM ${RUNTIME} AS runtime
 WORKDIR /app
 COPY --from=build /src/.venv /app/.venv
