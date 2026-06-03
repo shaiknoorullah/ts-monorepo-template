@@ -41,8 +41,34 @@ jobs:
         # and deny-list — the two are mutually exclusive. Keep the deny-list
         # (copyleft licenses we can't ship) and let everything else through.
         # High-severity vulnerabilities are still gated.
+        #
+        # `allow-dependencies-licenses` whitelists specific Rust packages
+        # whose SPDX `Unicode-3.0` license the action's older SPDX parser
+        # doesn't recognize as valid. These are all upstream icu4x +
+        # related crates pulled in transitively; the license itself is
+        # MIT/Apache-2.0-style permissive.
         uses: actions/dependency-review-action@4081bf99e2866ebe428fc0477b69eb4fcda7220a # v4.4.0
         with:
           fail-on-severity: high
           comment-summary-in-pr: on-failure
           deny-licenses: GPL-3.0-only, AGPL-3.0-only, SSPL-1.0
+          allow-dependencies-licenses: |
+            pkg:cargo/icu_collections,
+            pkg:cargo/icu_locale_core,
+            pkg:cargo/icu_normalizer,
+            pkg:cargo/icu_normalizer_data,
+            pkg:cargo/icu_properties,
+            pkg:cargo/icu_properties_data,
+            pkg:cargo/icu_provider,
+            pkg:cargo/litemap,
+            pkg:cargo/potential_utf,
+            pkg:cargo/tinystr,
+            pkg:cargo/unicode-ident,
+            pkg:cargo/writeable,
+            pkg:cargo/yoke,
+            pkg:cargo/yoke-derive,
+            pkg:cargo/zerofrom,
+            pkg:cargo/zerofrom-derive,
+            pkg:cargo/zerotrie,
+            pkg:cargo/zerovec,
+            pkg:cargo/zerovec-derive

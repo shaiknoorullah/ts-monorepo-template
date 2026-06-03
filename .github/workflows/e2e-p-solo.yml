@@ -38,6 +38,11 @@ jobs:
         with:
           name: devenv
       - run: nix profile install nixpkgs#devenv
+      - name: Install pnpm dependencies (tsx, @internal/cli runtime deps)
+        # The Taskfile's `CLI` var runs `pnpm --filter @internal/cli exec
+        # tsx ...`. pnpm exec needs node_modules populated; without this
+        # step `tsx` can't be found and `task profile:select` exits 254.
+        run: devenv shell -- pnpm install --frozen-lockfile
       - name: Install k3d 5.x
         run: |
           curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/v5.7.4/install.sh | bash
