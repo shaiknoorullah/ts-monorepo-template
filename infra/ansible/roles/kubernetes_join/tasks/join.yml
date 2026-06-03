@@ -1,0 +1,14 @@
+---
+- name: Join as additional control plane
+  ansible.builtin.command:
+    cmd: '{{ join_cmd.stdout }} --control-plane --certificate-key {{ kubeadm_cert_key }}'
+    creates: /etc/kubernetes/kubelet.conf
+  when:
+    - "'control_plane' in group_names"
+    - inventory_hostname != groups['control_plane'][0]
+
+- name: Join as worker
+  ansible.builtin.command:
+    cmd: '{{ join_cmd.stdout }}'
+    creates: /etc/kubernetes/kubelet.conf
+  when: "'workers' in group_names"

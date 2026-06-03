@@ -1,0 +1,8 @@
+---
+- name: Install kubeadm/kubelet/kubectl apt path
+  ansible.builtin.import_tasks: apt.yml
+  tags: [kubeadm, apt]
+
+- name: Initialize first control plane
+  ansible.builtin.import_tasks: init.yml
+  tags: [kubeadm, init]

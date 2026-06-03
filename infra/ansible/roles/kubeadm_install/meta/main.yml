@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  role_name: kubeadm_install
+  author: platform-infra
+  description: 'Install kubeadm/kubelet/kubectl and run kubeadm init on CP0'
+  license: Apache-2.0
+  min_ansible_version: '2.16'
+dependencies:
+  - role: container_runtime

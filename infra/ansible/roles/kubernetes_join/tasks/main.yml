@@ -1,0 +1,8 @@
+---
+- name: Acquire join token from CP0
+  ansible.builtin.import_tasks: token.yml
+  tags: [join, token]
+
+- name: Join the cluster
+  ansible.builtin.import_tasks: join.yml
+  tags: [join]

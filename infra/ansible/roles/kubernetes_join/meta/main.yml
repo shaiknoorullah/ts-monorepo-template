@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  role_name: kubernetes_join
+  author: platform-infra
+  description: 'Join workers and additional CPs to the cluster'
+  license: Apache-2.0
+  min_ansible_version: '2.16'
+dependencies:
+  - role: container_runtime

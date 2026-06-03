@@ -1,0 +1,37 @@
+---
+- name: Ensure keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Add Kubernetes apt key
+  ansible.builtin.get_url:
+    url: '{{ kubernetes_apt_key_url }}'
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    mode: '0644'
+
+- name: Add Kubernetes apt repository
+  ansible.builtin.apt_repository:
+    repo: 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] {{ kubernetes_apt_repo }} /'
+    state: present
+    filename: kubernetes
+
+- name: Install kubeadm/kubelet/kubectl
+  ansible.builtin.apt:
+    name:
+      - 'kubeadm={{ kube_version }}-1.1'
+      - 'kubelet={{ kube_version }}-1.1'
+      - 'kubectl={{ kube_version }}-1.1'
+    state: present
+    update_cache: true
+    allow_change_held_packages: true
+
+- name: Hold kube packages
+  ansible.builtin.dpkg_selections:
+    name: '{{ item }}'
+    selection: hold
+  loop:
+    - kubeadm
+    - kubelet
+    - kubectl
