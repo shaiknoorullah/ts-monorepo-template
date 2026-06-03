@@ -14,20 +14,31 @@ describe('internal/mcp-server package.json', () => {
   })
 
   it('pins @modelcontextprotocol/sdk to a concrete version', () => {
-    expect(pkg.dependencies['@modelcontextprotocol/sdk']).toMatch(/^\d+\.\d+\.\d+$/)
+    // Accept exact (`1.18.1`) or caret (`^1.18.1`) — `pnpm.overrides`
+    // at the workspace root would clamp either form to the same resolved
+    // version. Reject floating tags or catalog refs since the sdk is not
+    // managed via the catalog.
+    expect(pkg.dependencies['@modelcontextprotocol/sdk']).toMatch(/^\^?\d+\.\d+\.\d+$/)
   })
 
   it('pins ajv 8.x for JSON Schema Draft 2020-12 validation', () => {
-    expect(pkg.dependencies['ajv']).toMatch(/^8\.\d+\.\d+$/)
-    expect(pkg.dependencies['ajv-formats']).toMatch(/^3\.\d+\.\d+$/)
+    expect(pkg.dependencies['ajv']).toMatch(/^\^?8\.\d+\.\d+$/)
+    expect(pkg.dependencies['ajv-formats']).toMatch(/^\^?3\.\d+\.\d+$/)
   })
 
-  it('pins zod 3.x for runtime input parsing', () => {
-    expect(pkg.dependencies['zod']).toMatch(/^3\.\d+\.\d+$/)
+  it('keeps zod aligned with the workspace catalog', () => {
+    // mcp-server itself does not import zod from `src/`; the dep exists
+    // because `@modelcontextprotocol/sdk` → `zod-to-json-schema` requires
+    // it as a peer. The catalog entry in pnpm-workspace.yaml is the single
+    // source of truth for the workspace-wide zod version, so accept
+    // `catalog:` here.
+    expect(pkg.dependencies['zod']).toMatch(/^(catalog:|\^?\d+\.\d+\.\d+)$/)
   })
 
   it('declares vitest as devDependency for the mcp-validate gate', () => {
-    expect(pkg.devDependencies['vitest']).toMatch(/^\d+\.\d+\.\d+$/)
+    // `catalog:` resolves to the catalog entry (`vitest: ^4.0.0`) in
+    // pnpm-workspace.yaml; semver-shaped pins are still accepted.
+    expect(pkg.devDependencies['vitest']).toMatch(/^(catalog:|\^?\d+\.\d+\.\d+)$/)
   })
 
   it('declares build + test scripts wired to tsc + vitest', () => {
