@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1.10
+# Rust Dockerfile template — spec Section 5.3.
+# {{app}} is the bin name (matches package name in apps/<svc>/Cargo.toml).
+
+ARG RUST_VERSION=1.83
+ARG RUNTIME=gcr.io/distroless/cc-debian12:nonroot
+
+FROM rust:${RUST_VERSION}-bookworm AS chef
+RUN cargo install cargo-chef --locked --version 0.1.*
+WORKDIR /src
+
+FROM chef AS planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS deps
+COPY --from=planner /src/recipe.json recipe.json
+RUN --mount=type=cache,target=/usr/local/cargo/registry,id=cargo-registry-${TARGETARCH} \
+    --mount=type=cache,target=/usr/local/cargo/git,id=cargo-git-${TARGETARCH} \
+    --mount=type=cache,target=/src/target,id=cargo-target-${TARGETARCH} \
+    cargo chef cook --release --recipe-path recipe.json
+
+FROM deps AS build
+COPY . .
+RUN --mount=type=cache,target=/usr/local/cargo/registry,id=cargo-registry-${TARGETARCH} \
+    --mount=type=cache,target=/usr/local/cargo/git,id=cargo-git-${TARGETARCH} \
+    --mount=type=cache,target=/src/target,id=cargo-target-${TARGETARCH} \
+    mkdir -p /out && \
+    cargo build --release --bin {{app}} && \
+    cp /src/target/release/{{app}} /out/app
+
+FROM ${RUNTIME} AS runtime
+WORKDIR /app
+COPY --from=build /out/app /app/app
+USER nonroot:nonroot
+ENTRYPOINT ["/app/app"]
