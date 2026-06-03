@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-image-updater-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '-40'
+data:
+  log.level: info
+  registries.conf: |
+    registries:
+      - name: ghcr
+        api_url: https://ghcr.io
+        prefix: ghcr.io
+        credentials: pullsecret:argocd/ghcr-pull
+        defaultns: REPLACE_ORG
+  applications.conf: |
+    # Scope: only ApplicationSet-generated apps in apps-dev project carry the
+    # image-list annotation. This block is the default for any matched app.
+    write-back-method: git
+    write-back-target: helmvalues:./values.dev.yaml
+    git-branch: main
+    git-commit-user: argocd-image-updater
+    git-commit-email: argocd-image-updater@REPLACE_ORG.invalid
+    git-commit-message-template: |
+      build(image-updater): bump {{ .AppName }} image to {{ .NewTag }}
+
+      Scoped to apps-dev AppProject (spec section 7.7).
+    project-restrictions: |
+      - apps-dev
