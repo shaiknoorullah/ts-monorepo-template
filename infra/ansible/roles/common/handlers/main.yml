@@ -7,23 +7,28 @@
   ansible.builtin.systemd:
     name: systemd-modules-load.service
     state: restarted
+  when: ansible_virtualization_type | default('') not in ['docker', 'container', 'containerd']
 
 - name: Restart sshd
   ansible.builtin.service:
     name: ssh
     state: restarted
+  when: ansible_virtualization_type | default('') not in ['docker', 'container', 'containerd']
 
 - name: Restart fail2ban
   ansible.builtin.service:
     name: fail2ban
     state: restarted
+  when: ansible_virtualization_type | default('') not in ['docker', 'container', 'containerd']
 
 - name: Restart auditd
   ansible.builtin.service:
     name: auditd
     state: restarted
+  when: ansible_virtualization_type | default('') not in ['docker', 'container', 'containerd']
 
 - name: Restart chrony
   ansible.builtin.service:
     name: chrony
     state: restarted
+  when: ansible_virtualization_type | default('') not in ['docker', 'container', 'containerd']

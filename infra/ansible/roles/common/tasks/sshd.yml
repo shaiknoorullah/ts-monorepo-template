@@ -1,4 +1,15 @@
 ---
+- name: Detect virtualization type for sshd
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - virtual
+
+- name: Check whether sshd_config exists
+  ansible.builtin.stat:
+    path: /etc/ssh/sshd_config
+  register: sshd_cfg
+
 - name: Harden sshd_config
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
@@ -11,4 +22,5 @@
     - { key: 'PasswordAuthentication', value: '{{ common_sshd_password_authentication }}' }
     - { key: 'AllowTcpForwarding', value: '{{ common_sshd_allow_tcp_forwarding }}' }
     - { key: 'MaxAuthTries', value: '{{ common_sshd_max_auth_tries }}' }
+  when: sshd_cfg.stat.exists
   notify: Restart sshd
