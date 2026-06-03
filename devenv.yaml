@@ -2,4 +2,14 @@
 inputs:
   nixpkgs:
     url: github:NixOS/nixpkgs/nixpkgs-unstable
+  # `git-hooks.hooks = ...` in devenv.nix requires the git-hooks input.
+  # Without this declaration devenv exits with:
+  #   error: Failed assertions: - To use 'git-hooks', run the following
+  #     command: $ devenv inputs add git-hooks github:cachix/git-hooks.nix
+  #     --follows nixpkgs
+  git-hooks:
+    url: github:cachix/git-hooks.nix
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
 allowUnfree: true
