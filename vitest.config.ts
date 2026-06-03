@@ -8,6 +8,7 @@ export default defineConfig({
       '.audit',
       'apps/*',
       'docs/adrs',
+      'docs/architecture',
       'packages/*',
       'internal/cli',
       'internal/schemas',
