@@ -12,6 +12,9 @@ out/
 .nx/cache
 .nx/workspace-data
 
+# Cargo / Rust build output
+**/target/
+
 # Test artifacts
 coverage/
 .vitest-cache/
