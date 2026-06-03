@@ -34,3 +34,30 @@ tasks:
           done
         } > docs/adrs/README.md
         echo "Regenerated docs/adrs/README.md"
+
+  meta:validate:
+    desc: Validate every META.yaml against internal/schemas/meta-v1.schema.json
+    vars:
+      META_GLOB: '{{.META_GLOB | default "**/META.yaml"}}'
+    cmds:
+      - |
+        set -e
+        files=$(find . -name META.yaml \
+          -not -path "./node_modules/*" \
+          -not -path "./.tmp-meta-fixtures/*" \
+          2>/dev/null || true)
+        if [ -n "{{.META_GLOB}}" ] && [ "{{.META_GLOB}}" != "**/META.yaml" ]; then
+          files="{{.META_GLOB}}"
+        fi
+        if [ -z "$files" ]; then
+          echo "No META.yaml files found; nothing to validate."
+          exit 0
+        fi
+        for f in $files; do
+          pnpm exec ajv validate \
+            --spec=draft2020 \
+            -s internal/schemas/meta-v1.schema.json \
+            -d "$f" \
+            --strict=true
+        done
+        echo "All META.yaml files valid."
