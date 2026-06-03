@@ -1,37 +1,37 @@
-{ { - include "lib-chart.workload" . } }
+{{- include "lib-chart.workload" . }}
 ---
-{ { - include "lib-chart.service" . } }
+{{- include "lib-chart.service" . }}
 ---
-{ { - include "lib-chart.serviceHeadless" . } }
+{{- include "lib-chart.serviceHeadless" . }}
 ---
-{ { - include "lib-chart.hpa" . } }
+{{- include "lib-chart.hpa" . }}
 ---
-{ { - include "lib-chart.pdb" . } }
+{{- include "lib-chart.pdb" . }}
 ---
-{ { - include "lib-chart.serviceAccount" . } }
+{{- include "lib-chart.serviceAccount" . }}
 ---
-{ { - include "lib-chart.httpRoute" . } }
+{{- include "lib-chart.httpRoute" . }}
 ---
-{ { - include "lib-chart.grpcRoute" . } }
+{{- include "lib-chart.grpcRoute" . }}
 ---
-{ { - include "lib-chart.virtualService" . } }
+{{- include "lib-chart.virtualService" . }}
 ---
-{ { - include "lib-chart.ingress" . } }
+{{- include "lib-chart.ingress" . }}
 ---
-{ { - include "lib-chart.networkPolicy" . } }
+{{- include "lib-chart.networkPolicy" . }}
 ---
-{ { - include "lib-chart.externalSecret" . } }
+{{- include "lib-chart.externalSecret" . }}
 ---
-{ { - include "lib-chart.serviceMonitor" . } }
+{{- include "lib-chart.serviceMonitor" . }}
 ---
-{ { - include "lib-chart.podMonitor" . } }
+{{- include "lib-chart.podMonitor" . }}
 ---
-{ { - include "lib-chart.prometheusRule" . } }
+{{- include "lib-chart.prometheusRule" . }}
 ---
-{ { - include "lib-chart.grafanaDashboardCM" . } }
+{{- include "lib-chart.grafanaDashboardCM" . }}
 ---
-{ { - include "lib-chart.instrumentation" . } }
+{{- include "lib-chart.instrumentation" . }}
 ---
-{ { - include "lib-chart.otelColSidecar" . } }
+{{- include "lib-chart.otelColSidecar" . }}
 ---
-{ { - include "lib-chart.presyncMigration" . } }
+{{- include "lib-chart.presyncMigration" . }}
