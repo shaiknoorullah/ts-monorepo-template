@@ -7,6 +7,9 @@ dist/
 build/
 out/
 *.tsbuildinfo
+# infra/build is the container build pipeline source (cosign policy, trivy config,
+# SBOM templates, container.sh) — not generated output; force-include it.
+!infra/build/
 
 # Nx
 .nx/cache
