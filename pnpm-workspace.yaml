@@ -1,5 +1,7 @@
 packages:
   - apps/*
+  # Covers @ts-monorepo-template/contracts (packages/contracts) — the cross-language
+  # proto package with buf-generated TS bindings consumed by downstream apps.
   - packages/*
   - internal/*
   - infra/cloudflare/workers/*
