@@ -1,2 +1,6 @@
 export { loadPrices, providerIds, toUsd } from './prices'
 export type { ProviderId, ProviderPrices, Sku, StorageRate, EgressRate } from './prices'
+export { simulateCost } from './simulate'
+export type { SimulateInput, SimulateResult } from './simulate'
+export { RESOURCE_SHAPES } from './resource-shapes'
+export type { ProfileId, ResourceShape } from './resource-shapes'
