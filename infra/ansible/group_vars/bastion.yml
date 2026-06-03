@@ -1,0 +1,7 @@
+---
+bastion_user: 'bootstrap'
+bastion_ssh_keys: []
+bastion_packages:
+  - wireguard-tools
+  - jq
+  - curl
