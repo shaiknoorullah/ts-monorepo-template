@@ -28,5 +28,13 @@
     entry = "pnpm exec commitlint --edit";
     language = "system";
   };
-  gitleaks.enable = true;
+  gitleaks = {
+    enable = true;
+    # `gitleaks` is not a built-in git-hooks.nix hook either; declare
+    # an explicit entry pointing at the binary devenv adds to PATH via
+    # the toolchain.
+    entry = "${pkgs.gitleaks}/bin/gitleaks protect --staged --redact -v";
+    language = "system";
+    pass_filenames = false;
+  };
 }
