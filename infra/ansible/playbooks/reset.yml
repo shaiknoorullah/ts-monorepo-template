@@ -1,0 +1,49 @@
+---
+# Section 9.10 reset.yml — destructive, requires -e confirm_reset=yes
+
+- name: Guard
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Refuse to run without confirm_reset=yes
+      ansible.builtin.fail:
+        msg: 'Pass -e confirm_reset=yes to run reset.yml (destroys etcd, /etc/kubernetes, /var/lib/longhorn)'
+      when: confirm_reset is not defined or confirm_reset != "yes"
+
+- name: kubeadm reset all nodes
+  hosts: all
+  become: true
+  tasks:
+    - name: Run kubeadm reset
+      ansible.builtin.command:
+        cmd: kubeadm reset --force
+      changed_when: true
+      failed_when: false
+
+    - name: Remove /etc/kubernetes
+      ansible.builtin.file:
+        path: /etc/kubernetes
+        state: absent
+
+    - name: Remove /var/lib/etcd
+      ansible.builtin.file:
+        path: /var/lib/etcd
+        state: absent
+
+    - name: Remove /var/lib/longhorn
+      ansible.builtin.file:
+        path: /var/lib/longhorn
+        state: absent
+
+    - name: Flush iptables
+      ansible.builtin.command:
+        cmd: '{{ item }}'
+      loop:
+        - 'iptables -F'
+        - 'iptables -X'
+        - 'iptables -t nat -F'
+        - 'iptables -t nat -X'
+        - 'iptables -t mangle -F'
+        - 'iptables -t mangle -X'
+      changed_when: true
+      failed_when: false

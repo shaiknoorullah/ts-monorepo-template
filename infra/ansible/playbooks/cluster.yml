@@ -1,0 +1,57 @@
+---
+# Section 9.10 cluster.yml — full bringup from bare VMs.
+
+- name: Phase 1 — Host hardening (all nodes)
+  hosts: all
+  become: true
+  roles:
+    - role: common
+
+- name: Phase 2 — Container runtime (all nodes)
+  hosts: all
+  become: true
+  roles:
+    - role: container_runtime
+
+- name: Phase 3 — kubeadm install + CP0 init
+  hosts: control_plane
+  become: true
+  roles:
+    - role: kubeadm_install
+
+- name: Phase 4 — Additional control planes join
+  hosts: control_plane
+  become: true
+  serial: 1
+  roles:
+    - role: kubernetes_join
+
+- name: Phase 5 — CNI install (delegated to CP0)
+  hosts: control_plane
+  become: true
+  roles:
+    - role: cni_install
+
+- name: Phase 6 — Workers join
+  hosts: workers
+  become: true
+  roles:
+    - role: kubernetes_join
+
+- name: Phase 7 — Longhorn prep on workers
+  hosts: workers
+  become: true
+  roles:
+    - role: longhorn_prep
+
+- name: Phase 8 — WireGuard mesh (when enabled)
+  hosts: all
+  become: true
+  roles:
+    - role: wireguard_mesh
+
+- name: Phase 9 — Observability agents
+  hosts: all
+  become: true
+  roles:
+    - role: observability_agents
