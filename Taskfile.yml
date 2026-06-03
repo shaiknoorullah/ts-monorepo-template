@@ -4,6 +4,18 @@ includes:
   api: { taskfile: apps/api/Taskfile.yml, dir: apps/api, optional: true }
   web: { taskfile: apps/web/Taskfile.yml, dir: apps/web, optional: true }
   worker: { taskfile: apps/worker-py/Taskfile.yml, dir: apps/worker-py, optional: true }
+  # Phase 4 polyglot reference apps. Path prefixed with ./ so the conformance
+  # test in tests/taskfile/app-includes.test.ts can assert the canonical form
+  # called out in spec section 2.5.
+  go-hello:
+    taskfile: ./apps/go-hello/Taskfile.yml
+    dir: ./apps/go-hello
+  py-hello:
+    taskfile: ./apps/py-hello/Taskfile.yml
+    dir: ./apps/py-hello
+  rs-hello:
+    taskfile: ./apps/rs-hello/Taskfile.yml
+    dir: ./apps/rs-hello
 
 vars:
   CLI: 'pnpm --filter @internal/cli exec ts-monorepo'
