@@ -1,0 +1,25 @@
+appName: py-hello
+image:
+  repository: ghcr.io/org/py-hello
+  tag: ''
+service:
+  http: { port: 8080 }
+  grpc: { port: 9000 }
+  metrics: { port: 9090 }
+observability:
+  otel:
+    enabled: true
+    endpoint: otel-collector.observability:4317
+  prometheus:
+    scrape: true
+secrets:
+  esoStore: cluster-secret-store
+  items:
+    - { name: pg-dsn, key: py-hello/pg-dsn }
+    - { name: redis-url, key: py-hello/redis-url }
+    - { name: kafka-brokers, key: kafka/brokers }
+networkPolicy:
+  egressAllow: [postgres, redis, kafka, otel-collector]
+resources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 512Mi }

@@ -1,0 +1,54 @@
+{
+  "name": "py-hello",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/py-hello/src",
+  "implicitDependencies": ["contracts"],
+  "targets": {
+    "build": {
+      "executor": "@nxlv/python:build",
+      "dependsOn": ["^build", "contracts:generate"],
+      "options": {
+        "outputPath": "dist/apps/py-hello",
+        "publish": false,
+        "lockedVersions": true,
+        "bundleLocalDependencies": true
+      },
+      "cache": true
+    },
+    "install": {
+      "executor": "@nxlv/python:install",
+      "options": { "args": ["--extra", "dev"] }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": { "command": "uv run pytest tests/test_handlers.py", "cwd": "apps/py-hello" },
+      "cache": true
+    },
+    "test:integration": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run pytest tests/test_store_integration.py",
+        "cwd": "apps/py-hello"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run ruff check src tests && uv run mypy src",
+        "cwd": "apps/py-hello"
+      },
+      "cache": true
+    },
+    "container": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker buildx build -f apps/py-hello/Dockerfile -t py-hello:dev apps/py-hello"
+      }
+    },
+    "chart:lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "helm lint infra/helm/lib-chart -f apps/py-hello/values.yaml" }
+    }
+  }
+}
