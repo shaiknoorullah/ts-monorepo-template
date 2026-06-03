@@ -1,0 +1,86 @@
+# internal/errors/catalog.yaml
+# Top-20 plain-English error catalog. Consumed by:
+#   - launcher CLI error renderer
+#   - MCP errors.lookup tool
+#   - apps/marketing/ /troubleshoot route
+# Spec Section 15.3.
+- code: TOOL_MISSING_DEVENV
+  founder: "devenv isn't installed. Run `curl -L https://install.devenv.sh | sh` then re-run `task launch`."
+  engineer: devenv 1.x required for toolchain pinning (Section 2).
+  link: /troubleshoot/tool-missing-devenv
+- code: TOOL_MISSING_TASK
+  founder: "task isn't installed. Run `go install github.com/go-task/task/v3/cmd/task@latest` or use the Homebrew package."
+  engineer: Taskfile v3 is the Layer 1 verb surface.
+  link: /troubleshoot/tool-missing-task
+- code: TOOL_MISSING_NX
+  founder: "Nx isn't on PATH. Run `pnpm install` at the repo root."
+  engineer: '@nx/workspace 21.x; pnpm workspace must be installed before nx affected runs.'
+  link: /troubleshoot/tool-missing-nx
+- code: TOOL_MISSING_DOCKER
+  founder: "Docker isn't running. Start Docker Desktop or `systemctl start docker`."
+  engineer: BuildKit requires docker buildx 0.14+.
+  link: /troubleshoot/tool-missing-docker
+- code: TOOL_MISSING_KUBECTL
+  founder: "kubectl isn't installed. Install it from https://kubernetes.io/docs/tasks/tools/."
+  engineer: kubectl >= 1.30 required for the Crossplane v1.18 provider set.
+  link: /troubleshoot/tool-missing-kubectl
+- code: AKV_SECRET_NOT_FOUND
+  founder: "We couldn't find your database password in Azure Key Vault. Run `task secret:set db.password`."
+  engineer: ESO ClusterSecretStore.spec.provider.azurekv.vaultUrl mismatch — check profile secretspec.toml.
+  link: /troubleshoot/akv-secret-not-found
+- code: KEYRING_BACKEND_UNAVAILABLE
+  founder: "Your OS keyring isn't available. Pick a different secret backend with `task profile:select`."
+  engineer: libsecret / gnome-keyring / macOS Keychain not reachable from the current shell.
+  link: /troubleshoot/keyring-backend-unavailable
+- code: PROFILE_NOT_FOUND
+  founder: "That profile doesn't exist. Run `task profile:list` to see the 5 named profiles."
+  engineer: profiles/<id>/META.yaml missing or invalid; ajv validation failed.
+  link: /troubleshoot/profile-not-found
+- code: PROFILE_COST_OVER_BUDGET
+  founder: The cost simulator says this profile costs more than your target budget. Switch profile or raise budget.
+  engineer: simulate_cost result exceeds spec.costBandUsdMo upper bound; refused by launcher guardrail.
+  link: /troubleshoot/profile-cost-over-budget
+- code: CLUSTER_NOT_REACHABLE
+  founder: "We couldn't reach your cluster. Check your VPN, `kubectl cluster-info`, and that the cluster is running."
+  engineer: kubectl API request returned a connection error; check KUBECONFIG and current-context.
+  link: /troubleshoot/cluster-not-reachable
+- code: CROSSPLANE_PROVIDER_NOT_HEALTHY
+  founder: A platform provider is unhealthy. Run `task xp:doctor` to see which one and why.
+  engineer: Provider .status.conditions has Healthy=False; common causes — image pull, RBAC, leader election.
+  link: /troubleshoot/crossplane-provider-not-healthy
+- code: ARGOCD_APP_OUT_OF_SYNC
+  founder: Argo CD says an app is out of sync. Run `task argo:sync <app>` or check the diff in the UI.
+  engineer: Application status.sync.status = OutOfSync; inspect status.conditions for the cause.
+  link: /troubleshoot/argocd-app-out-of-sync
+- code: HELM_LINT_FAILED
+  founder: "A chart isn't valid. The launcher refused to deploy it. Open the linked page for details."
+  engineer: helm lint produced errors; usually missing required values or invalid YAML in overlays.
+  link: /troubleshoot/helm-lint-failed
+- code: COSIGN_VERIFY_FAILED
+  founder: "An image signature didn't verify. The cluster will refuse to run this image until you re-sign it."
+  engineer: cosign verify failed; check Fulcio cert chain, OIDC issuer, and identity expressions.
+  link: /troubleshoot/cosign-verify-failed
+- code: TERRAFORM_PLAN_DRIFT
+  founder: "Your cloud state drifted from what's in git. Run `task tf:plan` to see what changed."
+  engineer: terraform plan returned non-empty diff; investigate before apply.
+  link: /troubleshoot/terraform-plan-drift
+- code: ANSIBLE_HOST_UNREACHABLE
+  founder: "Ansible couldn't SSH to a node. Check that the node is up and your SSH key is loaded."
+  engineer: ansible host returned UNREACHABLE; verify inventory + ansible_host + ssh-agent.
+  link: /troubleshoot/ansible-host-unreachable
+- code: NX_CLOUD_TOKEN_MISSING
+  founder: "Nx Cloud isn't authenticated. CI builds will work; local builds run uncached. No action required."
+  engineer: NX_CLOUD_ACCESS_TOKEN not set; expected only in GH Actions (spec Section 3.1).
+  link: /troubleshoot/nx-cloud-token-missing
+- code: MCP_TOOL_NOT_IMPLEMENTED
+  founder: "That agent action isn't available on Day-1. See the linked page for the deferred-tool roadmap."
+  engineer: MCP tool returned status=DEFERRED per spec Section 1.10.
+  link: /troubleshoot/mcp-tool-not-implemented
+- code: AUDIT_LOG_CHAIN_BROKEN
+  founder: Your decision history file looks tampered. Run `task audit:verify` for the exact line.
+  engineer: sha256_self mismatch at line N; spec Section 15.10 chain rule violated.
+  link: /troubleshoot/audit-log-chain-broken
+- code: ADR_MISSING_FOR_DECISION
+  founder: A decision was made but no ADR was written. Run `task adr:new` to backfill.
+  engineer: audit log line has no adr_emitted; expected for every architectural-fork stage.
+  link: /troubleshoot/adr-missing-for-decision
