@@ -380,3 +380,53 @@ Wrangler is the only IaC tool — see `infra/cloudflare/`. ADR-0011 documents th
 The authoritative architecture for this repo is [`docs/superpowers/specs/2026-06-03-platform-foundation-design.md`](docs/superpowers/specs/2026-06-03-platform-foundation-design.md). Read it before touching `apps/`, `packages/`, `internal/`, `infra/`, or `profiles/`.
 
 Cascade rule (spec section 15.8): the nearest `AGENTS.md` wins. Agents walk from the current directory upward, merging shallow, child overrides parent.
+
+### The seven layers (plus 2 entrypoints)
+
+The platform exposes two front doors over seven layered concerns. Each layer
+is replaceable independently; the layer above consumes only the verb surface
+or the typed schema of the layer below (spec Section 1.2).
+
+- **Layer 0a** — Launcher CLI (`npx create-platform@latest`) and marketing site (`apps/marketing/`). Founder entrypoint.
+- **Layer 0b** — MCP server (`@ts-monorepo-template/mcp-server`). Agent entrypoint.
+- **Layer 1** — Verb surface (`Taskfile.yml`). The only surface engineers and agents type.
+- **Layer 2** — Toolchain (`devenv.nix`) + secrets (`secretspec.toml`).
+- **Layer 3** — Build orchestration (Nx + Nx Cloud).
+- **Layer 4** — Container build (BuildKit + cosign).
+- **Layer 5** — App runtime (`infra/helm/lib-chart` Helm library chart).
+- **Layer 6** — Platform infra (Crossplane XRDs + ESO).
+- **Layer 7** — Bootstrap (Terraform + Ansible, opt-in).
+
+### Founder-safe verbs (Layer 1)
+
+Engineers and agents type `task <verb>`. The full catalog lives in
+`Taskfile.yml`; the curated subset:
+
+- `task init` — run the launcher CLI wizard (alias of `npx create-platform`).
+- `task launch` — provision + deploy per the selected profile.
+- `task open` — open Grafana, Argo CD, and the repo in the browser.
+- `task profile:select` — re-run profile recommender + emit ADR.
+- `task profile:fork` — derive a custom profile from a base.
+- `task meta:validate` — validate every `META.yaml` against the v1 schema.
+- `task adr:new` / `task adr:index` — scaffold or regenerate ADRs.
+- `task audit:append` / `audit:verify` / `audit:export` / `audit:diff` — manage the SHA-256 chained decisions log.
+- `task docs:gen` — regenerate `apps/docs-public/` from code.
+- `task ci:per-commit` — replay every CI gate across the local commit ladder.
+
+### Never-do list (platform foundation)
+
+- Never write a plaintext `.env.local`. The only secret surface is
+  `secretspec` (Layer 2). AKV is the source of truth; OS keyring is cache.
+- Never bypass git hooks (`--no-verify`). Fix the hook environment instead.
+- Never amend + force-push without explicit human authorization.
+- Never provision stateful infra from an app Helm chart. Stateful infra is
+  Crossplane-only (Layer 6).
+- Never commit the Nx Cloud access token. It lives only in GH Actions secrets.
+
+### How agents read this repo
+
+1. Resolve `AGENTS.md` upwards (this file → `apps/AGENTS.md` → `apps/<svc>/AGENTS.md`).
+2. Resolve `META.yaml` upwards with the same rule.
+3. Use the MCP server tools (`list_profiles`, `describe_app`, `claim_infra`, `simulate_cost`, `explain_tradeoff`, `propose_change`) — they read the same `META.yaml` graph.
+
+See [`docs/agents/agents-md-cascade.md`](./docs/agents/agents-md-cascade.md) and [`docs/agents/mcp-tool-reference.md`](./docs/agents/mcp-tool-reference.md) for the full agent surface.

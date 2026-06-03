@@ -14,5 +14,10 @@ Workspace-private packages. Always `"private": true`. Never published.
 
 ## Editing rules
 
+- JSON Schemas live under `internal/schemas/`. The discriminator on `META.yaml` is `kind`; valid values enumerated in `internal/schemas/meta-v1.schema.json`.
+- Adding a new `kind` requires updating the schema, the validator (`task meta:validate`), and the MCP `meta.validate` tool fixtures.
 - Schema changes are breaking by default. Bump `$id` major (`meta-v2.schema.json`) instead of mutating `meta-v1`.
+- Plain-English errors live in `internal/errors/catalog.yaml`. Every entry has `code`, `founder`, `engineer`, `link`. The launcher renderer and MCP `errors.lookup` both read this file — do not duplicate.
+- Glossary terms live in `internal/glossary/terms.yaml`. Each term cross-references the spec section where it is load-bearing.
 - New error codes must appear in `internal/errors/catalog.yaml` before any launcher code references them.
+- The CLI scaffold lives in `internal/cli/`; the MCP server in `internal/mcp-server/`; the recommender in `internal/recommender/`; the cost simulator in `internal/cost-simulator/`. None are shipped as runtime apps — they are tooling.

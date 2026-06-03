@@ -23,3 +23,10 @@ Deployable microservices. Containerized. Never published to npm. Spec section 1.
 
 - Stateful infra provisioning — that is Layer 6 (Crossplane), not the app chart.
 - Cross-service orchestration — use a Workflow kind, not an HTTP endpoint chain.
+
+## Per-app override
+
+Each `apps/<svc>/AGENTS.md` is a per-app override of this file. The template
+(spec Section 15.8) has 7 sections: What this app is / Build-test-lint /
+Architecture invariants / Common tasks / Out of scope / How to claim infra /
+How to add a new endpoint. Whole-section replacements win over the parent.
