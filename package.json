@@ -121,7 +121,8 @@
   "pnpm": {
     "overrides": {
       "ajv@>=8 <9": "^8.17.1",
-      "ajv-formats@>=3 <4": "^3.0.1"
+      "ajv-formats@>=3 <4": "^3.0.1",
+      "fast-json-patch": "^3.1.1"
     }
   },
   "typeCoverage": {

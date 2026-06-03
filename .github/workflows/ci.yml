@@ -104,14 +104,22 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - name: Install go-task
-        # @internal/schemas + @internal/scripts integration tests shell out to
-        # `task` (meta:validate, adr:new, adr:index). Use the official action
-        # with a 40-char SHA pin (per AGENTS.md) rather than `curl | sh` for
-        # supply-chain safety.
-        uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
-        with:
-          version: 3.x
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+        # @internal/schemas + @internal/scripts integration tests shell out
+        # to `task` (meta:validate, adr:new, adr:index). Download the
+        # official release tarball from go-task/task and verify its
+        # sha256 against the pinned checksum — supply-chain safe AND no
+        # GPL-3.0 dep introduced by a third-party setup action.
+        run: |
+          set -euo pipefail
+          TASK_VERSION=v3.40.1
+          TASK_SHA256=a35462ec71410cccfc428072de830e4478bc57a919d0131ef7897759270dff8f
+          curl --fail --silent --show-error --location \
+               --retry 6 --retry-all-errors --retry-delay 4 \
+               -o /tmp/task.tar.gz \
+               "https://github.com/go-task/task/releases/download/${TASK_VERSION}/task_linux_amd64.tar.gz"
+          echo "${TASK_SHA256}  /tmp/task.tar.gz" | sha256sum -c -
+          sudo tar -xzf /tmp/task.tar.gz -C /usr/local/bin task
+          task --version
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:coverage
 
