@@ -1,0 +1,24 @@
+---
+- name: Add cri-o apt key
+  ansible.builtin.get_url:
+    url: "https://pkgs.k8s.io/addons:/cri-o:/stable:/v{{ crio_version | regex_replace('^([0-9]+\\.[0-9]+).*', '\\1') }}/deb/Release.key"
+    dest: /etc/apt/keyrings/cri-o-apt-keyring.asc
+    mode: '0644'
+
+- name: Add cri-o apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.asc] https://pkgs.k8s.io/addons:/cri-o:/stable:/v{{ crio_version | regex_replace('^([0-9]+\\.[0-9]+).*', '\\1') }}/deb/ /"
+    state: present
+    filename: cri-o
+
+- name: Install cri-o
+  ansible.builtin.apt:
+    name: cri-o
+    state: present
+    update_cache: true
+
+- name: Enable and start cri-o
+  ansible.builtin.service:
+    name: crio
+    enabled: true
+    state: started

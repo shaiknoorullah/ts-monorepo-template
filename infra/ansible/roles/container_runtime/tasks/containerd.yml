@@ -1,0 +1,32 @@
+---
+- name: Install containerd dependencies
+  ansible.builtin.apt:
+    name:
+      - containerd
+      - runc
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Ensure /etc/containerd
+  ansible.builtin.file:
+    path: /etc/containerd
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Render containerd config.toml
+  ansible.builtin.template:
+    src: containerd-config.toml.j2
+    dest: /etc/containerd/config.toml
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart containerd
+
+- name: Enable and start containerd
+  ansible.builtin.service:
+    name: containerd
+    enabled: true
+    state: started

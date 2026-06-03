@@ -1,0 +1,10 @@
+---
+- name: Install containerd path
+  ansible.builtin.import_tasks: containerd.yml
+  when: container_manager == "containerd"
+  tags: [container_runtime, containerd]
+
+- name: Install cri-o path
+  ansible.builtin.import_tasks: crio.yml
+  when: container_manager == "cri-o"
+  tags: [container_runtime, crio]
