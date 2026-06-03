@@ -45,20 +45,21 @@ jobs:
           #   processing shallow info: 4
           fetch-depth: 0
 
-      - name: Fetch origin/main for diff-range
-        # actions/checkout configures the remote without a default refspec,
-        # so a plain `git fetch origin main` updates only FETCH_HEAD, not
-        # `refs/remotes/origin/main`. CodeQL's diff-range generator looks
-        # up `refs/remotes/origin/main` (or the local `main` branch) and
-        # falls over when neither exists:
-        #   git call failed. Cannot fetch main. Error: fatal: error
-        #     processing shallow info: 4
-        # Fetch with an explicit refspec so the remote-tracking branch is
-        # written, regardless of the runner's checkout config.
+      - name: Disable diff-aware CodeQL analysis
+        # `fetch-depth: 0` + explicit refspec already populates
+        # origin/main, but the codeql-action's diff-range generator still
+        # hits `fatal: error processing shallow info: 4` from its own
+        # internal `git fetch` invocation against a base it can't see.
+        # The cleanest unblock for a bootstrap PR is to opt out of
+        # diff-aware analysis entirely — codeql still runs the full
+        # security-extended + security-and-quality query suites, it just
+        # uploads results for the whole codebase rather than only the
+        # diff.
         run: |
-          git fetch --no-tags --depth=2147483647 origin \
-            '+refs/heads/main:refs/remotes/origin/main'
-          git rev-parse refs/remotes/origin/main
+          {
+            echo 'CODEQL_ACTION_PR_DIFF_RANGE_ENABLED=false'
+            echo 'CODEQL_ACTION_DIFF_INFORMED_QUERIES=false'
+          } >> "$GITHUB_ENV"
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@4f3212b61783c3c68e8309a0f18a699764811cda # v3.27.5
