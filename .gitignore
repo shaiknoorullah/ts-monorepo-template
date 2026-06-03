@@ -15,6 +15,12 @@ out/
 # Cargo / Rust build output
 **/target/
 
+# Python build / test caches
+**/__pycache__/
+**/.pytest_cache/
+**/.venv/
+**/*.egg-info/
+
 # Test artifacts
 coverage/
 .vitest-cache/
