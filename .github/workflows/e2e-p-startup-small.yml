@@ -1,0 +1,108 @@
+name: e2e-p-startup-small
+on:
+  pull_request:
+    paths:
+      - 'profiles/p-startup-small/**'
+      - 'infra/terraform/modules/hetzner/**'
+      - 'infra/ansible/playbooks/cluster.yml'
+      - 'infra/ansible/roles/**'
+      - 'infra/helm/**'
+      - 'infra/crossplane/**'
+      - 'infra/argocd/**'
+      - 'apps/**'
+      - '.github/workflows/e2e-p-startup-small.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '30 3 * * *'
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: e2e-p-startup-small-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  bringup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      PROFILE: p-startup-small
+      HETZNER_TOKEN_CI: ${{ secrets.HETZNER_TOKEN_CI }}
+      TF_VAR_node_count: '3'
+    steps:
+      - name: Guard — require ephemeral Hetzner project credentials
+        id: guard
+        run: |
+          if [[ -z "${HETZNER_TOKEN_CI}" ]]; then
+            echo "::warning::HETZNER_TOKEN_CI not set; skipping e2e-p-startup-small"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+      - if: steps.guard.outputs.skip != 'true'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - if: steps.guard.outputs.skip != 'true'
+        uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
+      - if: steps.guard.outputs.skip != 'true'
+        uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # v15
+        with:
+          name: devenv
+      - if: steps.guard.outputs.skip != 'true'
+        run: nix profile install nixpkgs#devenv
+      - if: steps.guard.outputs.skip != 'true'
+        name: Budget precheck — Hetzner spend cap
+        run: devenv shell -- task ci:budget:precheck PROFILE=p-startup-small CLOUD=hetzner
+      - if: steps.guard.outputs.skip != 'true'
+        name: Materialize profile
+        run: devenv shell -- task profile:select PROFILE="${PROFILE}"
+      - if: steps.guard.outputs.skip != 'true'
+        name: Validate profile
+        run: devenv shell -- task profile:validate
+      - if: steps.guard.outputs.skip != 'true'
+        name: Terraform apply — 3 VPS + private network
+        run: |
+          terraform -chdir=bootstrap/terraform/hetzner init -backend-config=profile=p-startup-small
+          terraform -chdir=bootstrap/terraform/hetzner apply \
+            -var profile=p-startup-small \
+            -var node_count=3 \
+            -auto-approve
+      - if: steps.guard.outputs.skip != 'true'
+        name: Ansible cluster bringup (k3s + Calico + Longhorn + wg-mesh)
+        run: ansible-playbook ansible/cluster.yml -i bootstrap/terraform/hetzner/inventory.ini
+      - if: steps.guard.outputs.skip != 'true'
+        name: Bootstrap ArgoCD
+        run: devenv shell -- task ci:argocd:bootstrap PROFILE="${PROFILE}"
+      - if: steps.guard.outputs.skip != 'true'
+        name: Render ApplicationSet for envs dev staging prod
+        run: devenv shell -- task ci:appset:render PROFILE=p-startup-small ENVS=dev,staging,prod
+      - if: steps.guard.outputs.skip != 'true'
+        name: Wait Ready per env
+        run: devenv shell -- task ci:appset:wait PROFILE="${PROFILE}" ENVS=dev,staging,prod
+      - if: steps.guard.outputs.skip != 'true'
+        name: Smoke pack S-01..S-10
+        run: devenv shell -- task ci:smoke PROFILE="${PROFILE}"
+      - if: steps.guard.outputs.skip != 'true'
+        name: Observability parity
+        run: devenv shell -- task ci:observability:assert PROFILE="${PROFILE}"
+      - if: steps.guard.outputs.skip != 'true'
+        name: Claim readiness — XPostgresCluster XKafkaTopic XBucket
+        run: devenv shell -- task ci:claims:assert PROFILE="${PROFILE}"
+      - if: steps.guard.outputs.skip != 'true'
+        name: Image Updater + Kargo promotion staging → prod
+        run: devenv shell -- task ci:image-updater:assert ci:kargo:assert PROFILE="${PROFILE}"
+      - if: always() && steps.guard.outputs.skip != 'true'
+        name: Collect evidence
+        run: devenv shell -- task ci:evidence:collect PROFILE="${PROFILE}"
+      - if: always() && steps.guard.outputs.skip != 'true'
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: evidence-p-startup-small-${{ github.run_id }}
+          path: .ci/evidence/p-startup-small/
+          retention-days: 30
+      - if: always() && steps.guard.outputs.skip != 'true'
+        name: Teardown — terraform destroy
+        run: |
+          terraform -chdir=bootstrap/terraform/hetzner destroy \
+            -var profile=p-startup-small \
+            -var node_count=3 \
+            -auto-approve || true
+          devenv shell -- task ci:teardown PROFILE=p-startup-small
