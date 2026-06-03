@@ -15,7 +15,7 @@
     "type-check": "tsc -b"
   },
   "dependencies": {
-    "yaml": "^2.6.0",
+    "yaml": "^2.6.1",
     "zod": "catalog:"
   },
   "devDependencies": {

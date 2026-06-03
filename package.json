@@ -118,6 +118,12 @@
     "node": ">=22.0.0",
     "pnpm": ">=10.15.0"
   },
+  "pnpm": {
+    "overrides": {
+      "ajv": "^8.17.1",
+      "ajv-formats": "^3.0.1"
+    }
+  },
   "typeCoverage": {
     "atLeast": 95,
     "strict": true,

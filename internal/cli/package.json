@@ -32,8 +32,8 @@
     "@clack/prompts": "^0.7.0",
     "@internal/schemas": "workspace:*",
     "@oclif/core": "^4.0.0",
-    "ajv": "8.17.1",
-    "ajv-formats": "3.0.1",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "c12": "^3.0.0",
     "citty": "^0.1.6",
     "consola": "^3.4.0",
@@ -44,7 +44,7 @@
     "pathe": "^2.0.0",
     "picocolors": "^1.1.0",
     "prompts": "^2.4.2",
-    "yaml": "^2.6.0",
+    "yaml": "^2.6.1",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -27,6 +27,18 @@ module.exports = {
       dependencies: ['@testcontainers/postgresql', 'msw', '@faker-js/faker'],
       pinVersion: 'catalog:testing',
     },
+    {
+      // pnpm.overrides are intentionally exact pins — the whole point of an
+      // override is to force every package in the workspace onto one resolved
+      // copy (needed for ajv + ajv-formats so `Ajv2020` and `ajv-formats`'s
+      // peer-injected Plugin<Opts> reference the same TypeScript type).
+      // Carets here would defeat the override.
+      label: 'Allow exact-pin in pnpm.overrides',
+      dependencyTypes: ['pnpmOverrides'],
+      dependencies: ['**'],
+      packages: ['**'],
+      isIgnored: true,
+    },
   ],
   semverGroups: [
     {
@@ -34,6 +46,7 @@ module.exports = {
       range: '^',
       dependencies: ['**'],
       packages: ['**'],
+      dependencyTypes: ['dev', 'prod', 'peer', 'optional'],
     },
   ],
   sortPackages: true,
