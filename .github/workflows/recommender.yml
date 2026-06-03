@@ -1,0 +1,88 @@
+# .github/workflows/recommender.yml
+# Phase 15 C15 gate per Section 13.3: four-job matrix covering
+# (a) cloud-prices YAML JSON Schema validation,
+# (b) @internal/recommender unit + golden + edge-case tests,
+# (c) @internal/cost-simulator unit + known-bill tests,
+# (d) MCP server handler contract against the frozen Phase 12 schemas.
+name: recommender
+
+on:
+  pull_request:
+    paths:
+      - 'internal/recommender/**'
+      - 'internal/cost-simulator/**'
+      - 'internal/mcp-server/src/tools/recommend_profile.ts'
+      - 'internal/mcp-server/src/tools/simulate_cost.ts'
+      - 'internal/mcp-server/src/schemas/recommend_profile.ts'
+      - 'internal/mcp-server/src/schemas/simulate_cost.ts'
+      - 'data/cloud-prices/**'
+      - '.github/workflows/recommender.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'internal/recommender/**'
+      - 'internal/cost-simulator/**'
+      - 'internal/mcp-server/src/tools/recommend_profile.ts'
+      - 'internal/mcp-server/src/tools/simulate_cost.ts'
+      - 'data/cloud-prices/**'
+
+jobs:
+  price-data-schema:
+    name: price-data schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @internal/cloud-prices-tests test
+
+  recommender-unit:
+    name: recommender unit + golden
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @internal/recommender test
+
+  cost-simulator-unit:
+    name: cost-simulator unit + known-bill
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @internal/cost-simulator test
+
+  mcp-handler-contract:
+    name: mcp handler contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @ts-monorepo-template/mcp-server test
