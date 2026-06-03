@@ -1,0 +1,62 @@
+name: e2e-p-solo
+on:
+  pull_request:
+    paths:
+      - 'profiles/p-solo/**'
+      - 'infra/helm/**'
+      - 'infra/crossplane/**'
+      - 'apps/**'
+      - '.github/workflows/e2e-p-solo.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '30 2 * * *'
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: e2e-p-solo-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  bringup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      PROFILE: p-solo
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
+      - uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # v15
+        with:
+          name: devenv
+      - run: nix profile install nixpkgs#devenv
+      - name: Install k3d 5.x
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/v5.7.4/install.sh | bash
+      - name: Materialize profile
+        run: devenv shell -- task profile:select PROFILE="${PROFILE}"
+      - name: Validate profile
+        run: devenv shell -- task profile:validate
+      - name: Bringup (k3d + Crossplane + ESO + ArgoCD)
+        run: devenv shell -- task ci:bringup PROFILE="${PROFILE}"
+      - name: Smoke pack S-01..S-10
+        run: devenv shell -- task ci:smoke PROFILE="${PROFILE}"
+      - name: Observability parity (Layer 5)
+        run: devenv shell -- task ci:observability:assert PROFILE="${PROFILE}"
+      - name: Claim readiness — XPostgresCluster, XKafkaTopic, XBucket
+        run: devenv shell -- task ci:claims:assert PROFILE="${PROFILE}"
+      - name: Image Updater dev env
+        run: devenv shell -- task ci:image-updater:assert PROFILE="${PROFILE}"
+      - name: Kargo promotion staging → prod
+        run: devenv shell -- task ci:kargo:assert PROFILE="${PROFILE}"
+      - if: always()
+        name: Collect evidence
+        run: devenv shell -- task ci:evidence:collect PROFILE="${PROFILE}"
+      - if: always()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: evidence-p-solo-${{ github.run_id }}
+          path: .ci/evidence/p-solo/
+          retention-days: 30
+      - if: always()
+        name: Teardown
+        run: devenv shell -- task ci:teardown PROFILE=p-solo
