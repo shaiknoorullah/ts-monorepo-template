@@ -1,0 +1,200 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  name: py-hello
+spec: {}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: py-hello
+  namespace: py-hello
+spec:
+  interval: 5m
+  subscriptions:
+    - image:
+        repoURL: ghcr.io/REPLACE_ORG/py-hello
+        semverConstraint: '>=0.0.0-0'
+    - git:
+        repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+        branch: main
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: dev
+  namespace: py-hello
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: py-hello
+      sources:
+        direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+            checkout:
+              - branch: main
+                path: ./repo
+        - uses: yaml-update
+          config:
+            path: ./repo/infra/helm/apps/py-hello/values.dev.yaml
+            updates:
+              - key: image.tag
+                value: ${{ imageFrom("ghcr.io/REPLACE_ORG/py-hello").Tag }}
+        - uses: git-commit
+          config:
+            path: ./repo
+            messageFromSteps: [yaml-update]
+        - uses: git-push
+          config:
+            path: ./repo
+        - uses: argocd-update
+          config:
+            apps:
+              - name: py-hello-dev
+                namespace: argocd
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: staging
+  namespace: py-hello
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: py-hello
+      sources:
+        stages: [dev]
+  verification:
+    analysisTemplates:
+      - name: smoke
+      - name: slo
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+            checkout:
+              - branch: main
+                path: ./repo
+        - uses: yaml-update
+          config:
+            path: ./repo/infra/helm/apps/py-hello/values.staging.yaml
+            updates:
+              - key: image.tag
+                value: ${{ imageFrom("ghcr.io/REPLACE_ORG/py-hello").Tag }}
+        - uses: git-commit
+          config:
+            path: ./repo
+            messageFromSteps: [yaml-update]
+        - uses: git-push
+          config:
+            path: ./repo
+        - uses: argocd-update
+          config:
+            apps:
+              - name: py-hello-staging
+                namespace: argocd
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod
+  namespace: py-hello
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: py-hello
+      sources:
+        stages: [staging]
+  verification:
+    analysisTemplates:
+      - name: smoke
+      - name: slo
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+            checkout:
+              - branch: main
+                path: ./repo
+        - uses: yaml-update
+          config:
+            path: ./repo/infra/helm/apps/py-hello/values.prod.yaml
+            updates:
+              - key: image.tag
+                value: ${{ imageFrom("ghcr.io/REPLACE_ORG/py-hello").Tag }}
+        - uses: git-commit
+          config:
+            path: ./repo
+            messageFromSteps: [yaml-update]
+        - uses: git-push
+          config:
+            path: ./repo
+        - uses: argocd-update
+          config:
+            apps:
+              - name: py-hello-prod
+                namespace: argocd
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: smoke
+  namespace: py-hello
+spec:
+  args:
+    - name: env
+  metrics:
+    - name: smoke-200
+      provider:
+        web:
+          url: 'http://py-hello.py-hello-{{ args.env }}.svc/healthz'
+          jsonPath: '{$.status}'
+      successCondition: 'result == "ok"'
+      failureLimit: 0
+      count: 3
+      interval: 10s
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: slo
+  namespace: py-hello
+spec:
+  args:
+    - name: env
+  metrics:
+    - name: p95-latency
+      provider:
+        prometheus:
+          address: http://kube-prometheus-stack-prometheus.observability:9090
+          query: |
+            histogram_quantile(0.95,
+              sum(rate(http_request_duration_seconds_bucket{app="py-hello",env="{{ args.env }}"}[5m])) by (le))
+      successCondition: 'result < 0.300'
+      failureLimit: 1
+      count: 5
+      interval: 30s
+    - name: error-rate
+      provider:
+        prometheus:
+          address: http://kube-prometheus-stack-prometheus.observability:9090
+          query: |
+            sum(rate(http_requests_total{app="py-hello",env="{{ args.env }}",code=~"5.."}[5m]))
+              /
+            sum(rate(http_requests_total{app="py-hello",env="{{ args.env }}"}[5m]))
+      successCondition: 'result < 0.01'
+      failureLimit: 1
+      count: 5
+      interval: 30s

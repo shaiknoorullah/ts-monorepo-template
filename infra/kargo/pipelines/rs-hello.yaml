@@ -1,0 +1,200 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  name: rs-hello
+spec: {}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: rs-hello
+  namespace: rs-hello
+spec:
+  interval: 5m
+  subscriptions:
+    - image:
+        repoURL: ghcr.io/REPLACE_ORG/rs-hello
+        semverConstraint: '>=0.0.0-0'
+    - git:
+        repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+        branch: main
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: dev
+  namespace: rs-hello
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: rs-hello
+      sources:
+        direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+            checkout:
+              - branch: main
+                path: ./repo
+        - uses: yaml-update
+          config:
+            path: ./repo/infra/helm/apps/rs-hello/values.dev.yaml
+            updates:
+              - key: image.tag
+                value: ${{ imageFrom("ghcr.io/REPLACE_ORG/rs-hello").Tag }}
+        - uses: git-commit
+          config:
+            path: ./repo
+            messageFromSteps: [yaml-update]
+        - uses: git-push
+          config:
+            path: ./repo
+        - uses: argocd-update
+          config:
+            apps:
+              - name: rs-hello-dev
+                namespace: argocd
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: staging
+  namespace: rs-hello
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: rs-hello
+      sources:
+        stages: [dev]
+  verification:
+    analysisTemplates:
+      - name: smoke
+      - name: slo
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+            checkout:
+              - branch: main
+                path: ./repo
+        - uses: yaml-update
+          config:
+            path: ./repo/infra/helm/apps/rs-hello/values.staging.yaml
+            updates:
+              - key: image.tag
+                value: ${{ imageFrom("ghcr.io/REPLACE_ORG/rs-hello").Tag }}
+        - uses: git-commit
+          config:
+            path: ./repo
+            messageFromSteps: [yaml-update]
+        - uses: git-push
+          config:
+            path: ./repo
+        - uses: argocd-update
+          config:
+            apps:
+              - name: rs-hello-staging
+                namespace: argocd
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod
+  namespace: rs-hello
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: rs-hello
+      sources:
+        stages: [staging]
+  verification:
+    analysisTemplates:
+      - name: smoke
+      - name: slo
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+            checkout:
+              - branch: main
+                path: ./repo
+        - uses: yaml-update
+          config:
+            path: ./repo/infra/helm/apps/rs-hello/values.prod.yaml
+            updates:
+              - key: image.tag
+                value: ${{ imageFrom("ghcr.io/REPLACE_ORG/rs-hello").Tag }}
+        - uses: git-commit
+          config:
+            path: ./repo
+            messageFromSteps: [yaml-update]
+        - uses: git-push
+          config:
+            path: ./repo
+        - uses: argocd-update
+          config:
+            apps:
+              - name: rs-hello-prod
+                namespace: argocd
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: smoke
+  namespace: rs-hello
+spec:
+  args:
+    - name: env
+  metrics:
+    - name: smoke-200
+      provider:
+        web:
+          url: 'http://rs-hello.rs-hello-{{ args.env }}.svc/healthz'
+          jsonPath: '{$.status}'
+      successCondition: 'result == "ok"'
+      failureLimit: 0
+      count: 3
+      interval: 10s
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: slo
+  namespace: rs-hello
+spec:
+  args:
+    - name: env
+  metrics:
+    - name: p95-latency
+      provider:
+        prometheus:
+          address: http://kube-prometheus-stack-prometheus.observability:9090
+          query: |
+            histogram_quantile(0.95,
+              sum(rate(http_request_duration_seconds_bucket{app="rs-hello",env="{{ args.env }}"}[5m])) by (le))
+      successCondition: 'result < 0.300'
+      failureLimit: 1
+      count: 5
+      interval: 30s
+    - name: error-rate
+      provider:
+        prometheus:
+          address: http://kube-prometheus-stack-prometheus.observability:9090
+          query: |
+            sum(rate(http_requests_total{app="rs-hello",env="{{ args.env }}",code=~"5.."}[5m]))
+              /
+            sum(rate(http_requests_total{app="rs-hello",env="{{ args.env }}"}[5m]))
+      successCondition: 'result < 0.01'
+      failureLimit: 1
+      count: 5
+      interval: 30s
