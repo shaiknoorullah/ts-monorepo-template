@@ -1,0 +1,12 @@
+version: v2
+modules:
+  - path: src/proto
+    name: buf.build/ts-monorepo-template/contracts
+lint:
+  use:
+    - STANDARD
+  except:
+    - PACKAGE_VERSION_SUFFIX
+breaking:
+  use:
+    - FILE
