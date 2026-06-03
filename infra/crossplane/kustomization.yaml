@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./core
+  - ./providers
+  - ./provider-configs
+  - ./functions
+  - ./environment-configs
+  - ./xrds
+  - ./compositions/core
+  - ./compositions/obs-identity
+  - ./compositions/schema-gov
+  - ./compositions/cloud-bootstrap
+commonLabels:
+  platform.pn.cloud/layer: '6-composition'
+  app.kubernetes.io/managed-by: argocd
