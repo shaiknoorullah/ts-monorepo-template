@@ -45,10 +45,32 @@ jobs:
           curl -fsSL -o /tmp/kc.tgz https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
           sudo tar -xzf /tmp/kc.tgz -C /usr/local/bin kubeconform
       - name: Install crossplane CLI
+        # crossplane's install.sh occasionally returns a partial response on
+        # GHA runners; the retry covers transient network blips. Tail keeps
+        # the install behavior identical to the one-shot form.
         run: |
-          curl -fsSL https://raw.githubusercontent.com/crossplane/crossplane/release-1.17/install.sh \
-            | XP_CHANNEL=stable XP_VERSION=v1.17.3 sh
-          sudo mv crossplane /usr/local/bin/crossplane
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if curl -fsSL https://raw.githubusercontent.com/crossplane/crossplane/release-1.17/install.sh \
+                | XP_CHANNEL=stable XP_VERSION=v1.17.3 sh; then
+              break
+            fi
+            echo "crossplane install attempt ${attempt} failed; retrying"
+            sleep 3
+          done
+          sudo install -m 0755 crossplane /usr/local/bin/crossplane
+          crossplane --help >/dev/null
       - run: pnpm install --frozen-lockfile
+      - name: Build helm chart dependencies (lib-chart)
+        # Each apps/<svc>/Chart.yaml depends on `file://../../lib-chart`.
+        # `helm template` (used inside profile:validate) requires the dep to
+        # be present under `charts/`; only `helm dependency build` populates
+        # that directory.
+        run: |
+          set -euo pipefail
+          for chart_dir in infra/helm/apps/*/; do
+            echo "==> helm dependency build ${chart_dir}"
+            helm dependency build "${chart_dir}"
+          done
       - name: Run profile:validate
         run: ./tools/ci/profile-validate.sh ${{ matrix.profile }}
