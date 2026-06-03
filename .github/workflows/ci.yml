@@ -105,9 +105,13 @@ jobs:
           cache: pnpm
       - name: Install go-task
         # @internal/schemas + @internal/scripts integration tests shell out to
-        # `task` (meta:validate, adr:new, adr:index). Match the install pattern
-        # used in site-build.yml's quickstart-verify job.
-        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+        # `task` (meta:validate, adr:new, adr:index). Use the official action
+        # with a 40-char SHA pin (per AGENTS.md) rather than `curl | sh` for
+        # supply-chain safety.
+        uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:coverage
 

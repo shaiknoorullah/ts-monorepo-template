@@ -177,7 +177,7 @@ jobs:
           cosign sign --yes \
             --oidc-issuer=https://token.actions.githubusercontent.com \
             --rekor-url=https://rekor.sigstore.dev \
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}@${DIGEST}
+            "ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}@${DIGEST}"
 
       - name: cosign attach SBOM
         if: steps.build.outputs.digest != '' && github.event_name != 'pull_request'
@@ -185,8 +185,8 @@ jobs:
           DIGEST: ${{ steps.build.outputs.digest }}
         run: |
           set -euo pipefail
-          cosign attach sbom --sbom sbom-${{ matrix.app }}.cdx.json \
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}@${DIGEST}
+          cosign attach sbom --sbom "sbom-${{ matrix.app }}.cdx.json" \
+            "ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}@${DIGEST}"
 
   helm-validate:
     name: helm lint + kubeconform per (app, env)

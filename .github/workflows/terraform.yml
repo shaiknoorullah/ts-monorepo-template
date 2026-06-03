@@ -61,10 +61,11 @@ jobs:
       - name: tflint
         run: |
           set -euo pipefail
-          tflint --init --config=$(pwd)/infra/terraform/.tflint.hcl
+          TFLINT_CFG="$(pwd)/infra/terraform/.tflint.hcl"
+          tflint --init --config="$TFLINT_CFG"
           for d in infra/terraform/modules/* infra/terraform/envs/*; do
             [ -d "$d" ] || continue
-            tflint --chdir="$d" --config=$(pwd)/infra/terraform/.tflint.hcl
+            tflint --chdir="$d" --config="$TFLINT_CFG"
           done
       - uses: aquasecurity/tfsec-action@v1.0.3
         with:
