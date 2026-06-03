@@ -99,7 +99,9 @@ const allCompositionText = compositionFiles
 
 for (const [xrd, pin] of Object.entries(entries)) {
   if (!allCompositionText.includes(pin.compositionRef)) {
-    warn(`composition ${pin.compositionRef} (for ${xrd}) not found under ${compDir} — future phase will land it`)
+    warn(
+      `composition ${pin.compositionRef} (for ${xrd}) not found under ${compDir} — future phase will land it`,
+    )
   }
 }
 

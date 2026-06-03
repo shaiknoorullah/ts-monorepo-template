@@ -8,7 +8,7 @@ const CREATE = resolve(__dirname, '..', 'bin', 'create-platform.ts')
 
 function run(file: string, args: string[]): string {
   // process.execPath = absolute path to current node; avoids PATH lookup (sonarjs/no-os-command-from-path).
-   
+
   return execFileSync(process.execPath, ['--import', 'tsx', file, ...args], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],

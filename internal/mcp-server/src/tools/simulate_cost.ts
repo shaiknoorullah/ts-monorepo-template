@@ -147,9 +147,9 @@ function handleWithCtx(input: Input, ctx: Ctx): Output {
 
 export async function handler(input: Input, ctx?: Ctx): Promise<Output> {
   if (ctx) {
-    return handleWithCtx(input, ctx);
+    return handleWithCtx(input, ctx)
   }
   // Phase 15: delegate to the deterministic @internal/cost-simulator package.
   const result = simulateCostFromPackage({ profile: input.profile })
-  return result;
+  return result
 }

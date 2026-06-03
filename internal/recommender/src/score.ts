@@ -179,14 +179,18 @@ function scoreOne(
   if (answers.registry !== undefined) {
     const coef = w('registry')
     max += coef
-    raw += prior.registry_fit.includes(answers.registry) ? coef : Math.max(0, coef - p.registry_mismatch!);
+    raw += prior.registry_fit.includes(answers.registry)
+      ? coef
+      : Math.max(0, coef - p.registry_mismatch!)
   }
 
   // cdn_edge (optional)
   if (answers.cdn_edge !== undefined) {
     const coef = w('cdn_edge')
     max += coef
-    raw += prior.cdn_edge_fit.includes(answers.cdn_edge) ? coef : Math.max(0, coef - p.cdn_edge_mismatch!);
+    raw += prior.cdn_edge_fit.includes(answers.cdn_edge)
+      ? coef
+      : Math.max(0, coef - p.cdn_edge_mismatch!)
   }
 
   const normalized = max === 0 ? 0 : Math.max(0, Math.min(1, raw / max))

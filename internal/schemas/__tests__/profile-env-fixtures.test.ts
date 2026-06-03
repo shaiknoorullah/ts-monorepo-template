@@ -28,7 +28,6 @@ describe('profile.env fixtures conform to profile-v1', () => {
     const doc = parse(readFileSync(path, 'utf8'))
     const ok = validate(doc)
     if (!ok) {
-       
       console.error(validate.errors)
     }
     expect(ok).toBe(true)

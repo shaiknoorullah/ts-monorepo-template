@@ -1556,7 +1556,7 @@ For Crossplane: none of the three has a NATIVE provider in 2026. The path is pro
 
 **Gotchas:**
 
-- Chatwoot's enterprise/ directory is in the SAME repo as the MIT core and is built by default when you run `bundle exec rails server`. Setting INSTALLATION_PRO_USED=true or shipping a chart with the enterprise/ dir present technically infringes without a paid license. The Helm chart respects this — set image to chatwoot/chatwoot-ce:_ to be safe in template defaults; users opt into chatwoot/chatwoot:_ (enterprise) themselves.
+- Chatwoot's enterprise/ directory is in the SAME repo as the MIT core and is built by default when you run `bundle exec rails server`. Setting INSTALLATION*PRO_USED=true or shipping a chart with the enterprise/ dir present technically infringes without a paid license. The Helm chart respects this — set image to chatwoot/chatwoot-ce:* to be safe in template defaults; users opt into chatwoot/chatwoot:\_ (enterprise) themselves.
 - Zammad's AGPL means: if we run Chatwoot-on-our-cluster as a hosted demo for prospects, we're a service operator and any modifications we make must be published. Chatwoot/MIT does not have this constraint — strong reason to prefer Chatwoot for the demo environment.
 - Chatwoot Helm chart bundles a Postgres subchart by default. For our template (which has a centralized pg-tenant CNPG cluster), you MUST set postgresql.enabled=false and provide external connection vars via ExternalSecret — otherwise you get a second, orphan Postgres.
 - Chatwoot webhook delivery is best-effort with no built-in dead-letter; if the MCP/backend is down during a burst, events are lost. Mitigation: subscribe a small relay that mirrors webhooks to Kafka (we already have Kafka via Strimzi) and process from there.

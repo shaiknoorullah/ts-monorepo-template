@@ -167,7 +167,7 @@ function handleWithCtx(input: Input, ctx: Ctx): Output {
 
 export async function handler(input: Input, ctx?: Ctx): Promise<Output> {
   if (ctx) {
-    return handleWithCtx(input, ctx);
+    return handleWithCtx(input, ctx)
   }
   // Phase 15: delegate to the deterministic @internal/recommender package.
   const result = scoreFromPackage(input.answers)
@@ -176,5 +176,5 @@ export async function handler(input: Input, ctx?: Ctx): Promise<Output> {
     recommended: result.recommended,
     rubric_version: result.rubric_version,
     rubric_sha256: result.rubric_sha256,
-  };
+  }
 }

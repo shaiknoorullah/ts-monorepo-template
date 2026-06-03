@@ -26,7 +26,7 @@ function parseToml(text: string): { secrets: Record<string, SecretEntry> } {
       current = {}
       continue
     }
-    if (line.startsWith("[")) {
+    if (line.startsWith('[')) {
       if (currentName && current) secrets[currentName] = current
       currentName = null
       current = null
@@ -38,27 +38,27 @@ function parseToml(text: string): { secrets: Record<string, SecretEntry> } {
     const key = kv[1]!
     const valRaw = kv[2]!.trim()
     switch (key) {
-    case 'ci_only': 
-    case 'required': {
-      ;(current as Record<string, unknown>)[key] = valRaw === 'true'
-    
-    break;
-    }
-    case 'default_dev': {
-      current.default_dev = valRaw.replaceAll(/^"|"$/g, '')
-    
-    break;
-    }
-    case 'profiles': {
-      const arr = valRaw
-        .replaceAll(/^\[|\]$/g, '')
-        .split(',')
-        .map((s) => s.trim().replaceAll(/^"|"$/g, ''))
-      current.profiles = arr.filter(Boolean)
-    
-    break;
-    }
-    // No default
+      case 'ci_only':
+      case 'required': {
+        ;(current as Record<string, unknown>)[key] = valRaw === 'true'
+
+        break
+      }
+      case 'default_dev': {
+        current.default_dev = valRaw.replaceAll(/^"|"$/g, '')
+
+        break
+      }
+      case 'profiles': {
+        const arr = valRaw
+          .replaceAll(/^\[|\]$/g, '')
+          .split(',')
+          .map((s) => s.trim().replaceAll(/^"|"$/g, ''))
+        current.profiles = arr.filter(Boolean)
+
+        break
+      }
+      // No default
     }
   }
   if (currentName && current) secrets[currentName] = current
