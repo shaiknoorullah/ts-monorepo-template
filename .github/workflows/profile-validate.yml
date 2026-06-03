@@ -45,20 +45,23 @@ jobs:
           curl -fsSL -o /tmp/kc.tgz https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
           sudo tar -xzf /tmp/kc.tgz -C /usr/local/bin kubeconform
       - name: Install crossplane CLI
-        # crossplane's install.sh occasionally returns a partial response on
-        # GHA runners; the retry covers transient network blips. Tail keeps
-        # the install behavior identical to the one-shot form.
+        # `install.sh` is flaky on GHA runners — the pipe occasionally aborts
+        # before extracting the `crank` binary, leaving no file for the
+        # follow-up `install`. Download the static binary directly from the
+        # releases CDN instead. Equivalent to what install.sh does
+        # internally, minus the extra cURL+tar dance.
         run: |
           set -euo pipefail
+          XP_VERSION=v1.17.3
           for attempt in 1 2 3; do
-            if curl -fsSL https://raw.githubusercontent.com/crossplane/crossplane/release-1.17/install.sh \
-                | XP_CHANNEL=stable XP_VERSION=v1.17.3 sh; then
+            if curl -fsSL -o /tmp/crank \
+                "https://releases.crossplane.io/stable/${XP_VERSION}/bin/linux_amd64/crank"; then
               break
             fi
-            echo "crossplane install attempt ${attempt} failed; retrying"
+            echo "crossplane download attempt ${attempt} failed; retrying"
             sleep 3
           done
-          sudo install -m 0755 crossplane /usr/local/bin/crossplane
+          sudo install -m 0755 /tmp/crank /usr/local/bin/crossplane
           crossplane --help >/dev/null
       - run: pnpm install --frozen-lockfile
       - name: Build helm chart dependencies (lib-chart)
