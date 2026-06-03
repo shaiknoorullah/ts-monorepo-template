@@ -1,0 +1,16 @@
+---
+- name: Skip when disabled
+  ansible.builtin.meta: end_host
+  when: not uems_enroll_enabled
+
+- name: Download EC agent installer
+  ansible.builtin.get_url:
+    url: '{{ uems_agent_download_url }}'
+    dest: /tmp/uems-agent-install.bin
+    mode: '0755'
+
+- name: Run EC agent installer
+  ansible.builtin.command:
+    cmd: '/tmp/uems-agent-install.bin -i silent -DUEMS_TOKEN={{ uems_tenant_token }}'
+    creates: /opt/ManageEngine/UEMS_Agent/data/agent.properties
+  no_log: true

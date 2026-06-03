@@ -1,0 +1,8 @@
+---
+arc_enroll_enabled: false
+arc_resource_group: ''
+arc_subscription_id: ''
+arc_tenant_id: ''
+arc_service_principal_id: ''
+arc_service_principal_secret: ''
+arc_location: 'southindia'

@@ -1,0 +1,7 @@
+---
+wireguard_mesh_enabled: false
+wireguard_mesh_cidr: '10.50.0.0/24'
+wireguard_listen_port: 51820
+wireguard_keepalive: 25
+wireguard_iface: 'wg0'
+wireguard_keys_dir: '/etc/wireguard'

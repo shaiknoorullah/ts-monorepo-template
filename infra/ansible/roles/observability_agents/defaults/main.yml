@@ -1,0 +1,6 @@
+---
+node_exporter_version: '1.8.2'
+promtail_version: '3.2.1'
+otel_collector_version: '0.111.0'
+loki_push_url: ''
+otel_collector_endpoint: ''
