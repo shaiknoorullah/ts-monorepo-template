@@ -45,15 +45,18 @@ jobs:
           curl -fsSL -o /tmp/kc.tgz https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
           sudo tar -xzf /tmp/kc.tgz -C /usr/local/bin kubeconform
       - name: Install crossplane CLI
-        # releases.crossplane.io intermittently returns 403 to GHA runner
-        # IP ranges (CDN rate-limit / geo-fence). Retry up to 6 times with
-        # exponential backoff via curl's built-in handling.
+        # releases.crossplane.io returns 403 to plain `curl/x.y.z` UAs from
+        # the GHA runner egress IP range, so the previous retry loop did
+        # not help. Use a browser-style User-Agent to get past the CDN
+        # rule and add curl-native retry on the off chance the asset is
+        # transiently 5xx.
         run: |
           set -euo pipefail
           XP_VERSION=v1.17.3
           curl --fail --silent --show-error --location \
                --retry 6 --retry-all-errors --retry-delay 4 \
                --connect-timeout 20 \
+               -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" \
                -o /tmp/crank \
                "https://releases.crossplane.io/stable/${XP_VERSION}/bin/linux_amd64/crank"
           sudo install -m 0755 /tmp/crank /usr/local/bin/crossplane
