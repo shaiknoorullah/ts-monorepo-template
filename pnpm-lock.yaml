@@ -774,7 +774,21 @@ importers:
         specifier: 4.0.0
         version: 4.0.0(@types/debug@4.1.13)(@types/node@22.10.10)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1)
 
-  internal/schemas: {}
+  internal/schemas:
+    dependencies:
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
+      ajv-formats:
+        specifier: ^3.0.1
+        version: 3.0.1(ajv@8.17.1)
+    devDependencies:
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1))
+      yaml:
+        specifier: ^2.6.0
+        version: 2.6.1
 
   internal/scripts: {}
 
@@ -21437,7 +21451,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.7(@types/node@22.19.19)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
+      vitest: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
 
   '@vitest/eslint-plugin@1.6.17(@typescript-eslint/eslint-plugin@8.59.4(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)(vitest@4.1.7)':
     dependencies:
@@ -21493,6 +21507,14 @@ snapshots:
     optionalDependencies:
       vite: 6.4.2(@types/node@24.12.4)(jiti@1.21.7)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0)
 
+  '@vitest/mocker@4.1.7(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1))':
+    dependencies:
+      '@vitest/spy': 4.1.7
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1)
+
   '@vitest/mocker@4.1.7(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))':
     dependencies:
       '@vitest/spy': 4.1.7
@@ -21545,7 +21567,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.16
       tinyrainbow: 3.1.0
-      vitest: 4.1.7(@types/node@22.19.19)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
+      vitest: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
 
   '@vitest/utils@4.0.0':
     dependencies:
@@ -30529,6 +30551,24 @@ snapshots:
       tsx: 4.22.3
       yaml: 2.9.0
 
+  vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1):
+    dependencies:
+      esbuild: 0.25.12
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
+      postcss: 8.5.15
+      rollup: 4.60.4
+      tinyglobby: 0.2.16
+    optionalDependencies:
+      '@types/node': 24.12.4
+      fsevents: 2.3.3
+      jiti: 2.7.0
+      lightningcss: 1.27.0
+      sass: 1.77.4
+      terser: 5.48.0
+      tsx: 4.22.3
+      yaml: 2.6.1
+
   vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0):
     dependencies:
       esbuild: 0.25.12
@@ -30692,6 +30732,36 @@ snapshots:
       tinyglobby: 0.2.16
       tinyrainbow: 3.1.0
       vite: 6.4.2(@types/node@24.12.4)(jiti@1.21.7)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 24.12.4
+      '@vitest/coverage-v8': 4.1.7(vitest@4.1.7)
+      '@vitest/ui': 4.1.7(vitest@4.1.7)
+      happy-dom: 20.9.0
+    transitivePeerDependencies:
+      - msw
+
+  vitest@4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1)):
+    dependencies:
+      '@vitest/expect': 4.1.7
+      '@vitest/mocker': 4.1.7(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1))
+      '@vitest/pretty-format': 4.1.7
+      '@vitest/runner': 4.1.7
+      '@vitest/snapshot': 4.1.7
+      '@vitest/spy': 4.1.7
+      '@vitest/utils': 4.1.7
+      es-module-lexer: 2.1.0
+      expect-type: 1.3.0
+      magic-string: 0.30.21
+      obug: 2.1.1
+      pathe: 2.0.3
+      picomatch: 4.0.4
+      std-env: 4.1.0
+      tinybench: 2.9.0
+      tinyexec: 1.1.2
+      tinyglobby: 0.2.16
+      tinyrainbow: 3.1.0
+      vite: 6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.12.4

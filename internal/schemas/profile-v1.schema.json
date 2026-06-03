@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts-monorepo-template.dev/schemas/profile-v1.schema.json",
+  "title": "profile-v1",
+  "description": "Profile document conforming to spec Section 1.5 + 1.6 (12 axes).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "machineId", "founderLabel", "costBandUsdMonthly", "axes"],
+  "properties": {
+    "schemaVersion": { "const": "profile-v1" },
+    "machineId": {
+      "type": "string",
+      "enum": ["p-solo", "p-hobby", "p-startup-small", "p-startup-scale", "p-enterprise"]
+    },
+    "founderLabel": {
+      "type": "string",
+      "enum": ["Just Me", "Side Project", "Early Startup", "Scaling Startup", "Production at Scale"]
+    },
+    "costBandUsdMonthly": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "number", "minimum": 0 },
+        "max": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "axes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "team_size",
+        "env_count",
+        "target_budget_usd",
+        "compliance_floor",
+        "workload_shape",
+        "ha_level",
+        "cluster_substrate",
+        "mesh",
+        "observability_depth",
+        "secret_backend",
+        "registry",
+        "cdn_edge"
+      ],
+      "properties": {
+        "team_size": { "enum": ["solo", "small", "mid", "large"] },
+        "env_count": {
+          "oneOf": [{ "type": "integer", "minimum": 1, "maximum": 3 }, { "const": "N" }]
+        },
+        "target_budget_usd": {
+          "enum": ["<20", "<100", "<500", "<2k", "open"]
+        },
+        "compliance_floor": {
+          "enum": ["none", "SOC2-ready", "HIPAA-ready", "FedRAMP-ready"]
+        },
+        "workload_shape": {
+          "enum": ["web-services", "event-driven", "batch", "mixed"]
+        },
+        "ha_level": {
+          "enum": ["none", "single-AZ", "multi-AZ", "multi-region"]
+        },
+        "cluster_substrate": {
+          "enum": ["local-k3d", "single-VPS", "bare-VM k3s", "kubeadm", "managed-K8s"]
+        },
+        "mesh": { "enum": ["none", "linkerd", "istio", "cilium-mesh"] },
+        "observability_depth": {
+          "enum": ["metrics-only", "+logs", "+traces", "+profiling"]
+        },
+        "secret_backend": { "enum": ["keyring", "akv", "asm", "gsm", "vault"] },
+        "registry": { "enum": ["ghcr", "acr", "ecr", "gar", "harbor"] },
+        "cdn_edge": { "enum": ["none", "cloudflare", "fastly"] }
+      }
+    }
+  }
+}
