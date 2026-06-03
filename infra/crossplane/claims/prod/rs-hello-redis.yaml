@@ -1,0 +1,17 @@
+apiVersion: pn.cloud/v1alpha1
+kind: RedisClusterClaim
+metadata:
+  name: rs-hello
+  namespace: prod
+  labels:
+    app.kubernetes.io/name: rs-hello
+    app.kubernetes.io/component: redis
+spec:
+  env: prod
+  size: m
+  tls: true
+  persistence: true
+  connectionSecret: rs-hello-redis-conn
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: small

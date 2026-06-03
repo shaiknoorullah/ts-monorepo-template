@@ -8,3 +8,6 @@ resources:
   - go-hello-pg.yaml
   - py-hello-pg.yaml
   - rs-hello-pg.yaml
+  - go-hello-redis.yaml
+  - py-hello-redis.yaml
+  - rs-hello-redis.yaml

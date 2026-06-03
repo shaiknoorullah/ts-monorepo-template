@@ -1,0 +1,17 @@
+apiVersion: pn.cloud/v1alpha1
+kind: RedisClusterClaim
+metadata:
+  name: go-hello
+  namespace: dev
+  labels:
+    app.kubernetes.io/name: go-hello
+    app.kubernetes.io/component: redis
+spec:
+  env: dev
+  size: xs
+  tls: false
+  persistence: false
+  connectionSecret: go-hello-redis-conn
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: small
