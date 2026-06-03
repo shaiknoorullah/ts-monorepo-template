@@ -145,7 +145,12 @@ jobs:
           trivy-config: internal/templates/dockerfiles/_trivy-dockerfile.yaml
 
       - name: upload trivy SARIF to GH Security
-        if: always()
+        # Only upload when a trivy scan actually ran — for PR builds we
+        # don't push the image, so the image-scan step (gated on
+        # `steps.build.outputs.digest != ''`) is skipped and there is no
+        # SARIF on disk. Without this guard, upload-sarif fails with:
+        #   ##[error]No SARIF files found to upload in ".".
+        if: always() && steps.build.outputs.digest != ''
         uses: github/codeql-action/upload-sarif@4f3212b61783c3c68e8309a0f18a699764811cda # v3.27.1
         with:
           sarif_file: .

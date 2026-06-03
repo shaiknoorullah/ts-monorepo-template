@@ -45,6 +45,15 @@ jobs:
           #   processing shallow info: 4
           fetch-depth: 0
 
+      - name: Fetch origin/main for diff-range
+        # actions/checkout with fetch-depth: 0 still leaves origin/main
+        # as a shallow ref on PR runs; the diff-range generator then
+        # falls over on `git fetch ... main`. An explicit unshallow fetch
+        # is the workaround documented in the codeql-action issue tracker.
+        run: |
+          git fetch --unshallow --no-tags origin main || \
+            git fetch --no-tags --depth=2147483647 origin main
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@4f3212b61783c3c68e8309a0f18a699764811cda # v3.27.5
         with:
