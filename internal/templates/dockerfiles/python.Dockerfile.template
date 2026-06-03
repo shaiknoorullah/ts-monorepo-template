@@ -1,0 +1,26 @@
+# syntax=docker/dockerfile:1.10
+# Python Dockerfile template — spec Section 5.3.
+# {{pkg}} is the importable package name (e.g. py_hello).
+
+ARG PY_VERSION=3.13
+ARG RUNTIME=gcr.io/distroless/python3-debian12:nonroot
+
+FROM python:${PY_VERSION}-slim-bookworm AS deps
+RUN pip install --no-cache-dir uv==0.5.*
+WORKDIR /src
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv-${TARGETARCH} \
+    uv sync --frozen --no-dev --no-install-project
+
+FROM deps AS build
+COPY . .
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv-${TARGETARCH} \
+    uv sync --frozen --no-dev --compile-bytecode
+
+FROM ${RUNTIME} AS runtime
+WORKDIR /app
+COPY --from=build /src/.venv /app/.venv
+COPY --from=build /src/src/{{pkg}} /app/{{pkg}}
+ENV PYTHONPATH=/app PATH=/app/.venv/bin:$PATH
+USER nonroot:nonroot
+ENTRYPOINT ["python", "-m", "{{pkg}}"]
