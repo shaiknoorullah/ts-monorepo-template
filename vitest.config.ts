@@ -18,6 +18,7 @@ export default defineConfig({
       'internal/test-utils',
       // NOTE: internal/templates/* are scaffolding stubs, NOT real projects.
       // They contain placeholder {{name}} markers and broken tsconfig extends.
+      'tests',
     ],
     coverage: {
       provider: 'v8',

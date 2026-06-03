@@ -55,7 +55,10 @@
       "options": {
         "targetName": "lint"
       }
-    }
+    },
+    "@nx-go/nx-go",
+    "@nxlv/python",
+    "@monodon/rust"
   ],
   "release": {
     "projectsRelationship": "independent",
