@@ -22,7 +22,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install yq (mikefarah v4)
-        uses: mikefarah/yq-action@v4
+        # `mikefarah/yq-action` does not exist as a repo — pull the static
+        # binary directly from a pinned release. yq itself is a single
+        # statically-linked Go binary, so this is reproducible and small.
+        run: |
+          set -euo pipefail
+          YQ_VERSION=v4.44.3
+          curl -fsSL -o /usr/local/bin/yq \
+            "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+          chmod +x /usr/local/bin/yq
 
       - name: Verify yq is on PATH
         run: yq --version
