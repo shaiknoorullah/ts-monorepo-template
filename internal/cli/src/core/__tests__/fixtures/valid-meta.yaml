@@ -1,0 +1,11 @@
+# internal/cli/src/core/__tests__/fixtures/valid-meta.yaml
+apiVersion: meta.platform.dev/v1alpha1
+kind: AppDescriptor
+name: go-hello
+language: go
+endpoints:
+  - name: http
+    port: 8080
+profiles:
+  - p-solo
+  - p-hobby
