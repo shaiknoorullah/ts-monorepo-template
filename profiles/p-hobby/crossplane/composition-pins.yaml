@@ -1,0 +1,12 @@
+postgresclusters.pn.cloud:
+  compositionRef:
+    name: xpostgrescluster-cnpg-singlenode
+kafkaclusters.pn.cloud:
+  compositionRef:
+    name: xkafkacluster-strimzi-kraft-singlenode
+buckets.pn.cloud:
+  compositionRef:
+    name: xbucket-s3-hetzner
+secretbindings.pn.cloud:
+  compositionRef:
+    name: xsecretbinding-keyring
