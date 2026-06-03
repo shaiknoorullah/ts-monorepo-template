@@ -1,0 +1,14 @@
+profile: p-startup-scale
+envs:
+  - dev
+  - staging
+  - prod
+imageUpdater: true
+kargo:
+  enabled: true
+  pipeline: full-friday-freeze
+syncWindow: full
+notifications:
+  channel: slack
+  required: true
+  pagerduty: true

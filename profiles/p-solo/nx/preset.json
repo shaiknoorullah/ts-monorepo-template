@@ -1,0 +1,7 @@
+{
+  "profile": "p-solo",
+  "cacheMode": "local-only",
+  "remoteCache": false,
+  "ciAccessToken": "",
+  "agentCount": 1
+}

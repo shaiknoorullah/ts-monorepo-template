@@ -1,0 +1,8 @@
+{
+  "profile": "p-enterprise",
+  "cacheMode": "self-hosted",
+  "remoteCache": true,
+  "ciAccessToken": "NX_CLOUD_ACCESS_TOKEN",
+  "agentCount": 12,
+  "selfHostedUrl": "https://nx-cloud.platform.local"
+}

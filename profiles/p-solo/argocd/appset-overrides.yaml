@@ -1,0 +1,9 @@
+profile: p-solo
+envs:
+  - dev
+imageUpdater: true
+kargo:
+  enabled: false
+syncWindow: none
+notifications:
+  channel: stdout

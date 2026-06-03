@@ -1,0 +1,7 @@
+{
+  "profile": "p-hobby",
+  "cacheMode": "saas-readonly",
+  "remoteCache": true,
+  "ciAccessToken": "NX_CLOUD_READ_ONLY_TOKEN",
+  "agentCount": 1
+}

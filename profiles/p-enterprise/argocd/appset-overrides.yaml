@@ -1,0 +1,16 @@
+profile: p-enterprise
+envs:
+  - dev
+  - staging
+  - prod
+  - dr
+imageUpdater: false
+kargo:
+  enabled: true
+  pipeline: full-multi-region
+syncWindow: full
+notifications:
+  channel: slack
+  required: true
+  pagerduty: true
+  splunk: true
