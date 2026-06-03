@@ -23,7 +23,7 @@ spec:
       serviceAccountName: {{ include "lib-chart.serviceAccountName" . }}
       automountServiceAccountToken: {{ default false (and .Values.serviceAccount .Values.serviceAccount.tokenMount) }}
       {{- with .Values.priorityClassName }}
-      priorityClassName: {{ . | quote }}
+      priorityClassName: {{ . }}
       {{- end }}
       securityContext:
 {{ include "lib-chart.podSecurityContext" . | indent 8 }}
@@ -84,6 +84,9 @@ spec:
 {{ include "lib-chart.selectorLabels" . | indent 8 }}
     spec:
       serviceAccountName: {{ include "lib-chart.serviceAccountName" . }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
       securityContext:
 {{ include "lib-chart.podSecurityContext" . | indent 8 }}
       containers:

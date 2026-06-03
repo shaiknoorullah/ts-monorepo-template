@@ -78,3 +78,7 @@ Thumbs.db
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 docs/api/
+
+# Helm: file:// chart dependency vendor and lock
+infra/helm/apps/*/charts/
+infra/helm/apps/*/Chart.lock
