@@ -11,3 +11,4 @@ resources:
   - go-hello-redis.yaml
   - py-hello-redis.yaml
   - rs-hello-redis.yaml
+  - shared-topics.yaml
