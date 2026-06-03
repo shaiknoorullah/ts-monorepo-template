@@ -1,5 +1,5 @@
 [package]
-name = "contracts"
+name = "contracts-rs"
 version = "0.0.0"
 edition = "2021"
 publish = false
@@ -7,6 +7,11 @@ description = "Rust bindings for ts-monorepo-template/contracts (generated via b
 license = "MIT"
 
 [lib]
+# The library crate is still importable as `contracts::...` in Rust code so the
+# Phase 3 import paths in packages/contracts-rs/tests/shape.rs and downstream
+# apps don't churn. The Cargo package name is unique (`contracts-rs`) to
+# disambiguate from the Nx project named `contracts` at packages/contracts.
+name = "contracts"
 path = "src/lib.rs"
 
 [dependencies]

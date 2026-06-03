@@ -37,9 +37,11 @@ uuid.workspace = true
 figment = { workspace = true, features = ["env", "toml"] }
 prometheus.workspace = true
 anyhow = "1"
-# Phase 3 ships the Rust contracts crate at packages/contracts-rs with the
-# package name "contracts" (re-exporting user.v1 + health.v1 via include!).
-contracts = { path = "../../packages/contracts-rs" }
+# Phase 3 ships the Rust contracts crate at packages/contracts-rs. The Cargo
+# package was renamed to `contracts-rs` to disambiguate from the Nx project
+# named `contracts` at packages/contracts; the library crate is still imported
+# as `contracts::...` in Rust code (see [lib] in packages/contracts-rs/Cargo.toml).
+contracts = { path = "../../packages/contracts-rs", package = "contracts-rs" }
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }
