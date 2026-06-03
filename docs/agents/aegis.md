@@ -1,6 +1,10 @@
 # Aegis — reference MCP consumer
 
-Aegis is the in-house agent that drives the launcher and MCP server (spec [Section 11](../superpowers/specs/2026-06-03-platform-foundation-design.md) and Section 1.8). This page documents what Aegis is allowed to do and how it discovers capabilities.
+Aegis is the reference consumer of the platform MCP server (spec [Section 11](../superpowers/specs/2026-06-03-platform-foundation-design.md) and Section 1.8). Any Claude / Codex / Cursor agent that speaks the
+Model Context Protocol can drive the same tool surface — Aegis is the
+in-house agent we use to validate the contract in CI (spec Section 14.7).
+This page documents what Aegis is allowed to do and how it discovers
+capabilities.
 
 ## Discovery
 
