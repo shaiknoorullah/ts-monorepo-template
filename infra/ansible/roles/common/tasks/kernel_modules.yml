@@ -6,7 +6,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: load kernel modules
+  notify: Load kernel modules
 
 - name: Load br_netfilter now
   community.general.modprobe:

@@ -16,4 +16,4 @@
       {% for srv in common_chrony_servers %}
       pool {{ srv }} iburst
       {% endfor %}
-  notify: restart chrony
+  notify: Restart chrony

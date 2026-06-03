@@ -23,7 +23,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: restart containerd
+  notify: Restart containerd
 
 - name: Enable and start containerd
   ansible.builtin.service:

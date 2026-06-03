@@ -1,28 +1,29 @@
 ---
-- name: reload sysctl
+- name: Reload sysctl
   ansible.builtin.command: sysctl --system
   changed_when: true
 
-- name: load kernel modules
-  ansible.builtin.command: systemctl restart systemd-modules-load.service
-  changed_when: true
+- name: Load kernel modules
+  ansible.builtin.systemd:
+    name: systemd-modules-load.service
+    state: restarted
 
-- name: restart sshd
+- name: Restart sshd
   ansible.builtin.service:
     name: ssh
     state: restarted
 
-- name: restart fail2ban
+- name: Restart fail2ban
   ansible.builtin.service:
     name: fail2ban
     state: restarted
 
-- name: restart auditd
+- name: Restart auditd
   ansible.builtin.service:
     name: auditd
     state: restarted
 
-- name: restart chrony
+- name: Restart chrony
   ansible.builtin.service:
     name: chrony
     state: restarted

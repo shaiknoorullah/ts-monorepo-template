@@ -11,4 +11,4 @@
     path: /etc/audit/auditd.conf
     regexp: '^max_log_file ='
     line: 'max_log_file = {{ common_auditd_max_log_file_mb }}'
-  notify: restart auditd
+  notify: Restart auditd

@@ -10,7 +10,7 @@
         msg: 'Pass -e confirm_reset=yes to run reset.yml (destroys etcd, /etc/kubernetes, /var/lib/longhorn)'
       when: confirm_reset is not defined or confirm_reset != "yes"
 
-- name: kubeadm reset all nodes
+- name: Reset kubeadm on all nodes
   hosts: all
   become: true
   tasks:

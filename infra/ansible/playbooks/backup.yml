@@ -1,7 +1,7 @@
 ---
 # Section 9.10 backup.yml — etcd snapshot + Longhorn BackupTarget reconcile trigger.
 
-- name: etcd snapshot on CP0
+- name: Take etcd snapshot on CP0
   hosts: control_plane[0]
   become: true
   vars:
@@ -16,7 +16,7 @@
         group: root
         mode: '0700'
 
-    - name: etcdctl snapshot save
+    - name: Run etcdctl snapshot save
       ansible.builtin.shell: |
         ETCDCTL_API=3 etcdctl snapshot save \
           --endpoints=https://127.0.0.1:2379 \

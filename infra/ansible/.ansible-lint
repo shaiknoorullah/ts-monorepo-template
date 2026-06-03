@@ -1,0 +1,13 @@
+---
+profile: production
+exclude_paths:
+  - .cache/
+  - .facts-cache/
+  - .collections/
+  - tests/
+  - inventory/example.hosts.yml
+skip_list:
+  - role-name[path]  # roles live under roles/ — path naming intentional
+  - var-naming[no-role-prefix]  # group_vars are flat by design
+warn_list:
+  - experimental

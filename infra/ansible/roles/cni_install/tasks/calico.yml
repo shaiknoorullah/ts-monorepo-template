@@ -1,7 +1,9 @@
 ---
 - name: Apply Tigera operator
   ansible.builtin.command:
-    cmd: 'kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://raw.githubusercontent.com/projectcalico/calico/{{ calico_version }}/manifests/tigera-operator.yaml'
+    cmd: >-
+      kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f
+      https://raw.githubusercontent.com/projectcalico/calico/{{ calico_version }}/manifests/tigera-operator.yaml
   run_once: true
   delegate_to: "{{ groups['control_plane'][0] }}"
   changed_when: true
@@ -16,7 +18,9 @@
 
 - name: Apply Calico Installation CR
   ansible.builtin.command:
-    cmd: 'kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /etc/kubernetes/calico-installation.yaml'
+    cmd: >-
+      kubectl --kubeconfig=/etc/kubernetes/admin.conf apply
+      -f /etc/kubernetes/calico-installation.yaml
   delegate_to: "{{ groups['control_plane'][0] }}"
   run_once: true
   changed_when: true

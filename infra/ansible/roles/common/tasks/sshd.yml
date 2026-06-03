@@ -11,4 +11,4 @@
     - { key: 'PasswordAuthentication', value: '{{ common_sshd_password_authentication }}' }
     - { key: 'AllowTcpForwarding', value: '{{ common_sshd_allow_tcp_forwarding }}' }
     - { key: 'MaxAuthTries', value: '{{ common_sshd_max_auth_tries }}' }
-  notify: restart sshd
+  notify: Restart sshd

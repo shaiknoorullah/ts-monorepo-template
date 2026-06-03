@@ -18,4 +18,4 @@
       bantime = {{ common_fail2ban_bantime }}
       findtime = {{ common_fail2ban_findtime }}
       maxretry = {{ common_fail2ban_maxretry }}
-  notify: restart fail2ban
+  notify: Restart fail2ban

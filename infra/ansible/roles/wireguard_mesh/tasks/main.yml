@@ -45,7 +45,7 @@
     owner: root
     group: root
     mode: '0600'
-  notify: restart wireguard
+  notify: Restart wireguard
 
 - name: Enable and start wg-quick@wg0
   ansible.builtin.service:

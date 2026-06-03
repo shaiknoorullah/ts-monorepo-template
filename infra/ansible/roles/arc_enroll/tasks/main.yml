@@ -3,10 +3,15 @@
   ansible.builtin.meta: end_host
   when: not arc_enroll_enabled
 
+- name: Download azcmagent installer
+  ansible.builtin.get_url:
+    url: 'https://aka.ms/azcmagent'
+    dest: /tmp/azcmagent-install.sh
+    mode: '0755'
+
 - name: Install azcmagent
-  ansible.builtin.shell: |
-    curl -sSL https://aka.ms/azcmagent | bash
-  args:
+  ansible.builtin.command:
+    cmd: /bin/bash /tmp/azcmagent-install.sh
     creates: /usr/bin/azcmagent
 
 - name: Connect azcmagent

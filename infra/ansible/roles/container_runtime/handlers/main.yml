@@ -1,10 +1,10 @@
 ---
-- name: restart containerd
+- name: Restart containerd
   ansible.builtin.service:
     name: containerd
     state: restarted
 
-- name: restart crio
+- name: Restart crio
   ansible.builtin.service:
     name: crio
     state: restarted
