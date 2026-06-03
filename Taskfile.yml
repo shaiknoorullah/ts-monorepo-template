@@ -163,7 +163,10 @@ tasks:
   profile:fork:
     cmds: ['{{.CLI}} profile:fork {{.CLI_ARGS}}']
   profile:validate:
-    cmds: ['{{.CLI}} profile:validate {{.CLI_ARGS}}']
+    # Accept either a `PROFILE=<id>` task var (used by the e2e
+    # workflows) or a positional via `task profile:validate -- <id>`
+    # (CLI_ARGS).
+    cmds: ['{{.CLI}} profile:validate {{.PROFILE | default ""}} {{.CLI_ARGS}}']
 
   # --- scaffolding ---
   new:backend:
