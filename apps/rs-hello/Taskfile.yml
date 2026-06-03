@@ -1,0 +1,20 @@
+version: '3'
+
+tasks:
+  run:
+    desc: Run rs-hello locally
+    cmds:
+      - cargo run -p rs-hello
+    dir: ../..
+
+  test:
+    desc: Unit + handler tests
+    cmds:
+      - cargo test -p rs-hello
+    dir: ../..
+
+  test:integration:
+    desc: Integration tests (testcontainers, ignored by default)
+    cmds:
+      - cargo test -p rs-hello --test store_integration_test -- --ignored
+    dir: ../..

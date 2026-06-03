@@ -1,0 +1,37 @@
+{
+  "name": "rs-hello",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/rs-hello/src",
+  "implicitDependencies": ["contracts"],
+  "targets": {
+    "build": {
+      "executor": "@monodon/rust:build",
+      "dependsOn": ["^build", "contracts:generate"],
+      "options": { "release": true, "package": "rs-hello" },
+      "cache": true
+    },
+    "test": {
+      "executor": "@monodon/rust:test",
+      "options": { "package": "rs-hello" },
+      "cache": true
+    },
+    "test:integration": {
+      "executor": "nx:run-commands",
+      "options": { "command": "cargo test -p rs-hello --test store_integration_test -- --ignored" }
+    },
+    "lint": {
+      "executor": "@monodon/rust:lint",
+      "options": { "package": "rs-hello" },
+      "cache": true
+    },
+    "container": {
+      "executor": "nx:run-commands",
+      "options": { "command": "docker buildx build -f apps/rs-hello/Dockerfile -t rs-hello:dev ." }
+    },
+    "chart:lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "helm lint infra/helm/lib-chart -f apps/rs-hello/values.yaml" }
+    }
+  }
+}

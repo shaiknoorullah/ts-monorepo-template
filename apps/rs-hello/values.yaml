@@ -1,0 +1,25 @@
+appName: rs-hello
+image:
+  repository: ghcr.io/org/rs-hello
+  tag: ''
+service:
+  http: { port: 8080 }
+  grpc: { port: 9000 }
+  metrics: { port: 9090 }
+observability:
+  otel:
+    enabled: true
+    endpoint: otel-collector.observability:4317
+  prometheus:
+    scrape: true
+secrets:
+  esoStore: cluster-secret-store
+  items:
+    - { name: pg-dsn, key: rs-hello/pg-dsn }
+    - { name: redis-url, key: rs-hello/redis-url }
+    - { name: kafka-brokers, key: kafka/brokers }
+networkPolicy:
+  egressAllow: [postgres, redis, kafka, otel-collector]
+resources:
+  requests: { cpu: 25m, memory: 32Mi }
+  limits: { cpu: 500m, memory: 128Mi }
