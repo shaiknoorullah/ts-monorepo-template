@@ -1,0 +1,28 @@
+---
+- name: Include sysctl tasks
+  ansible.builtin.import_tasks: sysctl.yml
+  tags: [common, sysctl]
+
+- name: Include kernel module tasks
+  ansible.builtin.import_tasks: kernel_modules.yml
+  tags: [common, modules]
+
+- name: Include ulimit tasks
+  ansible.builtin.import_tasks: limits.yml
+  tags: [common, limits]
+
+- name: Include sshd tasks
+  ansible.builtin.import_tasks: sshd.yml
+  tags: [common, sshd]
+
+- name: Include fail2ban tasks
+  ansible.builtin.import_tasks: fail2ban.yml
+  tags: [common, fail2ban]
+
+- name: Include auditd tasks
+  ansible.builtin.import_tasks: auditd.yml
+  tags: [common, auditd]
+
+- name: Include chrony tasks
+  ansible.builtin.import_tasks: chrony.yml
+  tags: [common, chrony]

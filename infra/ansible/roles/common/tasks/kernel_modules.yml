@@ -1,0 +1,19 @@
+---
+- name: Render modules-load drop-in
+  ansible.builtin.template:
+    src: k8s-modules.conf.j2
+    dest: /etc/modules-load.d/k8s.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: load kernel modules
+
+- name: Load br_netfilter now
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Load overlay now
+  community.general.modprobe:
+    name: overlay
+    state: present

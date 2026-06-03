@@ -85,3 +85,8 @@ infra/helm/apps/*/Chart.lock
 
 # chainsaw render reports (xp-validate)
 xp-render*.json
+
+# Ansible (Phase 11) — local-only state
+infra/ansible/.collections/
+infra/ansible/.facts-cache/
+infra/ansible/.cache/
