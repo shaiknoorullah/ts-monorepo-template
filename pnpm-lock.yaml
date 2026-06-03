@@ -720,11 +720,11 @@ importers:
         specifier: ^4.0.0
         version: 4.11.4
       ajv:
-        specifier: ^8.17.1
-        version: 8.20.0
+        specifier: 8.17.1
+        version: 8.17.1
       ajv-formats:
-        specifier: ^3.0.1
-        version: 3.0.1(ajv@8.20.0)
+        specifier: 3.0.1
+        version: 3.0.1(ajv@8.17.1)
       c12:
         specifier: ^3.0.0
         version: 3.3.4(magicast@0.5.3)
@@ -834,7 +834,7 @@ importers:
         version: 5.7.3
       vitest:
         specifier: 4.0.0
-        version: 4.0.0(@types/debug@4.1.13)(@types/node@22.10.10)(@vitest/ui@4.1.7(vitest@4.1.7))(happy-dom@20.9.0)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1)
+        version: 4.0.0(@types/debug@4.1.13)(@types/node@22.10.10)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1)
 
   internal/recommender:
     dependencies:
@@ -7194,9 +7194,6 @@ packages:
 
   ajv@8.18.0:
     resolution: {integrity: sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A==}
-
-  ajv@8.20.0:
-    resolution: {integrity: sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==}
 
   algoliasearch@5.52.1:
     resolution: {integrity: sha512-fHA8+kXTbjagw3jkLiaS7KKrH8qe2DyOsiUhGlN4cdT77PEsfqXZl7ewDk1hsg+pJnPlnE50XtLxjR91iJOpmg==}
@@ -21535,7 +21532,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1))
+      vitest: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
 
   '@vitest/eslint-plugin@1.6.17(@typescript-eslint/eslint-plugin@8.59.4(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)(vitest@4.1.7)':
     dependencies:
@@ -21659,7 +21656,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.16
       tinyrainbow: 3.1.0
-      vitest: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1))
+      vitest: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
 
   '@vitest/utils@4.0.0':
     dependencies:
@@ -21922,10 +21919,6 @@ snapshots:
     optionalDependencies:
       ajv: 8.18.0
 
-  ajv-formats@3.0.1(ajv@8.20.0):
-    optionalDependencies:
-      ajv: 8.20.0
-
   ajv-keywords@5.1.0(ajv@8.17.1):
     dependencies:
       ajv: 8.17.1
@@ -21946,13 +21939,6 @@ snapshots:
       require-from-string: 2.0.2
 
   ajv@8.18.0:
-    dependencies:
-      fast-deep-equal: 3.1.3
-      fast-uri: 3.1.2
-      json-schema-traverse: 1.0.0
-      require-from-string: 2.0.2
-
-  ajv@8.20.0:
     dependencies:
       fast-deep-equal: 3.1.3
       fast-uri: 3.1.2
@@ -30750,7 +30736,7 @@ snapshots:
       - typescript
       - universal-cookie
 
-  vitest@4.0.0(@types/debug@4.1.13)(@types/node@22.10.10)(@vitest/ui@4.1.7(vitest@4.1.7))(happy-dom@20.9.0)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1):
+  vitest@4.0.0(@types/debug@4.1.13)(@types/node@22.10.10)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1):
     dependencies:
       '@vitest/expect': 4.0.0
       '@vitest/mocker': 4.0.0(vite@6.4.2(@types/node@22.10.10)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.6.1))
