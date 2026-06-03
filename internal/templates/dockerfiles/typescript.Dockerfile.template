@@ -1,0 +1,28 @@
+# syntax=docker/dockerfile:1.10
+# TypeScript Dockerfile template — spec Section 5.3.
+# {{app}} is the Nx project name under apps/.
+
+ARG NODE_VERSION=22
+ARG RUNTIME=gcr.io/distroless/nodejs22-debian12:nonroot
+
+FROM node:${NODE_VERSION}-bookworm-slim AS deps
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+WORKDIR /src
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/{{app}}/package.json apps/{{app}}/package.json
+COPY packages/ packages/
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm config set store-dir /pnpm/store && \
+    pnpm install --frozen-lockfile --filter "...{apps/{{app}}}"
+
+FROM deps AS build
+COPY . .
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm --filter {{app}} build && \
+    pnpm --filter {{app}} deploy --prod /out/app
+
+FROM ${RUNTIME} AS runtime
+WORKDIR /app
+COPY --from=build /out/app /app
+USER nonroot:nonroot
+ENTRYPOINT ["node", "dist/main.js"]
