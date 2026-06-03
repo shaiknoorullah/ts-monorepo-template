@@ -159,6 +159,28 @@ tasks:
         } > docs/adrs/README.md
         echo "Regenerated docs/adrs/README.md"
 
+  # --- ArgoCD / Kargo validation (Phase 7) ---
+  argocd:render:
+    desc: Render appset-apps + appset-platform offline (no cluster).
+    cmds:
+      - mkdir -p .render
+      - |
+        if command -v argocd >/dev/null 2>&1; then
+          argocd appset generate infra/argocd/appset-apps.yaml -o yaml > .render/appset-apps.rendered.yaml
+          argocd appset generate infra/argocd/appset-platform.yaml -o yaml > .render/appset-platform.rendered.yaml
+          echo "Rendered ApplicationSets at .render/"
+        else
+          echo "argocd CLI not on PATH; skipping render. Install via the argo-validate workflow or 'brew install argocd' for local runs."
+          echo "(Set ARGO_VALIDATE_STRICT=1 to make this a hard failure.)"
+          if [ "${ARGO_VALIDATE_STRICT:-0}" = "1" ]; then exit 1; fi
+        fi
+
+  argocd:validate:
+    desc: Run the full layer-7 validation gate locally (same as CI argo-validate).
+    deps: [argocd:render]
+    cmds:
+      - scripts/ci/argo-validate.sh
+
   meta:validate:
     desc: Validate every META.yaml against internal/schemas/meta-v1.schema.json
     vars:
