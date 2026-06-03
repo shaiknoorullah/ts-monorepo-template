@@ -98,10 +98,12 @@ fi
 
 if require_or_warn kargo; then
   echo "::group::kargo lint pipelines"
-  for f in infra/kargo/pipelines/*.yaml; do
-    echo "lint ${f}"
-    kargo lint -f "${f}"
-  done
+  # `kargo` v1.x does not ship a `lint` subcommand — `kargo --help` only
+  # exposes server-side verbs (apply, get, login, ...). Until kargo adds
+  # a static linter we rely on the kubeconform pass over `infra/kargo/`
+  # (above) for structural validation; downgrade this step to a notice
+  # so the workflow stays green.
+  echo "::notice::kargo CLI has no static-lint subcommand; relying on the kubeconform pass above"
   echo "::endgroup::"
 fi
 
