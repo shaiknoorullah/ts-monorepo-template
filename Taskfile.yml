@@ -207,3 +207,52 @@ tasks:
             --strict=true
         done
         echo "All META.yaml files valid."
+
+  # --- Terraform (Phase 10) ---
+  terraform:fmt:
+    desc: Run terraform fmt across modules + envs (cumulative -check on CI).
+    cmds:
+      - terraform -chdir=infra/terraform fmt -recursive {{.CLI_ARGS}}
+
+  terraform:validate:
+    desc: Run terraform validate against every env stack (no backend init).
+    cmds:
+      - |
+        set -euo pipefail
+        for e in dev staging prod; do
+          (cd infra/terraform/envs/$e && terraform init -backend=false -input=false >/dev/null && terraform validate -no-color)
+        done
+
+  terraform:plan:
+    desc: Run terraform plan for the selected ENV against mock backends.
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+      PROFILE: '{{.PROFILE | default "p-solo"}}'
+    cmds:
+      - |
+        set -euo pipefail
+        stack=infra/terraform/envs/{{.ENV}}
+        tfvars=profiles/{{.PROFILE}}/terraform.tfvars
+        root=$(git rev-parse --show-toplevel)
+        if [ -f "$root/$tfvars" ]; then
+          varfile="$root/$tfvars"
+        else
+          varfile="$root/$stack/terraform.tfvars"
+        fi
+        (cd "$stack" && terraform init -backend=false -input=false >/dev/null && terraform plan -lock=false -input=false -no-color -var-file="$varfile" -out=plan.tfplan)
+
+  terraform:apply:
+    desc: Run terraform apply for the selected ENV; appends to audit log (Phase 1).
+    vars:
+      ENV: '{{.ENV | default "dev"}}'
+      PROFILE: '{{.PROFILE | default "p-solo"}}'
+    cmds:
+      - task: terraform:plan
+        vars: { ENV: '{{.ENV}}', PROFILE: '{{.PROFILE}}' }
+      - |
+        set -euo pipefail
+        stack=infra/terraform/envs/{{.ENV}}
+        (cd "$stack" && terraform apply -input=false -auto-approve plan.tfplan)
+        if [ -x scripts/audit-log-append.sh ]; then
+          scripts/audit-log-append.sh terraform:apply env={{.ENV}} profile={{.PROFILE}}
+        fi
