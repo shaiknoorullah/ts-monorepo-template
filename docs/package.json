@@ -1,0 +1,8 @@
+{
+  "name": "@internal/docs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Top-level repository documentation (glossary, dev setup, etc.). Tested via vitest contract tests for content drift.",
+  "license": "MIT",
+  "type": "module"
+}

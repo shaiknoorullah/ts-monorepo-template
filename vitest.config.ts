@@ -7,6 +7,7 @@ export default defineConfig({
     projects: [
       '.audit',
       'apps/*',
+      'docs',
       'docs/adrs',
       'docs/agents',
       'docs/architecture',
