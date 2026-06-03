@@ -2,7 +2,7 @@
 
 REQUIRED_VARS=(name_prefix region env private_network_cidr node_pools firewall_rules load_balancer managed_k8s managed_db tags)
 REQUIRED_OUTPUTS=(nodes kubeconfig lb_endpoint private_network_id state_inputs)
-MODULES=(hetzner-cloud ovh azure aws gcp)
+MODULES=(hetzner-cloud ovh azure aws gcp cloudflare proxmox)
 
 @test "every module declares the uniform variable set" {
   for m in "${MODULES[@]}"; do
@@ -29,4 +29,11 @@ MODULES=(hetzner-cloud ovh azure aws gcp)
     run grep -q "required_providers" "infra/terraform/modules/$m/versions.tf"
     [ "$status" -eq 0 ] || { echo "module $m missing required_providers"; return 1; }
   done
+}
+
+@test "cloudflare module exposes r2 + dns sub-outputs" {
+  run grep -q 'output "dns_zone_id"' infra/terraform/modules/cloudflare/outputs.tf
+  [ "$status" -eq 0 ]
+  run grep -q 'output "r2_bucket"' infra/terraform/modules/cloudflare/outputs.tf
+  [ "$status" -eq 0 ]
 }
