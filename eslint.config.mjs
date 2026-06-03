@@ -23,6 +23,8 @@ export default tseslint.config(
       'docs/.vitepress/cache/**',
       'docs/.vitepress/dist/**',
       'internal/templates/**',
+      // Generated proto bindings — buf manages these; linting them only generates noise.
+      'packages/contracts/gen/**',
     ],
   },
 

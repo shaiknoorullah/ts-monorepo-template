@@ -854,6 +854,19 @@ importers:
         specifier: 'catalog:'
         version: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
 
+  packages/contracts:
+    dependencies:
+      '@bufbuild/protobuf':
+        specifier: ^2.2.3
+        version: 2.12.0
+    devDependencies:
+      '@bufbuild/buf':
+        specifier: ^1.47.2
+        version: 1.70.0
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(@vitest/ui@4.1.7)(happy-dom@20.9.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.27.0)(sass@1.77.4)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
+
   packages/db-client:
     dependencies:
       '@pkg/types':
@@ -2113,6 +2126,56 @@ packages:
 
   '@braidai/lang@1.1.2':
     resolution: {integrity: sha512-qBcknbBufNHlui137Hft8xauQMTZDKdophmLFv05r2eNmdIv/MlPuP4TdUknHG68UdWLgVZwgxVe735HzJNIwA==}
+
+  '@bufbuild/buf-darwin-arm64@1.70.0':
+    resolution: {integrity: sha512-c7owUswBbMmwfHPH9JRBEJu09mrXYGC33V2JQCgraWCBm74Z95AOkhDua50qiBrQnysvJkJ0p/z4MWxJqcpnIA==}
+    engines: {node: '>=12'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@bufbuild/buf-darwin-x64@1.70.0':
+    resolution: {integrity: sha512-sucV3lQXVuOqYs3+ToulkUh2tZuMnl286DKb44imp3PnexVhAVOP7d3ybYe98HNGwysEdjNP2WIOGb0uKuRCIQ==}
+    engines: {node: '>=12'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@bufbuild/buf-linux-aarch64@1.70.0':
+    resolution: {integrity: sha512-4viSYqbhIusd6LR+JayDex8S1rLUL+hTUMYUgSPl75EC93FpJM4vkk2RhoAhyjQqWF/JQLcyWV8kjRRiIwygdg==}
+    engines: {node: '>=12'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@bufbuild/buf-linux-armv7@1.70.0':
+    resolution: {integrity: sha512-GqujpTX4MXtYiUkxd6oI1g0JaCX3L6koT16Gl0D0HIQ/V2mptH7x4UW8nK3tAURMjrHsEEhcSJRtmfINTTKnsg==}
+    engines: {node: '>=12'}
+    cpu: [arm]
+    os: [linux]
+
+  '@bufbuild/buf-linux-x64@1.70.0':
+    resolution: {integrity: sha512-5WHGUIb5iLFXcnqV33TDejqaPgx0CWFaYW7b4wh12wT0w3DR+ghFq6S6RmYyZLbTuhS4ZFsf+xyk5m+HViKxrA==}
+    engines: {node: '>=12'}
+    cpu: [x64]
+    os: [linux]
+
+  '@bufbuild/buf-win32-arm64@1.70.0':
+    resolution: {integrity: sha512-dU1qh7iD08/1avCHwIOoGsatQctE6uGwgOue9GOaThi8/Rdy1x9CC/eFdyFSeCMwbUg9ABQvMGUocylfUe6xDw==}
+    engines: {node: '>=12'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@bufbuild/buf-win32-x64@1.70.0':
+    resolution: {integrity: sha512-iKYbjTbEk0ppkv2SrsPFhYus93kj/aMN8aRsrpuo91ZVqXg8JcH4XXbgFpwiFAsiABjqKICFfnDomrFvv49UOA==}
+    engines: {node: '>=12'}
+    cpu: [x64]
+    os: [win32]
+
+  '@bufbuild/buf@1.70.0':
+    resolution: {integrity: sha512-oJWGqltlu8F7VVNHLoJ3pFXhjfiGpbh7+/mXW0y+VMPWFGxc9YDv4de1UcX7zhhjV6MbE4SiEGo5Gs5jhpVg5A==}
+    engines: {node: '>=12'}
+    hasBin: true
+
+  '@bufbuild/protobuf@2.12.0':
+    resolution: {integrity: sha512-B/XlCaFIP8LOwzo+bz5uFzATYokcwCKQcghqnlfwSmM5eX/qTkvDBnDPs+gXtX/RyjxJ4DRikECcPJbyALA8FA==}
 
   '@capsizecss/unpack@4.0.0':
     resolution: {integrity: sha512-VERIM64vtTP1C4mxQ5thVT9fK0apjPFobqybMtA1UdUujWka24ERHbRHFGmpbbhp73MhV+KSsHQH9C6uOTdEQA==}
@@ -15519,6 +15582,39 @@ snapshots:
   '@borewit/text-codec@0.2.2': {}
 
   '@braidai/lang@1.1.2': {}
+
+  '@bufbuild/buf-darwin-arm64@1.70.0':
+    optional: true
+
+  '@bufbuild/buf-darwin-x64@1.70.0':
+    optional: true
+
+  '@bufbuild/buf-linux-aarch64@1.70.0':
+    optional: true
+
+  '@bufbuild/buf-linux-armv7@1.70.0':
+    optional: true
+
+  '@bufbuild/buf-linux-x64@1.70.0':
+    optional: true
+
+  '@bufbuild/buf-win32-arm64@1.70.0':
+    optional: true
+
+  '@bufbuild/buf-win32-x64@1.70.0':
+    optional: true
+
+  '@bufbuild/buf@1.70.0':
+    optionalDependencies:
+      '@bufbuild/buf-darwin-arm64': 1.70.0
+      '@bufbuild/buf-darwin-x64': 1.70.0
+      '@bufbuild/buf-linux-aarch64': 1.70.0
+      '@bufbuild/buf-linux-armv7': 1.70.0
+      '@bufbuild/buf-linux-x64': 1.70.0
+      '@bufbuild/buf-win32-arm64': 1.70.0
+      '@bufbuild/buf-win32-x64': 1.70.0
+
+  '@bufbuild/protobuf@2.12.0': {}
 
   '@capsizecss/unpack@4.0.0':
     dependencies:
