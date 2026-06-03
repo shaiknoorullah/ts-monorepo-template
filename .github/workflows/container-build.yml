@@ -187,3 +187,26 @@ jobs:
           set -euo pipefail
           cosign attach sbom --sbom sbom-${{ matrix.app }}.cdx.json \
             ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}@${DIGEST}
+
+  helm-validate:
+    name: helm lint + kubeconform per (app, env)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install helm v3.16.3
+        uses: azure/setup-helm@v4.2.0
+        with:
+          version: v3.16.3
+      - name: Install kubeconform 0.6.7
+        run: |
+          set -euo pipefail
+          curl -fsSL -o kubeconform.tgz \
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          tar -xzf kubeconform.tgz kubeconform
+          sudo install -m 0755 kubeconform /usr/local/bin/kubeconform
+          kubeconform -v
+      - name: Run helm-validate
+        run: bash scripts/helm-validate.sh
