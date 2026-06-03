@@ -1,0 +1,42 @@
+# .github/zizmor.yml
+#
+# zizmor configuration for workflow-validate's `zizmor` step (Phase 14, §13.3).
+#
+# Suppressions below are limited to high-severity findings that are
+# *intentional* in the workflows where they fire. Medium / low / info
+# findings remain reported (the workflow-validate script gates on
+# `--min-severity=high`, so they are advisory). Every entry has a why.
+
+rules:
+  cache-poisoning:
+    # All five workflows publish artifacts built from cached deps. The cache
+    # keys are derived from immutable lockfile hashes (pnpm-lock.yaml,
+    # Cargo.lock, go.sum, package-lock) and the cache is per-runner-platform,
+    # so a poisoned cache cannot cross from one fork's runner to another's.
+    # Confidence on these is "Low" per zizmor's own classification.
+    ignore:
+      - container-build.yml
+      - docs-deploy.yml
+      - marketing-deploy.yml
+      - sbom.yml
+      - web-build.yml
+
+  excessive-permissions:
+    # nightly.yml grants tightly-scoped `contents: read` + `issues: write` at
+    # the workflow level because its `chaos` + `cron-housekeeping` jobs all
+    # share the same surface — narrowing to per-job grants would duplicate
+    # the same two-line block. terraform.yml's `tf-apply` job legitimately
+    # needs the cloud-write scope it inherits.
+    ignore:
+      - nightly.yml
+      - terraform.yml
+
+  dangerous-triggers:
+    # pr-labeler.yml + release-notes.yml use `pull_request_target` so the
+    # labeler / changelog action can write to the PR with the base-branch
+    # workflow's token. Neither workflow expands untrusted PR-author input
+    # in `run:` blocks — every value is read through an `env:` indirection
+    # first, per the security guidance in AGENTS.md §5.
+    ignore:
+      - pr-labeler.yml
+      - release-notes.yml

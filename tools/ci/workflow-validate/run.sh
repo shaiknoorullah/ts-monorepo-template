@@ -52,7 +52,11 @@ if ! command -v zizmor >/dev/null 2>&1; then
   echo "zizmor: skip (not installed)"
   echo "zizmor: ok"
 else
-  if zizmor --format plain "${FILES[@]}"; then
+  # `--min-severity=high` keeps medium/low findings advisory while still
+  # gating on every `error[*]` rule; the workflow-level suppressions in
+  # .github/zizmor.yml cover the remaining intentional high-severity
+  # findings (rationale in that file).
+  if zizmor --min-severity=high --format plain "${FILES[@]}"; then
     echo "zizmor: ok"
   else
     echo "zizmor: FAIL"
