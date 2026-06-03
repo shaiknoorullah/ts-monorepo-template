@@ -1,0 +1,30 @@
+apiVersion: apiextensions.crossplane.io/v1beta1
+kind: EnvironmentConfig
+metadata:
+  name: env-prod
+data:
+  env: prod
+  pg:
+    instances: 3
+    storageGi: 100
+    instanceClass: standard-2x
+  redis:
+    replicas: 3
+    storageGi: 20
+  kafka:
+    brokers: 3
+    storageGi: 200
+    retentionHours: 168
+  clickhouse:
+    shards: 1
+    replicas: 2
+    keepers: 3
+    storageGi: 500
+  opensearch:
+    masters: 3
+    data: 3
+    storageGi: 100
+  defaults:
+    backup:
+      enabled: true
+      retentionDays: 30

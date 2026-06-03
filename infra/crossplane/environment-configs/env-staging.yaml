@@ -1,0 +1,30 @@
+apiVersion: apiextensions.crossplane.io/v1beta1
+kind: EnvironmentConfig
+metadata:
+  name: env-staging
+data:
+  env: staging
+  pg:
+    instances: 1
+    storageGi: 10
+    instanceClass: standard-1x
+  redis:
+    replicas: 1
+    storageGi: 10
+  kafka:
+    brokers: 1
+    storageGi: 10
+    retentionHours: 24
+  clickhouse:
+    shards: 1
+    replicas: 1
+    keepers: 1
+    storageGi: 10
+  opensearch:
+    masters: 1
+    data: 1
+    storageGi: 10
+  defaults:
+    backup:
+      enabled: false
+      retentionDays: 0
