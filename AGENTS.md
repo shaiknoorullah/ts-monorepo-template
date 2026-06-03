@@ -372,3 +372,11 @@ Wrangler is the only IaC tool — see `infra/cloudflare/`. ADR-0011 documents th
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 - [`SECURITY.md`](./SECURITY.md)
 - [`GOVERNANCE.md`](./GOVERNANCE.md)
+
+---
+
+## Platform foundation spec
+
+The authoritative architecture for this repo is [`docs/superpowers/specs/2026-06-03-platform-foundation-design.md`](docs/superpowers/specs/2026-06-03-platform-foundation-design.md). Read it before touching `apps/`, `packages/`, `internal/`, `infra/`, or `profiles/`.
+
+Cascade rule (spec section 15.8): the nearest `AGENTS.md` wins. Agents walk from the current directory upward, merging shallow, child overrides parent.

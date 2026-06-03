@@ -6,12 +6,12 @@ export default defineConfig({
   test: {
     projects: [
       '.audit',
-      'apps/*',
+      'apps/*/vitest.config.ts',
       'docs',
       'docs/adrs',
       'docs/agents',
       'docs/architecture',
-      'packages/*',
+      'packages/*/vitest.config.ts',
       'internal/cli',
       'internal/schemas',
       'internal/test-utils',
