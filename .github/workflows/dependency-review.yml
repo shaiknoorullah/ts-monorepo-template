@@ -26,12 +26,13 @@ jobs:
   review:
     name: Dependency review
     runs-on: ubuntu-latest
-    # Dependency-review against the bootstrap PR (1k+ files added) surfaces
-    # findings the project will address incrementally — some transitive
-    # deps carry copyleft licenses or unknown license metadata, and a
-    # full audit is its own follow-up workstream. Mark the job
-    # informational so it doesn't gate platform-foundation landing.
-    continue-on-error: true
+    # Scoped soft-fail for the bootstrap PR ONLY (PR #2). Every future
+    # PR keeps the gate fully enforced — high-severity vulnerabilities
+    # and copyleft licenses still hard-fail. The bootstrap PR
+    # introduces ~1k transitive deps and surfaces a license-metadata
+    # backlog the project will resolve incrementally; that audit is
+    # tracked separately (see PR description).
+    continue-on-error: ${{ github.event.pull_request.number == 2 }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
