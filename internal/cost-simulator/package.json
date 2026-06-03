@@ -1,0 +1,27 @@
+{
+  "name": "@internal/cost-simulator",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Deterministic $/mo cost simulator over data/cloud-prices/*.yaml + profile resource shapes.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "./dist/index.mjs",
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "type-check": "tsc -b"
+  },
+  "dependencies": {
+    "yaml": "^2.6.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
