@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - kubernetes.yaml
+  - helm.yaml
+  - http.yaml
+  - family-azure.yaml
+  - family-aws.yaml
+  - family-gcp.yaml
+  - cloudflare.yaml
+  - grafana.yaml
+  - vault.yaml
+  - keycloak.yaml
+  - azuread.yaml
+  - github.yaml
+  - sql.yaml
+  - clickhousedbops.yaml
+  - argocd.yaml
