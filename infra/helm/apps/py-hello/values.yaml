@@ -1,0 +1,40 @@
+image:
+  repository: ghcr.io/proficient-now/py-hello
+  tag: "0.1.0"
+workload:
+  kind: Deployment
+  replicas: 2
+service:
+  enabled: true
+  port: 8000
+  name: http
+pod:
+  securityContext: { runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000 }
+serviceAccount: { create: true, tokenMount: false }
+autoscaling: { enabled: true, minReplicas: 2, maxReplicas: 8, targetCPU: 70 }
+pdb: { enabled: true, minAvailable: 1 }
+observability:
+  metrics: { port: 9090, path: /metrics, serviceMonitor: { enabled: true, interval: 30s } }
+  alerts:
+    enabled: true
+    rules:
+      - alert: PyHelloHighErrorRate
+        expr: sum(rate(http_requests_total{job="py-hello",code=~"5.."}[5m])) > 0.05
+        for: 10m
+        severity: warning
+  tracing:
+    runtime: py
+    samplerArg: "0.1"
+route:
+  kind: HTTPRoute
+  hostnames: ["py-hello.svc.example.com"]
+  parentRefs:
+    - { name: platform-gateway, namespace: gateway-system }
+networkPolicy:
+  enabled: true
+  ingress: { fromGateway: true, fromNamespaces: ["observability"] }
+  egress: { dns: true, platformDeps: [], external: [] }
+externalSecret: { enabled: false, store: { name: cluster-secret-store, kind: ClusterSecretStore }, data: [] }
+resources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits:   { cpu: 500m, memory: 512Mi }
