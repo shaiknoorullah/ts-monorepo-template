@@ -1,0 +1,16 @@
+provider: cloudflare
+currency: USD
+last_updated: '2026-05-28'
+source: https://www.cloudflare.com/plans/
+skus: []
+storage:
+  - id: r2
+    unit: gb-month
+    price: 0.015
+egress:
+  unit: gb
+  price_per_unit: 0
+  included_per_month: 1000000
+observability:
+  tier: workers-paid
+  price_monthly: 5.00

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts-monorepo-template.dev/schemas/cloud-prices.json",
+  "type": "object",
+  "required": ["provider", "currency", "last_updated", "source"],
+  "properties": {
+    "provider": {
+      "enum": ["hetzner", "contabo", "ovh", "aws", "azure", "gcp", "cloudflare", "ghcr"]
+    },
+    "currency": { "enum": ["USD", "EUR"] },
+    "fx_rate_to_usd": { "type": "number", "minimum": 0 },
+    "last_updated": { "type": "string", "format": "date" },
+    "source": { "type": "string", "format": "uri" },
+    "skus": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "price_monthly"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "vcpu": { "type": "integer", "minimum": 0 },
+          "ram_gb": { "type": "number", "minimum": 0 },
+          "disk_gb": { "type": "integer", "minimum": 0 },
+          "price_monthly": { "type": "number", "minimum": 0 },
+          "egress_tb_included": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "storage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "unit", "price"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "unit": { "enum": ["gb-month", "gb-iops-month", "tb-month"] },
+          "price": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "egress": {
+      "type": "object",
+      "properties": {
+        "unit": { "enum": ["gb", "tb"] },
+        "price_per_unit": { "type": "number", "minimum": 0 },
+        "included_per_month": { "type": "number", "minimum": 0 }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "properties": {
+        "tier": { "type": "string" },
+        "price_monthly": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

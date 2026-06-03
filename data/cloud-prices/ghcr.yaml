@@ -1,0 +1,16 @@
+provider: ghcr
+currency: USD
+last_updated: '2026-05-28'
+source: https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-packages/about-billing-for-github-packages
+skus: []
+storage:
+  - id: ghcr-public
+    unit: gb-month
+    price: 0
+  - id: ghcr-private-over-quota
+    unit: gb-month
+    price: 0.25
+egress:
+  unit: gb
+  price_per_unit: 0
+  included_per_month: 1000000

@@ -1,0 +1,32 @@
+provider: contabo
+currency: EUR
+fx_rate_to_usd: 1.08
+last_updated: '2026-05-28'
+source: https://contabo.com/en/vps/
+skus:
+  - id: vps-s
+    vcpu: 4
+    ram_gb: 8
+    disk_gb: 75
+    price_monthly: 4.50
+    egress_tb_included: 32
+  - id: vps-m
+    vcpu: 6
+    ram_gb: 16
+    disk_gb: 200
+    price_monthly: 8.50
+    egress_tb_included: 32
+  - id: vps-l
+    vcpu: 8
+    ram_gb: 30
+    disk_gb: 400
+    price_monthly: 14.50
+    egress_tb_included: 32
+storage:
+  - id: object-storage
+    unit: gb-month
+    price: 0.0035
+egress:
+  unit: tb
+  price_per_unit: 2.00
+  included_per_month: 32
