@@ -31,14 +31,12 @@ spec:
         kind: Input
         spec:
           extraResources:
-            - kind: Secret
+            - apiVersion: v1
+              kind: Secret
               into: backupBucketCreds
               type: Reference
               ref:
-                apiVersion: v1
-                kind: Secret
                 name: pg-backup-bucket-creds
-                namespace: crossplane-system
     - step: render
       functionRef: { name: function-go-templating }
       input:
