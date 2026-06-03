@@ -1,0 +1,4 @@
+# distroless USER directive (uid 65532) — referenced by spec Section 5.2.
+# Every runtime stage MUST set USER and WORKDIR before ENTRYPOINT.
+USER nonroot:nonroot
+WORKDIR /app
