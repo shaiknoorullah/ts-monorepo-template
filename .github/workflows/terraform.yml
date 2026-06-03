@@ -80,21 +80,23 @@ jobs:
         env:
           # Hetzner Cloud rejects anything but a 64-character token at
           # config-validation time, even when no resources are touched —
-          # pad the dummy out to the required length.
-          HCLOUD_TOKEN: 0000000000000000000000000000000000000000000000000000000000000000
-          CLOUDFLARE_API_TOKEN: 0000000000000000000000000000000000000000
-          OVH_ENDPOINT: ovh-eu
-          OVH_APPLICATION_KEY: ci-plan-dummy
-          OVH_APPLICATION_SECRET: ci-plan-dummy
-          OVH_CONSUMER_KEY: ci-plan-dummy
-          AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
-          AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          AWS_REGION: us-east-1
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-dummy.json
-          ARM_CLIENT_ID: 00000000-0000-0000-0000-000000000000
-          ARM_CLIENT_SECRET: ci-plan-dummy
-          ARM_SUBSCRIPTION_ID: 00000000-0000-0000-0000-000000000000
-          ARM_TENANT_ID: 00000000-0000-0000-0000-000000000000
+          # pad the dummy out to the required length. All values are
+          # quoted so YAML keeps them as strings (an unquoted run of
+          # zeros parses as the integer `0`).
+          HCLOUD_TOKEN: '0000000000000000000000000000000000000000000000000000000000000000'
+          CLOUDFLARE_API_TOKEN: '0000000000000000000000000000000000000000'
+          OVH_ENDPOINT: 'ovh-eu'
+          OVH_APPLICATION_KEY: 'ci-plan-dummy'
+          OVH_APPLICATION_SECRET: 'ci-plan-dummy'
+          OVH_CONSUMER_KEY: 'ci-plan-dummy'
+          AWS_ACCESS_KEY_ID: 'AKIAIOSFODNN7EXAMPLE'
+          AWS_SECRET_ACCESS_KEY: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+          AWS_REGION: 'us-east-1'
+          GOOGLE_APPLICATION_CREDENTIALS: '/tmp/gcp-dummy.json'
+          ARM_CLIENT_ID: '00000000-0000-0000-0000-000000000000'
+          ARM_CLIENT_SECRET: 'ci-plan-dummy'
+          ARM_SUBSCRIPTION_ID: '00000000-0000-0000-0000-000000000000'
+          ARM_TENANT_ID: '00000000-0000-0000-0000-000000000000'
         run: |
           set -euo pipefail
           echo '{"type":"service_account"}' > /tmp/gcp-dummy.json
