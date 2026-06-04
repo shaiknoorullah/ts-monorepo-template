@@ -43,6 +43,15 @@ jobs:
         # tsx ...`. pnpm exec needs node_modules populated; without this
         # step `tsx` can't be found and `task profile:select` exits 254.
         run: devenv shell -- pnpm install --frozen-lockfile
+      - name: Install kubeconform
+        # `repo profile:validate` runs kubeconform against the rendered
+        # Helm manifests as its final gate. Without the binary on PATH
+        # the validate step exits with `FAIL kubeconform-rendered-
+        # manifests`.
+        run: |
+          curl -fsSL -o /tmp/kc.tgz \
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          sudo tar -xzf /tmp/kc.tgz -C /usr/local/bin kubeconform
       - name: Build helm chart dependencies (lib-chart)
         # Each apps/<svc>/Chart.yaml depends on `file://../../lib-chart`.
         # `helm template` inside `profile:validate` needs the dep staged
