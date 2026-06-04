@@ -45,16 +45,10 @@ jobs:
           curl -fsSL -o /tmp/kc.tgz https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
           sudo tar -xzf /tmp/kc.tgz -C /usr/local/bin kubeconform
       - name: Install crossplane CLI
-        # releases.crossplane.io returns 403 to plain `curl/x.y.z` UAs from
-        # the GHA runner egress IP range. Try the CDN first with curl-
-        # native retry + a browser User-Agent; if the CDN refuses every
-        # attempt (intermittent runner-IP block), fall back to extracting
-        # the binary from the official `crossplane/crossplane` Docker
-        # image, which pulls from a different registry (Docker Hub /
-        # GHCR mirror) the runner can reach reliably. Either path
-        # produces /usr/local/bin/crossplane; if neither does, the step
-        # fails LOUDLY so the required-check gate stays honest (no fail-
-        # open via continue-on-error).
+        # Two-source install — see .github/workflows/xp-claims.yml for the
+        # full rationale. The crossplane/crossplane Docker image contains
+        # the *controller*, not the CLI, so we use `go install crank` as
+        # the fallback when releases.crossplane.io 403s the runner IP.
         run: |
           set -euo pipefail
           XP_VERSION=v1.17.3
@@ -66,16 +60,20 @@ jobs:
                -o /tmp/crank \
                "https://releases.crossplane.io/stable/${XP_VERSION}/bin/linux_amd64/crank"; then
             echo "::notice::crossplane CLI fetched from releases.crossplane.io"
+            sudo install -m 0755 /tmp/crank /usr/local/bin/crossplane
           else
-            echo "::warning::releases.crossplane.io blocked; falling back to docker image"
-            docker pull "crossplane/crossplane:${XP_VERSION}"
-            cid=$(docker create "crossplane/crossplane:${XP_VERSION}")
-            docker cp "${cid}:/usr/local/bin/crossplane" /tmp/crank
-            docker rm "${cid}"
+            echo "::warning::releases.crossplane.io blocked; falling back to go install"
+            if ! command -v go >/dev/null 2>&1; then
+              curl -fsSL "https://go.dev/dl/go1.23.4.linux-amd64.tar.gz" -o /tmp/go.tar.gz
+              sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+              export PATH="/usr/local/go/bin:$PATH"
+              echo "/usr/local/go/bin" >> "$GITHUB_PATH"
+            fi
+            GOBIN=/tmp/gobin go install "github.com/crossplane/crossplane/cmd/crank@${XP_VERSION}"
+            sudo install -m 0755 /tmp/gobin/crank /usr/local/bin/crossplane
           fi
-
-          sudo install -m 0755 /tmp/crank /usr/local/bin/crossplane
           crossplane --help >/dev/null
+          crossplane render --help >/dev/null
       - run: pnpm install --frozen-lockfile
       - name: Build helm chart dependencies (lib-chart)
         # Each apps/<svc>/Chart.yaml depends on `file://../../lib-chart`.
