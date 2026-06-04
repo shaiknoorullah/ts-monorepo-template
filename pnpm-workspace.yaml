@@ -27,7 +27,7 @@ catalogs:
     '@fastify/cors': ^11.0.0
     '@fastify/helmet': ^13.0.0
     bullmq: ^5.30.0
-    drizzle-orm: ^0.40.0
+    drizzle-orm: ^0.45.2
     fastify: ^5.0.0
     ioredis: ^5.4.0
   testing:

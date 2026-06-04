@@ -15,7 +15,7 @@
     "type-check": "astro check"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^11.0.0",
+    "@astrojs/cloudflare": "^13.1.10",
     "@astrojs/mdx": "^4.0.0",
     "@astrojs/rss": "^4.0.0",
     "@astrojs/sitemap": "^3.0.0",
@@ -25,7 +25,7 @@
     "@pkg/seo": "workspace:*",
     "@pkg/tracking": "workspace:*",
     "@pkg/ui": "workspace:*",
-    "astro": "^5.0.0",
+    "astro": "^6.1.10",
     "sharp": "^0.33.5",
     "yaml": "^2.6.1",
     "zod": "catalog:"
