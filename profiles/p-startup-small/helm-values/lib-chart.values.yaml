@@ -1,0 +1,21 @@
+image:
+  registry: ghcr.io
+  repository: ts-monorepo-template/lib-chart
+  digest: ''
+secrets:
+  backend: akv
+  refreshInterval: 1h
+  akv:
+    vaultUrl: https://pn-akv-ap-south-1.vault.azure.net/
+networkPolicy:
+  defaultDeny: true
+replicas: 2
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+monitoring:
+  enabled: true

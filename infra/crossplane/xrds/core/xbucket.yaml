@@ -1,0 +1,34 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xbuckets.pn.cloud
+spec:
+  group: pn.cloud
+  names:
+    kind: XBucket
+    plural: xbuckets
+  claimNames:
+    kind: BucketClaim
+    plural: bucketclaims
+  defaultCompositionRef:
+    name: xbucket-multiprovider
+  connectionSecretKeys: [endpoint, region, accessKeyId, secretAccessKey, bucket]
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [provider, name]
+              properties:
+                provider: { type: string, enum: [s3, azureblob, r2, gcs] }
+                name: { type: string }
+                versioning: { type: boolean, default: false }
+                lifecycle:
+                  type: object
+                  additionalProperties: true
+                publicRead: { type: boolean, default: false }

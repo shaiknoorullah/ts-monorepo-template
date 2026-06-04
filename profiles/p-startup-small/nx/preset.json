@@ -1,0 +1,7 @@
+{
+  "profile": "p-startup-small",
+  "cacheMode": "saas",
+  "remoteCache": true,
+  "ciAccessToken": "NX_CLOUD_ACCESS_TOKEN",
+  "agentCount": 3
+}

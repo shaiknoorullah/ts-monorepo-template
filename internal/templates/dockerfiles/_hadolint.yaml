@@ -1,0 +1,14 @@
+# Hadolint config — spec Section 5.6 rule set.
+# Bypassing any of these is a build break, not a warning.
+failure-threshold: warning
+override:
+  error:
+    - DL3007  # no `latest` tag on base images
+    - DL3008  # pin apt-get package versions
+    - DL3059  # consecutive RUN commands must be merged
+    - DL4006  # set SHELL with pipefail before pipes
+    - DL3002  # final USER must not be root (enforces nonroot:nonroot)
+trustedRegistries:
+  - docker.io
+  - gcr.io
+  - ghcr.io

@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: apps-prod
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '-70'
+spec:
+  syncWindows:
+    - kind: deny
+      schedule: '0 0 * * 5'
+      duration: 72h
+      applications:
+        - '*'
+      manualSync: false
+      timeZone: UTC

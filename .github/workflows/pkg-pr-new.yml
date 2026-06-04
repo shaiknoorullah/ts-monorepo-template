@@ -27,6 +27,16 @@ jobs:
   publish-preview:
     name: Publish PR preview
     runs-on: ubuntu-latest
+    # pkg-pr-new is a GitHub App that has to be installed on the repo for
+    # `pkg-pr-new publish` to authenticate against the registry. If the app
+    # is not installed (e.g. for forks or repos that haven't enrolled yet)
+    # the publish call returns:
+    #   Check failed (404): "The app https://github.com/apps/pkg-pr-new
+    #     is not installed on <repo>."
+    # The workflow is an optional dev-experience feature, not a gating
+    # release path, so soft-fail the job and emit a warning instead of
+    # turning the PR red.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -47,4 +57,7 @@ jobs:
         run: pnpm exec nx run-many -t build --projects=packages/*
 
       - name: Publish ephemeral preview
+        # Don't propagate a failure when the GH App isn't installed — the
+        # rest of the workflow is informational.
+        continue-on-error: true
         run: pnpm dlx pkg-pr-new publish --pnpm './packages/*'

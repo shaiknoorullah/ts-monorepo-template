@@ -18,7 +18,70 @@ Nx + pnpm + Vitest + tsdown + Changesets + AGENTS.md — opinionated, agent-frie
 
 ---
 
-## Quick start
+## 30-second pitch
+
+Pick one of 5 profiles (`Just Me` / `Side Project` / `Early Startup` /
+`Scaling Startup` / `Production at Scale`). Run 3 commands. You get a
+polyglot Go + Python + Rust + TypeScript monorepo, a working CI/CD
+pipeline, a Kubernetes cluster sized to your budget, observability,
+secrets, signed container images, and an Argo CD reconcile loop — with
+every architectural decision captured as an ADR and a SHA-256-chained
+audit log entry.
+
+## Quickstart
+
+```bash
+npx create-platform@latest
+cd <slug>
+task launch
+task open
+```
+
+Full per-profile bringup: [`docs/dev/bringup-<profile>.md`](docs/dev/).
+
+## The 5 profiles (spec Section 1.5)
+
+| Founder label       | Machine ID        | $/mo band | Tagline                                  |
+| ------------------- | ----------------- | --------- | ---------------------------------------- |
+| Just Me             | `p-solo`          | $0        | "I'm hacking on something this weekend." |
+| Side Project        | `p-hobby`         | $5-20     | "Maybe 100 users, single VPS, $5-20/mo." |
+| Early Startup       | `p-startup-small` | $30-150   | "2-10 of us, real customers, basic HA."  |
+| Scaling Startup     | `p-startup-scale` | $300-1500 | "Funded, multi-env, multi-AZ, real SLA." |
+| Production at Scale | `p-enterprise`    | $2k+      | "Multi-region, compliance, audit trail." |
+
+## The 7 layers (spec Section 1.2)
+
+```mermaid
+flowchart TB
+  L0a[Layer 0a — Launcher CLI + marketing site]
+  L0b[Layer 0b — MCP server]
+  L1[Layer 1 — Verb surface task]
+  L2[Layer 2 — Toolchain devenv + secrets secretspec]
+  L3[Layer 3 — Build orchestration Nx + Nx Cloud]
+  L4[Layer 4 — Container build BuildKit + cosign]
+  L5[Layer 5 — App runtime Helm library chart]
+  L6[Layer 6 — Platform infra Crossplane + ESO]
+  L7[Layer 7 — Bootstrap Terraform + Ansible]
+  L0a --> L1
+  L0b --> L1
+  L1 --> L2 --> L3 --> L4 --> L5 --> L6 --> L7
+```
+
+Full mechanics: [`docs/architecture/seven-layers.md`](docs/architecture/seven-layers.md).
+
+## Documentation map
+
+- Marketing site (founders): `apps/marketing/`.
+- Public docs (engineers): `apps/docs-public/` (Astro Starlight).
+- Architecture deep dives: [`docs/architecture/`](docs/architecture/).
+- Agent reference: [`docs/agents/`](docs/agents/).
+- Per-profile bringup: [`docs/dev/`](docs/dev/).
+- ADR system: [`docs/adrs/`](docs/adrs/).
+- Audit log: `.audit/decisions.jsonl` (verify with `task audit:verify`).
+
+---
+
+## Template bootstrap
 
 ```bash
 # Bootstrap a new monorepo from this template

@@ -1,0 +1,28 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xrecordvalidationfilters.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XRecordValidationFilter, plural: xrecordvalidationfilters }
+  claimNames: { kind: RecordValidationFilterClaim, plural: recordvalidationfilterclaims }
+  defaultCompositionRef: { name: xrecordvalidationfilter-kroxylicious }
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [proxyPlane, name, registry]
+              properties:
+                proxyPlane: { type: string }
+                name: { type: string }
+                registry: { type: string }
+                topics:
+                  type: array
+                  items: { type: string }
+                onInvalid: { type: string, enum: [REJECT, FORWARD_TO_DLQ], default: REJECT }

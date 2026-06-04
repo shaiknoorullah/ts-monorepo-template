@@ -1,0 +1,9 @@
+name: py-hello
+language: python
+path: apps/py-hello
+chart: infra/helm/apps/py-hello
+envs: [dev, staging, prod]
+capabilities:
+  http: true
+  grpc: false
+  background_jobs: true

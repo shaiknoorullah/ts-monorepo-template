@@ -35,6 +35,32 @@ export default defineConfig({
           ],
           label: 'Reference',
         },
+        // Phase 16 — generated reference pages (per layer / XRD / app / profile / verb).
+        // Source: apps/docs-public/scripts/generate-references.ts. Re-run via
+        // `task docs:gen` (CI asserts no drift, spec Section 15.4).
+        {
+          autogenerate: { directory: 'reference/layers' },
+          label: 'Layers',
+        },
+        {
+          autogenerate: { directory: 'reference/verbs' },
+          collapsed: true,
+          label: 'Verbs (Taskfile)',
+        },
+        {
+          autogenerate: { directory: 'reference/xrds' },
+          collapsed: true,
+          label: 'XRDs',
+        },
+        {
+          autogenerate: { directory: 'reference/apps' },
+          collapsed: true,
+          label: 'App charts',
+        },
+        {
+          autogenerate: { directory: 'reference/profiles' },
+          label: 'Profiles',
+        },
         {
           items: [
             { label: 'SLA', link: '/operations/sla/' },

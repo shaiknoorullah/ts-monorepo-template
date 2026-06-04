@@ -1,0 +1,54 @@
+---
+- name: Install wireguard-tools
+  ansible.builtin.apt:
+    name: wireguard-tools
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Ensure keys dir
+  ansible.builtin.file:
+    path: '{{ wireguard_keys_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Generate private key if missing
+  ansible.builtin.shell: |
+    umask 077
+    if [ ! -f {{ wireguard_keys_dir }}/privatekey ]; then
+      wg genkey > {{ wireguard_keys_dir }}/privatekey
+    fi
+  args:
+    creates: '{{ wireguard_keys_dir }}/privatekey'
+
+- name: Derive public key
+  ansible.builtin.shell: |
+    wg pubkey < {{ wireguard_keys_dir }}/privatekey > {{ wireguard_keys_dir }}/publickey
+  args:
+    creates: '{{ wireguard_keys_dir }}/publickey'
+
+- name: Slurp public key
+  ansible.builtin.slurp:
+    src: '{{ wireguard_keys_dir }}/publickey'
+  register: wg_pub
+
+- name: Set wg_public_key fact
+  ansible.builtin.set_fact:
+    wg_public_key: '{{ wg_pub.content | b64decode | trim }}'
+
+- name: Render wg0.conf with peer list from groups['all']
+  ansible.builtin.template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/{{ wireguard_iface }}.conf
+    owner: root
+    group: root
+    mode: '0600'
+  notify: Restart wireguard
+
+- name: Enable and start wg-quick@wg0
+  ansible.builtin.service:
+    name: 'wg-quick@{{ wireguard_iface }}'
+    enabled: true
+    state: started

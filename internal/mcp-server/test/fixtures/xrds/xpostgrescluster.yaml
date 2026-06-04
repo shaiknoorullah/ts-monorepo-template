@@ -1,0 +1,30 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xpostgresclusters.platform.ts-monorepo-template.dev
+spec:
+  group: platform.ts-monorepo-template.dev
+  names:
+    kind: XPostgresCluster
+    plural: xpostgresclusters
+  claimNames:
+    kind: PostgresCluster
+    plural: postgresclusters
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [size, version]
+              properties:
+                size:
+                  type: string
+                  enum: [small, medium, large]
+                version:
+                  type: string
+                  pattern: '^1[5-7]$'

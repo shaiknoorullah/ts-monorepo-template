@@ -11,8 +11,8 @@ COPY apps/web-app apps/web-app
 COPY packages packages
 COPY internal internal
 
-RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @app/web-app build:web
+RUN pnpm install --frozen-lockfile && \
+    pnpm --filter @app/web-app build:web
 
 FROM nginx:1.27-alpine AS runtime
 COPY --from=builder /app/apps/web-app/dist /usr/share/nginx/html

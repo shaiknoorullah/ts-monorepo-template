@@ -1,0 +1,17 @@
+id: p-solo
+name: Just Me
+tagline: One laptop, one cluster, one engineer.
+cost_band_usd:
+  min: 0
+  max: 30
+dimensions:
+  team_size: '1'
+  ha_level: best-effort
+  observability_depth: logs
+layer_defaults:
+  nx: { cloud: disabled }
+  helm: { replicaCount: 1 }
+  crossplane: { providers: [] }
+  terraform: { clouds: [] }
+  ansible: { hosts: [localhost] }
+  secretspec: { provider: keyring }

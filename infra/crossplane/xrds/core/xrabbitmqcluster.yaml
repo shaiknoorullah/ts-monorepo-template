@@ -1,0 +1,52 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xrabbitmqclusters.pn.cloud
+spec:
+  group: pn.cloud
+  names:
+    kind: XRabbitMQCluster
+    plural: xrabbitmqclusters
+  claimNames:
+    kind: RabbitMQClusterClaim
+    plural: rabbitmqclusterclaims
+  defaultCompositionRef:
+    name: xrabbitmqcluster-cluster-operator-singlenode
+  connectionSecretKeys: [host, port, username, password]
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [env]
+              properties:
+                env: { type: string, enum: [dev, staging, prod] }
+                size: { type: string, enum: [xs, s, m, l], default: s }
+                replicas: { type: integer }
+                vhosts:
+                  type: array
+                  items: { type: string }
+                users:
+                  type: array
+                  items:
+                    type: object
+                    required: [name]
+                    properties:
+                      name: { type: string }
+                      tags:
+                        type: array
+                        items: { type: string }
+                      permissions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            vhost: { type: string }
+                            configure: { type: string }
+                            read: { type: string }
+                            write: { type: string }

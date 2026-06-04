@@ -1,0 +1,28 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xcontainerregistries.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XContainerRegistry, plural: xcontainerregistries }
+  claimNames: { kind: ContainerRegistryClaim, plural: containerregistryclaims }
+  defaultCompositionRef: { name: xcontainerregistry-default }
+  connectionSecretKeys: [endpoint, username, password]
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [provider, name]
+              properties:
+                provider: { type: string, enum: [ghcr, acr, ecr, gar, harbor] }
+                name: { type: string }
+                sku: { type: string }
+                replications:
+                  type: array
+                  items: { type: string }

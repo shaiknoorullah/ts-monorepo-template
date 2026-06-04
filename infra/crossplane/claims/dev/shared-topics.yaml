@@ -1,0 +1,22 @@
+apiVersion: pn.cloud/v1alpha1
+kind: KafkaTopicClaim
+metadata:
+  name: user-events-v1
+  namespace: dev
+  labels:
+    app.kubernetes.io/component: kafka-topic
+    pn.cloud/shared: 'true'
+spec:
+  env: dev
+  cluster: shared
+  topic: user.events.v1
+  partitions: 1
+  replicas: 1
+  retentionMs: 86400000
+  cleanupPolicy: delete
+  config:
+    min.insync.replicas: '1'
+    compression.type: 'producer'
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: strimzi

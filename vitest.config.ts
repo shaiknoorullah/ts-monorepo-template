@@ -5,12 +5,23 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     projects: [
-      'apps/*',
-      'packages/*',
+      '.audit',
+      'apps/*/vitest.config.ts',
+      'docs',
+      'docs/adrs',
+      'docs/agents',
+      'docs/architecture',
+      'packages/*/vitest.config.ts',
       'internal/cli',
+      'internal/cost-simulator',
+      'internal/recommender',
+      'internal/schemas',
+      'internal/scripts',
       'internal/test-utils',
       // NOTE: internal/templates/* are scaffolding stubs, NOT real projects.
       // They contain placeholder {{name}} markers and broken tsconfig extends.
+      'data/cloud-prices/__tests__',
+      'tests',
     ],
     coverage: {
       provider: 'v8',

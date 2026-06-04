@@ -1,0 +1,14 @@
+---
+- name: Install auditd
+  ansible.builtin.apt:
+    name: auditd
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Set auditd max_log_file
+  ansible.builtin.lineinfile:
+    path: /etc/audit/auditd.conf
+    regexp: '^max_log_file ='
+    line: 'max_log_file = {{ common_auditd_max_log_file_mb }}'
+  notify: Restart auditd

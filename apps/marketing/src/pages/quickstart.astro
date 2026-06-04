@@ -1,0 +1,30 @@
+---
+// apps/marketing/src/pages/quickstart.astro — /quickstart
+// Phase 16 Task 16.7. The 3-command Quickstart, CI-verified.
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout
+  title="Quickstart — 3 commands to deployed"
+  description="From zero to deployed in three commands: npx create-platform@latest, task launch, task open."
+>
+  <section data-testid="quickstart">
+    <h1>Quickstart — 3 commands</h1>
+    <ol>
+      <li>
+        <code>npx create-platform@latest</code> — runs the launcher wizard. Picks a profile, scaffolds the monorepo,
+        emits ADRs and the audit log.
+      </li>
+      <li>
+        <code>cd &lt;slug&gt; &amp;&amp; task launch</code> — provisions the cluster and deploys the 3 reference apps
+        per your profile.
+      </li>
+      <li><code>task open</code> — opens Grafana, Argo CD, and your repo in the browser.</li>
+    </ol>
+    <p>
+      Full per-profile bringup: <a href="https://github.com/shaiknoorullah/ts-monorepo-template/tree/main/docs/dev">how-to guides</a>.
+      This Quickstart is CI-verified by <code>task docs:quickstart-verify</code> — a divergence between the documented
+      commands and the launcher output is a CI fail.
+    </p>
+  </section>
+</Layout>

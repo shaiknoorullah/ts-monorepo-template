@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '-90'
+spec:
+  description: Crossplane core, providers, functions, XRDs, Compositions
+  sourceRepos:
+    - https://github.com/REPLACE_ORG/REPLACE_REPO.git
+    - https://charts.crossplane.io/stable
+    - https://xpkg.upbound.io/*
+  destinations:
+    - namespace: crossplane-system
+      server: https://kubernetes.default.svc
+    - namespace: kube-system
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  orphanedResources:
+    warn: true

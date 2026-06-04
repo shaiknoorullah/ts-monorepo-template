@@ -1,0 +1,12 @@
+---
+- name: Preflight checks (Section 9.13 — asymmetric disk audit)
+  ansible.builtin.import_tasks: preflight.yml
+  tags: [longhorn, preflight]
+
+- name: Format, mount, and persist disk
+  ansible.builtin.import_tasks: disk.yml
+  tags: [longhorn, disk]
+
+- name: Label node for Longhorn
+  ansible.builtin.import_tasks: label.yml
+  tags: [longhorn, label]

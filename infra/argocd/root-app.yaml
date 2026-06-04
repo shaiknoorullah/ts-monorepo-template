@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: '-100'
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+    path: infra/argocd
+    targetRevision: HEAD
+    directory:
+      recurse: true
+      include: '{root-app.yaml,appprojects/*.yaml,appset-*.yaml,sync-windows/*.yaml,notifications.yaml,image-updater-config.yaml}'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=false
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m

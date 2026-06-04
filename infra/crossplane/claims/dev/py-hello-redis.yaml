@@ -1,0 +1,17 @@
+apiVersion: pn.cloud/v1alpha1
+kind: RedisClusterClaim
+metadata:
+  name: py-hello
+  namespace: dev
+  labels:
+    app.kubernetes.io/name: py-hello
+    app.kubernetes.io/component: redis
+spec:
+  env: dev
+  size: xs
+  tls: false
+  persistence: false
+  connectionSecret: py-hello-redis-conn
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: small

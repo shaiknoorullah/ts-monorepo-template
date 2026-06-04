@@ -1,0 +1,4 @@
+env: prod
+workload: { kind: Deployment, replicas: 4 }
+observability: { tracing: { samplerArg: "0.05" } }
+priorityClassName: prod-critical

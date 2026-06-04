@@ -1,0 +1,31 @@
+provider: azure
+currency: USD
+last_updated: '2026-05-28'
+source: https://azure.microsoft.com/en-us/pricing/
+skus:
+  - id: B2s
+    vcpu: 2
+    ram_gb: 4
+    disk_gb: 8
+    price_monthly: 30.66
+    egress_tb_included: 0
+  - id: B2ms
+    vcpu: 2
+    ram_gb: 8
+    disk_gb: 16
+    price_monthly: 60.59
+    egress_tb_included: 0
+  - id: D2s_v5
+    vcpu: 2
+    ram_gb: 8
+    disk_gb: 0
+    price_monthly: 70.08
+    egress_tb_included: 0
+storage:
+  - id: premium-ssd
+    unit: gb-month
+    price: 0.135
+egress:
+  unit: gb
+  price_per_unit: 0.087
+  included_per_month: 100

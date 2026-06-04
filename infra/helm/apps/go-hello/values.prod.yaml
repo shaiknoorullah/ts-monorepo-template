@@ -1,0 +1,26 @@
+env: prod
+workload:
+  kind: Rollout
+  replicas: 6
+  strategy:
+    canary:
+      steps:
+        - setWeight: 10
+        - pause: { duration: 5m }
+        - setWeight: 50
+        - pause: { duration: 10m }
+      trafficRouting:
+        gatewayAPI:
+          httpRoute: go-hello-lib-chart
+          namespace: apps
+observability:
+  tracing:
+    samplerArg: '0.05'
+  alerts:
+    enabled: true
+    rules:
+      - alert: GoHelloHighErrorRate
+        expr: sum(rate(http_requests_total{job="go-hello",code=~"5.."}[5m])) > 0.05
+        for: 10m
+        severity: page
+priorityClassName: prod-critical

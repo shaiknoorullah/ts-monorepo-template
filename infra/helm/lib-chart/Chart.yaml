@@ -1,0 +1,7 @@
+apiVersion: v2
+name: lib-chart
+type: library
+version: 0.1.0
+appVersion: '0.1.0'
+description: Platform library chart — observability + security baked in.
+kubeVersion: '>=1.29.0-0'

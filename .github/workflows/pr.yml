@@ -1,0 +1,176 @@
+# .github/workflows/pr.yml
+# Phase 2 green gate: prove that the Launcher CLI + Taskfile + devenv shell
+# all evaluate cleanly on a fresh GH-hosted runner.
+name: pr
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  cli-test:
+    name: cli-test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v14
+      - uses: cachix/cachix-action@v15
+        with:
+          name: devenv
+      - name: Install devenv
+        run: nix profile install nixpkgs#devenv
+      - name: Install task
+        run: nix profile install nixpkgs#go-task
+      - name: pnpm install
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+      - name: task --list smoke
+        run: task --list
+      - name: vitest internal/cli
+        run: pnpm vitest run internal/cli
+      - name: devenv test (shell evaluates)
+        run: devenv test
+
+  nx-affected:
+    name: nx-affected
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: nrwl/nx-set-shas@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.24' }
+      - uses: astral-sh/setup-uv@v3
+        with: { version: '0.4.x' }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { toolchain: '1.83' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx affected -t lint test build --parallel=3
+
+  polyglot-typecheck:
+    name: polyglot-typecheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.24' }
+      - uses: astral-sh/setup-uv@v3
+        with: { version: '0.4.x' }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { toolchain: '1.83', components: 'clippy' }
+      - run: pnpm install --frozen-lockfile
+      - name: tsc typecheck
+        run: pnpm tsc -p tsconfig.base.json --noEmit
+      - name: mypy py-hello
+        working-directory: apps/py-hello
+        run: uv sync --extra dev && uv run mypy src
+      - name: cargo check rs-hello
+        run: cargo check -p rs-hello --all-targets
+      - name: go build go-hello
+        working-directory: apps/go-hello
+        run: go build ./...
+
+  xp-validate:
+    name: crossplane validate + render
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install crossplane CLI
+        run: |
+          curl -sL https://raw.githubusercontent.com/crossplane/crossplane/release-1.17/install.sh | env XP_CHANNEL=stable XP_VERSION=v1.17.3 sh
+          sudo mv crossplane /usr/local/bin/
+      - name: Install kustomize
+        run: |
+          curl -sL https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          sudo mv kustomize /usr/local/bin/
+      - name: Install chainsaw
+        run: |
+          curl -sL https://github.com/kyverno/chainsaw/releases/download/v0.2.12/chainsaw_linux_amd64.tar.gz | tar xz
+          sudo mv chainsaw /usr/local/bin/
+      - name: Install kcl
+        run: |
+          curl -sL https://kcl-lang.io/script/install-cli.sh | bash
+      - name: crossplane beta validate + render + kcl vet + chainsaw
+        # Runs: crossplane beta validate, crossplane render, kcl vet,
+        # and: chainsaw test infra/crossplane/tests/chainsaw
+        run: bash scripts/ci/crossplane-validate.sh
+
+  xp-claims:
+    name: xp-claims
+    needs: xp-validate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install yq (mikefarah v4)
+        uses: mikefarah/yq-action@v4
+      - name: Verify yq is on PATH
+        run: yq --version
+      - name: Install Node.js for ajv-cli
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli@5
+      - name: Install crossplane CLI v1.17.3
+        run: |
+          set -euo pipefail
+          curl -sL https://raw.githubusercontent.com/crossplane/crossplane/release-1.17/install.sh \
+            | XP_CHANNEL=stable XP_VERSION=v1.17.3 sh
+          sudo install -m 0755 crossplane /usr/local/bin/crossplane
+          crossplane --help >/dev/null
+      - name: Install bats
+        run: sudo apt-get update && sudo apt-get install -y bats
+      - name: Parse claims (yq + JSON Schema)
+        run: bash infra/crossplane/claims/tests/parse_claims.sh
+      - name: Render claims (crossplane render)
+        run: bash infra/crossplane/claims/tests/render_all.sh
+      - name: Run claim bats suite
+        run: |
+          for f in infra/crossplane/claims/tests/test_*.bats; do
+            bats "${f}"
+          done
+
+  tf-validate:
+    name: tf-validate
+    # Phase 10 (Commit 10) — per-commit gate matrix entry. Delegates to the
+    # full terraform workflow so we share the same fmt/validate/tflint/tfsec/
+    # conftest plan-gating logic.
+    uses: ./.github/workflows/terraform.yml
+    secrets: inherit
+
+  mcp-validate:
+    name: mcp-validate
+    # Phase 12 (Commit 12) — per-commit gate for internal/mcp-server.
+    # Spec Section 13.3 (Gate matrix). Builds the mcp-server package,
+    # runs the full vitest suite, then re-runs the contract tests as
+    # a separate step so a failed contract gate is loud in the run UI.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install workspace
+        run: pnpm install --frozen-lockfile
+      - name: Build mcp-server
+        run: pnpm --filter @ts-monorepo-template/mcp-server build
+      - name: Run mcp-validate suite
+        run: pnpm --filter @ts-monorepo-template/mcp-server test
+      - name: Deferred-stub conformance gate
+        working-directory: internal/mcp-server
+        run: pnpm exec vitest run test/contract

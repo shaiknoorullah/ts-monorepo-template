@@ -1,0 +1,19 @@
+layer: 7-multi-env-promotion
+provides:
+  - argocd_appset
+  - argocd_app_project
+  - kargo_pipeline
+  - image_updater
+inputs:
+  profile_envs: [dev, staging, prod]
+  repo_url: ${PROFILE.repoURL}
+  cluster: ${PROFILE.cluster}
+  notifications_channel: ${PROFILE.slack.channel}
+outputs:
+  application_count: 'len(envs) * len(apps)'
+  project_count: 'len(envs) + 2'
+mcp_endpoints:
+  - GET  /argocd/apps
+  - POST /argocd/promote
+  - GET  /argocd/drift
+  - GET  /kargo/freight

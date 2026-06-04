@@ -1,0 +1,23 @@
+---
+- name: Install node_exporter via apt (prometheus-node-exporter Debian package)
+  ansible.builtin.apt:
+    name: prometheus-node-exporter
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Enable node_exporter
+  ansible.builtin.service:
+    name: prometheus-node-exporter
+    enabled: true
+    state: started
+
+- name: Install promtail (scaffolded — host fallback; DaemonSet preferred once Argo is up)
+  ansible.builtin.debug:
+    msg: 'promtail version {{ promtail_version }} — install deferred until cluster bringup is complete'
+  when: loki_push_url | length == 0
+
+- name: Install otel-collector (scaffolded — host fallback)
+  ansible.builtin.debug:
+    msg: 'otel-collector version {{ otel_collector_version }} — install deferred until cluster bringup is complete'
+  when: otel_collector_endpoint | length == 0

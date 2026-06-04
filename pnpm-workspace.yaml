@@ -1,9 +1,14 @@
 packages:
   - apps/*
+  # Covers @ts-monorepo-template/contracts (packages/contracts) — the cross-language
+  # proto package with buf-generated TS bindings consumed by downstream apps.
   - packages/*
   - internal/*
   - infra/cloudflare/workers/*
   - docs
+  # Schema-validation tests for the hand-maintained cloud-prices/*.yaml tables
+  # consumed by @internal/cost-simulator.
+  - data/cloud-prices/__tests__
 
 catalog:
   '@opentelemetry/api': ^1.10.0
@@ -29,3 +34,18 @@ catalogs:
     '@faker-js/faker': ^10.0.0
     '@testcontainers/postgresql': ^11.0.0
     msw: ^2.10.0
+
+# Workspace-wide dependency overrides — moved here from
+# `pnpm.overrides` in the root package.json because newer pnpm
+# (v11+) only reads overrides from pnpm-workspace.yaml. The package.json
+# location still works on pnpm 10 but emits a deprecation warning.
+overrides:
+  # Force every ajv 8.x reference in the workspace to dedupe to the
+  # same physical copy. Without this, internal/cli's `^8.17.1` resolved
+  # to 8.20.0 while everything else stayed on 8.17.1, breaking
+  # Ajv2020 type compatibility between modules.
+  ajv@>=8 <9: ^8.17.1
+  ajv-formats@>=3 <4: ^3.0.1
+  # ajv-cli pulls fast-json-patch@2.2.1 which has a prototype-pollution
+  # GHSA. 3.x carries the fix.
+  fast-json-patch: ^3.1.1

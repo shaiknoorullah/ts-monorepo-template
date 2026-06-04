@@ -1,0 +1,50 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xdnszone-cloudflare
+  labels:
+    pn.cloud/bundle: cloud-bootstrap
+    pn.cloud/variant: default
+spec:
+  compositeTypeRef:
+    apiVersion: pn.cloud/v1alpha1
+    kind: XDNSZone
+  mode: Pipeline
+  pipeline:
+    - step: load-env
+      functionRef: { name: function-environment-configs }
+      input:
+        apiVersion: environmentconfigs.fn.crossplane.io/v1beta1
+        kind: Input
+        spec:
+          environmentConfigs:
+            - type: Reference
+              ref: { name: env-dev }
+            - type: Reference
+              ref: { name: env-staging }
+            - type: Reference
+              ref: { name: env-prod }
+    - step: render
+      functionRef: { name: function-go-templating }
+      input:
+        apiVersion: gotemplating.fn.crossplane.io/v1beta1
+        kind: GoTemplate
+        source: Inline
+        inline:
+          template: |
+            {{- $name := .observed.composite.resource.metadata.name }}
+            {{- $claimRef := .observed.composite.resource.spec.claimRef }}
+            {{- $ns := "default" }}
+            {{- if $claimRef }}{{- $ns = $claimRef.namespace }}{{- end }}
+            apiVersion: cloudflare.upbound.io/v1alpha1
+            kind: Zone
+            metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: cf-zone
+                crossplane.io/external-name: {{ $name }}
+              name: {{ $name }}
+              namespace: {{ $ns }}
+            spec:
+              variant: "default"
+    - step: ready
+      functionRef: { name: function-auto-ready }

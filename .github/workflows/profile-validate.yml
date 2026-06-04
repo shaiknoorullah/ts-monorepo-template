@@ -1,0 +1,90 @@
+name: profile-validate
+
+on:
+  pull_request:
+    paths:
+      - 'profiles/**'
+      - 'infra/helm/**'
+      - 'infra/crossplane/**'
+      - 'internal/cli/src/commands/profile/**'
+      - 'internal/schemas/**'
+      - '.github/workflows/profile-validate.yml'
+      - 'tools/ci/profile-validate.sh'
+      - 'tools/ci/check-composition-pins.mjs'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  profile-validate:
+    name: profile-validate (${{ matrix.profile }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        profile:
+          - p-solo
+          - p-hobby
+          - p-startup-small
+          - p-startup-scale
+          - p-enterprise
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.11.0'
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.16.3'
+      - name: Install kubeconform
+        run: |
+          curl -fsSL -o /tmp/kc.tgz https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          sudo tar -xzf /tmp/kc.tgz -C /usr/local/bin kubeconform
+      - name: Install crossplane CLI
+        # Two-source install — see .github/workflows/xp-claims.yml for the
+        # full rationale. The crossplane/crossplane Docker image contains
+        # the *controller*, not the CLI, so we use `go install crank` as
+        # the fallback when releases.crossplane.io 403s the runner IP.
+        run: |
+          set -euo pipefail
+          XP_VERSION=v1.17.3
+
+          if curl --fail --silent --show-error --location \
+               --retry 6 --retry-all-errors --retry-delay 4 \
+               --connect-timeout 20 \
+               -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" \
+               -o /tmp/crank \
+               "https://releases.crossplane.io/stable/${XP_VERSION}/bin/linux_amd64/crank"; then
+            echo "::notice::crossplane CLI fetched from releases.crossplane.io"
+            sudo install -m 0755 /tmp/crank /usr/local/bin/crossplane
+          else
+            echo "::warning::releases.crossplane.io blocked; falling back to go install"
+            if ! command -v go >/dev/null 2>&1; then
+              curl -fsSL "https://go.dev/dl/go1.23.4.linux-amd64.tar.gz" -o /tmp/go.tar.gz
+              sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+              export PATH="/usr/local/go/bin:$PATH"
+              echo "/usr/local/go/bin" >> "$GITHUB_PATH"
+            fi
+            GOBIN=/tmp/gobin go install "github.com/crossplane/crossplane/cmd/crank@${XP_VERSION}"
+            sudo install -m 0755 /tmp/gobin/crank /usr/local/bin/crossplane
+          fi
+          crossplane --help >/dev/null
+          crossplane render --help >/dev/null
+      - run: pnpm install --frozen-lockfile
+      - name: Build helm chart dependencies (lib-chart)
+        # Each apps/<svc>/Chart.yaml depends on `file://../../lib-chart`.
+        # `helm template` (used inside profile:validate) requires the dep to
+        # be present under `charts/`; only `helm dependency build` populates
+        # that directory.
+        run: |
+          set -euo pipefail
+          for chart_dir in infra/helm/apps/*/; do
+            echo "==> helm dependency build ${chart_dir}"
+            helm dependency build "${chart_dir}"
+          done
+      - name: Run profile:validate
+        run: ./tools/ci/profile-validate.sh ${{ matrix.profile }}

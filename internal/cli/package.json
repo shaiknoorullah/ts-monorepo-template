@@ -7,15 +7,33 @@
   "type": "module",
   "main": "./dist/cli.mjs",
   "bin": {
-    "repo": "./dist/cli.mjs"
+    "create-platform": "./dist/bin/create-platform.js",
+    "repo": "./dist/cli.mjs",
+    "ts-monorepo": "./dist/bin/ts-monorepo.js"
   },
+  "files": [
+    "dist",
+    "oclif.manifest.json"
+  ],
   "scripts": {
     "build": "tsdown",
     "dev": "tsx src/cli.ts",
+    "lint": "eslint src --max-warnings=0",
     "test": "vitest run",
     "type-check": "tsc -b"
   },
+  "oclif": {
+    "bin": "ts-monorepo",
+    "commands": "./src/commands",
+    "dirname": "ts-monorepo",
+    "topicSeparator": ":"
+  },
   "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "@internal/schemas": "workspace:*",
+    "@oclif/core": "^4.0.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "c12": "^3.0.0",
     "citty": "^0.1.6",
     "consola": "^3.4.0",
@@ -24,8 +42,9 @@
     "nypm": "^0.5.4",
     "ohash": "^1.1.4",
     "pathe": "^2.0.0",
+    "picocolors": "^1.1.0",
     "prompts": "^2.4.2",
-    "yaml": "^2.6.0",
+    "yaml": "^2.6.1",
     "zod": "catalog:"
   },
   "devDependencies": {

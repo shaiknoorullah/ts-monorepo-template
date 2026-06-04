@@ -1,0 +1,35 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xoidcapps.pn.cloud
+spec:
+  group: pn.cloud
+  names:
+    kind: XOIDCApp
+    plural: xoidcapps
+  claimNames:
+    kind: OIDCAppClaim
+    plural: oidcappclaims
+  defaultCompositionRef:
+    name: xoidcapp-default
+  connectionSecretKeys: [OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, OIDC_ISSUER, OIDC_REDIRECT_URI]
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [name, realm]
+              properties:
+                name: { type: string }
+                realm: { type: string }
+                redirectUris:
+                  type: array
+                  items: { type: string }
+                audience:
+                  type: array
+                  items: { type: string }

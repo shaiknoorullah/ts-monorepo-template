@@ -7,10 +7,22 @@ dist/
 build/
 out/
 *.tsbuildinfo
+# infra/build is the container build pipeline source (cosign policy, trivy config,
+# SBOM templates, container.sh) — not generated output; force-include it.
+!infra/build/
 
 # Nx
 .nx/cache
 .nx/workspace-data
+
+# Cargo / Rust build output
+**/target/
+
+# Python build / test caches
+**/__pycache__/
+**/.pytest_cache/
+**/.venv/
+**/*.egg-info/
 
 # Test artifacts
 coverage/
@@ -66,3 +78,15 @@ Thumbs.db
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 docs/api/
+
+# Helm: file:// chart dependency vendor and lock
+infra/helm/apps/*/charts/
+infra/helm/apps/*/Chart.lock
+
+# chainsaw render reports (xp-validate)
+xp-render*.json
+
+# Ansible (Phase 11) — local-only state
+infra/ansible/.collections/
+infra/ansible/.facts-cache/
+infra/ansible/.cache/

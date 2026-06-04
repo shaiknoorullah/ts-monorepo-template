@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '5'
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - matrix:
+        generators:
+          - list:
+              elements:
+                - env: dev
+                  cluster: https://kubernetes.default.svc
+                  autosync: true
+                - env: staging
+                  cluster: https://kubernetes.default.svc
+                  autosync: true
+                - env: prod
+                  cluster: https://kubernetes.default.svc
+                  autosync: false
+          - git:
+              repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+              revision: HEAD
+              directories:
+                - path: infra/helm/apps/*
+  template:
+    metadata:
+      name: '{{.path.basename}}-{{.env}}'
+      labels:
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/name: '{{.path.basename}}'
+        env: '{{.env}}'
+      annotations:
+        argocd.argoproj.io/sync-wave: '5'
+        argocd-image-updater.argoproj.io/image-list: '{{ if eq .env "dev" }}main=ghcr.io/REPLACE_ORG/{{.path.basename}}{{ end }}'
+        argocd-image-updater.argoproj.io/write-back-method: '{{ if eq .env "dev" }}git{{ end }}'
+        argocd-image-updater.argoproj.io/write-back-target: '{{ if eq .env "dev" }}helmvalues:./values.dev.yaml{{ end }}'
+        argocd-image-updater.argoproj.io/main.update-strategy: '{{ if eq .env "dev" }}newest-build{{ end }}'
+    spec:
+      project: 'apps-{{.env}}'
+      source:
+        repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+        path: '{{.path.path}}'
+        targetRevision: HEAD
+        helm:
+          valueFiles:
+            - values.yaml
+            - 'values.{{.env}}.yaml'
+      destination:
+        server: '{{.cluster}}'
+        namespace: '{{.path.basename}}-{{.env}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: '{{ .autosync }}'
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - ApplyOutOfSyncOnly=true
+          - RespectIgnoreDifferences=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 10s
+            factor: 2
+            maxDuration: 5m

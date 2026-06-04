@@ -1,0 +1,56 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xpostgresclusters.pn.cloud
+spec:
+  group: pn.cloud
+  names:
+    kind: XPostgresCluster
+    plural: xpostgresclusters
+  claimNames:
+    kind: PostgresClusterClaim
+    plural: postgresclusterclaims
+  defaultCompositionRef:
+    name: xpostgrescluster-cnpg-singlenode
+  connectionSecretKeys: [host, port, username, password, uri, 'ca.crt']
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [env]
+              properties:
+                env: { type: string, enum: [dev, staging, prod] }
+                size: { type: string, enum: [xs, s, m, l], default: s }
+                version: { type: string, default: '16' }
+                databases:
+                  type: array
+                  items:
+                    type: object
+                    required: [name, owner]
+                    properties:
+                      name: { type: string }
+                      owner: { type: string }
+                pooler:
+                  type: object
+                  properties:
+                    enabled: { type: boolean, default: true }
+                    replicas: { type: integer, default: 2 }
+                    mode: { type: string, enum: [transaction, session], default: transaction }
+                backup:
+                  type: object
+                  properties:
+                    enabled: { type: boolean }
+                    target: { type: string }
+                    retentionDays: { type: integer }
+                observability:
+                  type: object
+                  properties:
+                    prometheus: { type: boolean, default: true }
+                    dashboard: { type: boolean, default: true }
+                connectionSecret: { type: string }

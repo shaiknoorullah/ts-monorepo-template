@@ -1,0 +1,32 @@
+---
+# Section 9.10 scale.yml — targets --limit new_nodes.
+
+- name: Harden new hosts
+  hosts: new_nodes
+  become: true
+  roles:
+    - role: common
+
+- name: Install container runtime on new hosts
+  hosts: new_nodes
+  become: true
+  roles:
+    - role: container_runtime
+
+- name: Join new hosts
+  hosts: new_nodes
+  become: true
+  roles:
+    - role: kubernetes_join
+
+- name: Longhorn prep on new workers
+  hosts: new_nodes:&workers
+  become: true
+  roles:
+    - role: longhorn_prep
+
+- name: Extend WireGuard mesh with delta peers
+  hosts: all
+  become: true
+  roles:
+    - role: wireguard_mesh

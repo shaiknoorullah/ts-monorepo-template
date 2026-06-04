@@ -1,0 +1,27 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xschemagroups.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XSchemaGroup, plural: xschemagroups }
+  claimNames: { kind: SchemaGroupClaim, plural: schemagroupclaims }
+  defaultCompositionRef: { name: xschemagroup-apicurio-http }
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [registry, groupId]
+              properties:
+                registry: { type: string }
+                groupId: { type: string }
+                description: { type: string }
+                labels:
+                  type: object
+                  additionalProperties: { type: string }

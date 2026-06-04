@@ -1,0 +1,16 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  tasks:
+    - name: Assert sysctl drop-in exists
+      ansible.builtin.stat:
+        path: /etc/sysctl.d/99-kubernetes.conf
+      register: sysctl_file
+      failed_when: not sysctl_file.stat.exists
+
+    - name: Assert modules-load drop-in exists
+      ansible.builtin.stat:
+        path: /etc/modules-load.d/k8s.conf
+      register: mod_file
+      failed_when: not mod_file.stat.exists

@@ -1,0 +1,27 @@
+{
+  "name": "@internal/recommender",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Deterministic profile recommender — pure function over (answers, rubric) -> ranked[].",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "./dist/index.mjs",
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "type-check": "tsc -b"
+  },
+  "dependencies": {
+    "yaml": "^2.6.1",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

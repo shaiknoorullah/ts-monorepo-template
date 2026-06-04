@@ -1,0 +1,10 @@
+# Trivy config scan against committed Dockerfiles (spec Section 5.12 pass 2).
+scan:
+  scanners:
+    - misconfig
+misconfiguration:
+  include-non-failures: false
+severity: HIGH,CRITICAL
+exit-code: 1
+format: sarif
+output: trivy-dockerfile.sarif

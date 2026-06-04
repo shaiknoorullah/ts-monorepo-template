@@ -1,0 +1,7 @@
+# OpenTelemetry auto-instrumentation reference (spec Section 12.7 + 5.3).
+# Apps consuming this snippet set the resource attributes via ENV at runtime;
+# the OTel collector endpoint is wired by the lib-chart NetworkPolicy egress allow.
+ENV OTEL_EXPORTER_OTLP_ENDPOINT="http://otel-collector.observability:4317" \
+    OTEL_EXPORTER_OTLP_PROTOCOL="grpc" \
+    OTEL_SERVICE_NAME="${OTEL_SERVICE_NAME:-unknown}" \
+    OTEL_RESOURCE_ATTRIBUTES="service.version=${GIT_SHA:-unknown},deployment.environment=${DEPLOY_ENV:-unknown}"

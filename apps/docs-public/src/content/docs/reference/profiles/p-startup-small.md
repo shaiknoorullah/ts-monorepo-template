@@ -1,0 +1,26 @@
+---
+title: p-startup-small — Early Startup
+---
+
+```yaml
+# DEVENV_PROFILE=p-startup-small
+schemaVersion: profile-v1
+machineId: p-startup-small
+founderLabel: Early Startup
+costBandUsdMonthly:
+  min: 30
+  max: 150
+axes:
+  team_size: small
+  env_count: 3
+  target_budget_usd: '<500'
+  compliance_floor: SOC2-ready
+  workload_shape: web-services
+  ha_level: single-AZ
+  cluster_substrate: bare-VM k3s
+  mesh: none
+  observability_depth: '+logs'
+  secret_backend: akv
+  registry: ghcr
+  cdn_edge: cloudflare
+```

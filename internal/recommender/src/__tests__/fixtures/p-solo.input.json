@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "team_size": "1",
+    "env_count": 1,
+    "target_budget_usd": 0,
+    "compliance_floor": "none",
+    "workload_shape": "stateless-web",
+    "ha_level": "best-effort",
+    "observability_depth": "logs",
+    "secret_backend": "keyring",
+    "registry": "ghcr",
+    "cdn_edge": "none"
+  }
+}

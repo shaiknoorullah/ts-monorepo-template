@@ -1,0 +1,8 @@
+---
+- name: Render limits.d drop-in
+  ansible.builtin.template:
+    src: limits-k8s.conf.j2
+    dest: /etc/security/limits.d/99-k8s.conf
+    owner: root
+    group: root
+    mode: '0644'

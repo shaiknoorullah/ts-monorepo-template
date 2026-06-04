@@ -1,0 +1,29 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xdatacontracts.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XDataContract, plural: xdatacontracts }
+  claimNames: { kind: DataContractClaim, plural: datacontractclaims }
+  defaultCompositionRef: { name: xdatacontract-default }
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [topic, group, artifactId, schemaType, schema]
+              properties:
+                topic: { type: string }
+                group: { type: string }
+                artifactId: { type: string }
+                schemaType: { type: string, enum: [AVRO, PROTOBUF, JSON] }
+                schema: { type: string }
+                compatibility:
+                  { type: string, enum: [BACKWARD, FORWARD, FULL, NONE], default: BACKWARD }
+                validity: { type: string, enum: [NONE, SYNTAX_ONLY, FULL], default: FULL }

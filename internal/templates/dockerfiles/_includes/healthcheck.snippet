@@ -1,0 +1,5 @@
+# HEALTHCHECK probes /healthz on the app's HTTP port (8080 default).
+# Distroless has no /bin/sh; we rely on Kubernetes liveness/readiness for runtime,
+# but include HEALTHCHECK for docker-run + local-dev parity.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD ["/app/app", "-healthcheck"]

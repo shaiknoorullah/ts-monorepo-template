@@ -1,0 +1,50 @@
+# .github/labeler.yml
+# Path-based area/* labels for required-review routing.
+# Spec section 13.7. Consumed by .github/workflows/pr-labeler.yml.
+
+'area/p-solo':
+  - changed-files:
+      - any-glob-to-any-file: ['profiles/p-solo/**']
+'area/p-hobby':
+  - changed-files:
+      - any-glob-to-any-file: ['profiles/p-hobby/**']
+'area/p-startup-small':
+  - changed-files:
+      - any-glob-to-any-file: ['profiles/p-startup-small/**']
+'area/p-startup-scale':
+  - changed-files:
+      - any-glob-to-any-file: ['profiles/p-startup-scale/**']
+'area/p-enterprise':
+  - changed-files:
+      - any-glob-to-any-file: ['profiles/p-enterprise/**']
+'area/helm':
+  - changed-files:
+      - any-glob-to-any-file: ['infra/helm/**']
+'area/crossplane':
+  - changed-files:
+      - any-glob-to-any-file: ['infra/crossplane/**']
+'area/terraform':
+  - changed-files:
+      - any-glob-to-any-file: ['infra/terraform/**']
+'area/ansible':
+  - changed-files:
+      - any-glob-to-any-file: ['infra/ansible/**']
+'area/argocd':
+  - changed-files:
+      - any-glob-to-any-file: ['infra/argocd/**']
+'area/mcp':
+  - changed-files:
+      - any-glob-to-any-file: ['internal/mcp-server/**']
+'area/profiles':
+  - changed-files:
+      - any-glob-to-any-file: ['profiles/**']
+'area/cloud-prices':
+  - changed-files:
+      - any-glob-to-any-file: ['data/cloud-prices/**']
+'area/platform-foundation':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'profiles/**'
+          - 'infra/**'
+          - 'internal/**'
+          - 'apps/**'

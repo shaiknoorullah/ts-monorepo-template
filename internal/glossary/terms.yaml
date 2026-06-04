@@ -1,0 +1,99 @@
+# internal/glossary/terms.yaml
+# Source of truth for the platform glossary. Consumed by:
+#   - docs/GLOSSARY.md (mirror)
+#   - apps/marketing/ /glossary route (build-time)
+#   - MCP glossary.lookup tool
+# Spec Section 18.1.
+- term: ADR
+  definition: Architecture Decision Record — short markdown file capturing one decision, its context, alternatives, and consequences.
+  section: '15'
+- term: AGENTS.md
+  definition: Cascading agent-guidance file; nearest-ancestor-wins lookup from any working directory; machine-readable counterpart to README.md.
+  section: '15'
+- term: ApplicationSet
+  definition: Argo CD controller that templates Application resources from a generator (matrix, git, list, cluster).
+  section: '7'
+- term: buf
+  definition: Protobuf toolchain (buf lint, buf generate, buf breaking); replaces hand-rolled protoc pipelines.
+  section: '12'
+- term: cargo-chef
+  definition: Rust Docker layer-caching helper that splits dependency build from source build for cache reuse.
+  section: '5'
+- term: Composition
+  definition: Crossplane pipeline that fulfills an XR by composing managed resources, optionally through Functions.
+  section: '8'
+- term: cosign
+  definition: Sigstore image-signing tool; keyless mode signs via OIDC identity (GitHub Actions token).
+  section: '5'
+- term: cspell
+  definition: Streaming spell checker with per-repo dictionaries; runs in lefthook pre-commit.
+  section: '4'
+- term: devenv
+  definition: Cachix Nix-based reproducible dev environment; declared in devenv.nix, activated by direnv.
+  section: '4'
+- term: direnv
+  definition: Per-directory env loader; auto-activates devenv shell on cd.
+  section: '4'
+- term: DTE
+  definition: Distributed Task Execution — Nx Cloud feature that fans out a task graph across remote agents.
+  section: '3'
+- term: ESO
+  definition: External Secrets Operator — pulls secrets from AKV/ASM/GSM/Vault/keyring into Kubernetes Secrets.
+  section: '6'
+- term: Function
+  definition: Crossplane composition-pipeline step (function-patch-and-transform, function-go-templating, function-kcl).
+  section: '8'
+- term: GHCR
+  definition: GitHub Container Registry — default OCI registry; profile-driven swap to ACR/ECR/GAR/Harbor.
+  section: '5'
+- term: GitOps
+  definition: Reconcile-from-git operating model; cluster state derives from a tracked branch via Argo CD.
+  section: '7'
+- term: Helm library chart
+  definition: Chart with type library; exports named templates consumed by other charts; ships no resources itself.
+  section: '6'
+- term: Kargo
+  definition: Argo project for staged promotion of artifacts across environments via Stages + Freight.
+  section: '7'
+- term: KCL
+  definition: KusionStack configuration language used by Crossplane function-kcl for typed composition logic.
+  section: '8'
+- term: Kubespray
+  definition: Ansible-based Kubernetes installer; reference for the configurable bootstrap path.
+  section: '9'
+- term: lefthook
+  definition: Go-based git-hook runner; parallel, language-agnostic; replaces husky for polyglot repos.
+  section: '4'
+- term: MCP
+  definition: Model Context Protocol — Anthropic-originated agent protocol for tool + resource exposure.
+  section: '1'
+- term: nx affected
+  definition: Nx command that derives the impacted project set from a git base and runs targets only on it.
+  section: '3'
+- term: Nx Cloud
+  definition: SaaS for Nx remote cache + DTE; free tier default in this spec, PowerPack opt-in.
+  section: '3'
+- term: OTel
+  definition: OpenTelemetry — vendor-neutral traces/metrics/logs SDK + collector.
+  section: '6'
+- term: PnT
+  definition: Patch and Transform — Crossplane composition pattern implemented by function-patch-and-transform.
+  section: '8'
+- term: PowerPack
+  definition: Nrwl's paid Nx extensions (conformance, owners, enterprise auth); opt-in only.
+  section: '3'
+- term: secretspec
+  definition: Cachix declared-secrets contract; secretspec.toml declares required env vars + provider hints.
+  section: '4'
+- term: tsdown
+  definition: Rolldown-powered TypeScript bundler; tsup successor; faster cold builds.
+  section: '3'
+- term: tfplugindocs
+  definition: HashiCorp Terraform plugin docs generator; emits docs/ from schema + examples.
+  section: '16'
+- term: XR
+  definition: Crossplane Composite Resource — an instance of an XRD, fulfilled by a Composition.
+  section: '8'
+- term: XRD
+  definition: Crossplane CompositeResourceDefinition — the type spec for an XR (OpenAPI schema + claim names).
+  section: '8'

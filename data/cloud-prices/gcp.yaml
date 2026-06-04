@@ -1,0 +1,31 @@
+provider: gcp
+currency: USD
+last_updated: '2026-05-28'
+source: https://cloud.google.com/pricing/
+skus:
+  - id: e2-small
+    vcpu: 2
+    ram_gb: 2
+    disk_gb: 0
+    price_monthly: 12.23
+    egress_tb_included: 0
+  - id: e2-medium
+    vcpu: 2
+    ram_gb: 4
+    disk_gb: 0
+    price_monthly: 24.46
+    egress_tb_included: 0
+  - id: n2-standard-2
+    vcpu: 2
+    ram_gb: 8
+    disk_gb: 0
+    price_monthly: 70.80
+    egress_tb_included: 0
+storage:
+  - id: pd-ssd
+    unit: gb-month
+    price: 0.17
+egress:
+  unit: gb
+  price_per_unit: 0.12
+  included_per_month: 100

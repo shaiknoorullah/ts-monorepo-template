@@ -1,0 +1,29 @@
+# Kyverno verifyImages policy fragment — spec Section 5.8.
+# Subject is profile-driven; the placeholder ${ORG}/${REPO} is rewritten by the
+# profile materializer (Section 13.10 launch wiring) per profile.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-cosign-keyless
+spec:
+  validationFailureAction: Enforce
+  webhookTimeoutSeconds: 30
+  rules:
+    - name: verify-images
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/${ORG}/*"
+          mutateDigest: true
+          required: true
+          attestors:
+            - entries:
+                - keyless:
+                    issuer: "https://token.actions.githubusercontent.com"
+                    subject: "https://github.com/${ORG}/${REPO}/.github/workflows/container-build.yml@refs/heads/main"
+                    rekor:
+                      url: "https://rekor.sigstore.dev"

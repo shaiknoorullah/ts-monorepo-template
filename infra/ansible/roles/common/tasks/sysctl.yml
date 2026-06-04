@@ -1,0 +1,9 @@
+---
+- name: Render Kubernetes sysctl drop-in
+  ansible.builtin.template:
+    src: 99-kubernetes.conf.j2
+    dest: /etc/sysctl.d/99-kubernetes.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload sysctl

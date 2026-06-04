@@ -1,0 +1,53 @@
+name: refresh-cloud-prices
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: refresh-cloud-prices
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: '22.11.0'
+      - run: npm install -g ajv-cli@5.0.0
+      - name: Run refresh script (writes data/cloud-prices/*.yaml)
+        run: bash tools/ci/cloud-prices/refresh.sh
+      - name: Verify all 8 cloud price files exist and validate
+        run: |
+          for f in data/cloud-prices/hetzner.yaml \
+                   data/cloud-prices/contabo.yaml \
+                   data/cloud-prices/ovh.yaml \
+                   data/cloud-prices/azure.yaml \
+                   data/cloud-prices/aws.yaml \
+                   data/cloud-prices/gcp.yaml \
+                   data/cloud-prices/cloudflare.yaml \
+                   data/cloud-prices/gha.yaml; do
+            test -f "$f" || { echo "missing $f"; exit 1; }
+            ajv validate -s internal/schemas/cloud-prices-v1.schema.json -d "$f"
+          done
+      - name: Open PR with updated price data
+        uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc84ffff1f # v7.0.6
+        with:
+          commit-message: 'chore(cloud-prices): Weekly refresh'
+          title: 'chore(cloud-prices): Weekly refresh'
+          body: |
+            Automated refresh of `data/cloud-prices/*.yaml` against upstream
+            pricing pages. Recommender + cost simulator (Section 15) read
+            these directly; merging keeps profile cost bands honest.
+          branch: chore/cloud-prices-refresh
+          labels: |
+            area/cost
+            automated
+          delete-branch: true

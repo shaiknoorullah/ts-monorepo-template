@@ -1,0 +1,10 @@
+---
+kube_version: '1.32.13'
+kubernetes_apt_repo: 'https://pkgs.k8s.io/core:/stable:/v1.32/deb/'
+kubernetes_apt_key_url: 'https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key'
+pod_cidr: '10.244.0.0/16'
+service_cidr: '10.96.0.0/12'
+cluster_dns_domain: 'cluster.local'
+apiserver_extra_args: {}
+controller_manager_extra_args: {}
+scheduler_extra_args: {}

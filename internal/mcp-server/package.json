@@ -1,0 +1,37 @@
+{
+  "name": "@ts-monorepo-template/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for ts-monorepo-template (Layer 0b)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "ts-monorepo-mcp": "dist/server.js"
+  },
+  "files": [
+    "dist",
+    "src/schemas"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src test --max-warnings 0",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@internal/cost-simulator": "workspace:*",
+    "@internal/recommender": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "yaml": "^2.6.1",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  }
+}

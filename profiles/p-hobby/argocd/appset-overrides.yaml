@@ -1,0 +1,12 @@
+profile: p-hobby
+envs:
+  - dev
+  - prod
+imageUpdater: true
+kargo:
+  enabled: true
+  pipeline: dev-prod-smoke
+syncWindow: none
+notifications:
+  channel: slack
+  required: false

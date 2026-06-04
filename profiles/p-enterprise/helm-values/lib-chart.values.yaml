@@ -1,0 +1,32 @@
+image:
+  registry: harbor.local
+  repository: ts-monorepo-template/lib-chart
+  digest: ''
+secrets:
+  backend: vault
+  refreshInterval: 15m
+  vault:
+    address: https://vault.platform.local
+    role: backend-default
+networkPolicy:
+  defaultDeny: true
+replicas: 5
+autoscaling:
+  enabled: true
+  minReplicas: 5
+  maxReplicas: 50
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 3
+monitoring:
+  enabled: true
+mesh:
+  enabled: true
+  type: istio
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/region
+    whenUnsatisfiable: ScheduleAnyway

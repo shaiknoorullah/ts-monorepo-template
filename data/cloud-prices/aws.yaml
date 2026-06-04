@@ -1,0 +1,31 @@
+provider: aws
+currency: USD
+last_updated: '2026-05-28'
+source: https://aws.amazon.com/pricing/
+skus:
+  - id: t4g.small
+    vcpu: 2
+    ram_gb: 2
+    disk_gb: 0
+    price_monthly: 12.27
+    egress_tb_included: 0
+  - id: t4g.medium
+    vcpu: 2
+    ram_gb: 4
+    disk_gb: 0
+    price_monthly: 24.53
+    egress_tb_included: 0
+  - id: m7g.large
+    vcpu: 2
+    ram_gb: 8
+    disk_gb: 0
+    price_monthly: 59.86
+    egress_tb_included: 0
+storage:
+  - id: gp3-ssd
+    unit: gb-month
+    price: 0.08
+egress:
+  unit: gb
+  price_per_unit: 0.09
+  included_per_month: 100

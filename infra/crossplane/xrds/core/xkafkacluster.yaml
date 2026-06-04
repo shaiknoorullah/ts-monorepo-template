@@ -1,0 +1,46 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xkafkaclusters.pn.cloud
+spec:
+  group: pn.cloud
+  names:
+    kind: XKafkaCluster
+    plural: xkafkaclusters
+  claimNames:
+    kind: KafkaClusterClaim
+    plural: kafkaclusterclaims
+  defaultCompositionRef:
+    name: xkafkacluster-strimzi-kraft-small
+  connectionSecretKeys: [bootstrap, 'ca.crt', 'client.properties']
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [env]
+              properties:
+                env: { type: string, enum: [dev, staging, prod] }
+                size: { type: string, enum: [xs, s, m, l], default: s }
+                brokerReplicas: { type: integer }
+                controllerReplicas: { type: integer }
+                storage:
+                  type: object
+                  properties:
+                    class: { type: string }
+                    size: { type: string }
+                listeners:
+                  type: object
+                  properties:
+                    plain: { type: boolean, default: false }
+                    tls: { type: boolean, default: true }
+                    external: { type: boolean, default: false }
+                authentication:
+                  type: object
+                  properties:
+                    type: { type: string, enum: [scram-sha-512, tls, none], default: scram-sha-512 }

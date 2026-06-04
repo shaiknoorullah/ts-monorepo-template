@@ -1,0 +1,45 @@
+apiVersion: ts-monorepo-template.dev/v1
+kind: App
+metadata:
+  name: py-hello
+  language: python
+  framework: fastapi
+spec:
+  schema: platform.app/v1
+  id: py-hello
+  languageVersion: '3.13'
+  capabilities:
+    - http-api
+    - grpc-api
+    - prometheus-metrics
+    - otel-tracing
+  needs:
+    - kind: XPostgresCluster
+      ref: { name: py-hello-pg, env: '{{env}}' }
+      size: small
+      optional: false
+    - kind: XRedisCluster
+      ref: { name: py-hello-redis, env: '{{env}}' }
+      size: small
+      optional: false
+    - kind: XKafkaTopic
+      topics: [user.created]
+      optional: false
+  exposes:
+    services:
+      - { name: py-hello, port: 8080, protocol: http }
+      - { name: py-hello-grpc, port: 9000, protocol: grpc }
+    metrics: { path: /metrics, port: 9090 }
+    health: { path: /healthz, port: 8080 }
+  contracts:
+    - packages/contracts/proto/user/v1/user.proto
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+  profiles:
+    p-solo: { replicas: 1, hpa: false }
+    p-hobby: { replicas: 1, hpa: false }
+    p-startup-small: { replicas: 2, hpa: { min: 2, max: 5 } }
+  costEstimate:
+    minimal: 1usd/month
+    typical: 6usd/month

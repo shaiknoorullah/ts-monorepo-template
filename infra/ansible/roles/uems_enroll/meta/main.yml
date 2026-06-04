@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  role_name: uems_enroll
+  author: platform-infra
+  description: 'ManageEngine Endpoint Central agent enrollment (scaffolded; off by default)'
+  license: Apache-2.0
+  min_ansible_version: '2.16'
+dependencies: []

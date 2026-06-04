@@ -1,0 +1,20 @@
+apiVersion: pn.cloud/v1alpha1
+kind: BucketClaim
+metadata:
+  name: shared-assets
+  namespace: prod
+  labels:
+    app.kubernetes.io/component: bucket
+    pn.cloud/shared: 'true'
+spec:
+  env: prod
+  provider: azureblob
+  name: shared-assets-prod
+  versioning: true
+  publicRead: false
+  lifecycle:
+    expirationDays: 365
+  connectionSecret: shared-assets-conn
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: azureblob

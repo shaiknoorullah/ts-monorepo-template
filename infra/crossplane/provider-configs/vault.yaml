@@ -1,0 +1,30 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: provider-vault-creds
+  namespace: crossplane-system
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: platform-store
+    kind: ClusterSecretStore
+  target:
+    name: provider-vault-creds
+    creationPolicy: Owner
+  data:
+    - secretKey: token
+      remoteRef:
+        key: crossplane/vault-token
+---
+apiVersion: vault.upbound.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  address: 'https://vault.platform.svc.cluster.local:8200'
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: provider-vault-creds
+      key: token

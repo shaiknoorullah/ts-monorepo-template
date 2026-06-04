@@ -1,0 +1,14 @@
+profile: p-startup-small
+envs:
+  - dev
+  - staging
+  - prod
+imageUpdater: true
+kargo:
+  enabled: true
+  pipeline: full-smoke-slo
+syncWindow:
+  staging: weekday-only
+notifications:
+  channel: slack
+  required: true

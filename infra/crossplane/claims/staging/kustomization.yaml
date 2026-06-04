@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: staging
+commonLabels:
+  app.kubernetes.io/part-of: platform-foundation
+  pn.cloud/env: staging
+resources:
+  - go-hello-pg.yaml
+  - py-hello-pg.yaml
+  - rs-hello-pg.yaml
+  - go-hello-redis.yaml
+  - py-hello-redis.yaml
+  - rs-hello-redis.yaml
+  - shared-topics.yaml
+  - shared-bucket.yaml
+  - go-hello-obs.yaml
+  - py-hello-obs.yaml
+  - rs-hello-obs.yaml
+  - go-hello-keycloak.yaml
+  - py-hello-keycloak.yaml
+  - rs-hello-keycloak.yaml

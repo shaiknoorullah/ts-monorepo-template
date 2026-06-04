@@ -1,0 +1,49 @@
+[package]
+name = "rs-hello"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+name = "rs_hello"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rs-hello"
+path = "src/main.rs"
+
+[dependencies]
+tokio.workspace = true
+axum.workspace = true
+tower-http.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-opentelemetry.workspace = true
+opentelemetry.workspace = true
+opentelemetry_sdk.workspace = true
+opentelemetry-otlp.workspace = true
+sqlx.workspace = true
+redis.workspace = true
+# rdkafka requires librdkafka headers + curl headers at build time which are
+# not present in every sandbox / CI runner. The Phase 4 plan §4.7 listed it
+# but the handler/smoke tests don't exercise Kafka producer paths directly,
+# so we ship a stub events module instead. To re-enable: uncomment and
+# install libcurl4-openssl-dev + libssl-dev + librdkafka-dev.
+# rdkafka.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+figment = { workspace = true, features = ["env", "toml"] }
+prometheus.workspace = true
+anyhow = "1"
+# Phase 3 ships the Rust contracts crate at packages/contracts-rs. The Cargo
+# package was renamed to `contracts-rs` to disambiguate from the Nx project
+# named `contracts` at packages/contracts; the library crate is still imported
+# as `contracts::...` in Rust code (see [lib] in packages/contracts-rs/Cargo.toml).
+contracts = { path = "../../packages/contracts-rs", package = "contracts-rs" }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+testcontainers = "0.25"
+testcontainers-modules = { version = "0.13", features = ["postgres"] }

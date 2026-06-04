@@ -1,0 +1,45 @@
+{
+  "name": "go-hello",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/go-hello",
+  "implicitDependencies": ["contracts"],
+  "targets": {
+    "build": {
+      "executor": "@nx-go/nx-go:build",
+      "dependsOn": ["^build", "contracts:generate"],
+      "options": { "main": "cmd/server/main.go", "outputPath": "dist/apps/go-hello/server" },
+      "cache": true
+    },
+    "test": {
+      "executor": "@nx-go/nx-go:test",
+      "options": { "args": ["./..."] },
+      "cache": true
+    },
+    "test:integration": {
+      "executor": "@nx-go/nx-go:test",
+      "options": { "args": ["-tags=integration", "./test/integration/..."] }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "golangci-lint run ./...", "cwd": "apps/go-hello" },
+      "cache": true
+    },
+    "container": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker buildx build -f apps/go-hello/Dockerfile -t go-hello:dev apps/go-hello"
+      }
+    },
+    "chart:lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "helm lint infra/helm/lib-chart -f apps/go-hello/values.yaml" }
+    },
+    "chart:render": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "helm template go-hello infra/helm/lib-chart -f apps/go-hello/values.yaml --output-dir dist/apps/go-hello/chart"
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+# internal/cli/src/core/__tests__/fixtures/invalid-meta.yaml
+apiVersion: meta.platform.dev/v1alpha1
+kind: AppDescriptor
+language: go

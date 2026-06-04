@@ -1,0 +1,8 @@
+---
+control_plane_endpoint: "{{ hostvars[groups['control_plane'][0]]['ansible_host'] }}:6443"
+upload_certs: true
+certificate_key_lifetime_hours: 2
+node_labels:
+  node-role.kubernetes.io/control-plane: ''
+node_taints:
+  - 'node-role.kubernetes.io/control-plane:NoSchedule'

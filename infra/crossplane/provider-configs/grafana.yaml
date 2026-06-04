@@ -1,0 +1,35 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: provider-grafana-creds
+  namespace: crossplane-system
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: platform-store
+    kind: ClusterSecretStore
+  target:
+    name: provider-grafana-creds
+    creationPolicy: Owner
+  data:
+    - secretKey: url
+      remoteRef:
+        key: crossplane/grafana-api-key
+        property: url
+    - secretKey: auth
+      remoteRef:
+        key: crossplane/grafana-api-key
+        property: auth
+---
+apiVersion: grafana.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: provider-grafana-creds
+      key: auth
+  url: 'https://grafana.platform.svc.cluster.local'

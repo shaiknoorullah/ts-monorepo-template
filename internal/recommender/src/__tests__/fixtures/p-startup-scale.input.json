@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "team_size": "6-20",
+    "env_count": 4,
+    "target_budget_usd": 800,
+    "compliance_floor": "soc2",
+    "workload_shape": "mixed",
+    "ha_level": "multi-az",
+    "observability_depth": "logs+metrics+traces",
+    "secret_backend": "vault",
+    "registry": "cloud-native",
+    "cdn_edge": "cloudflare"
+  }
+}

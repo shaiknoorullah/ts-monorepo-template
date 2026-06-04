@@ -1,0 +1,39 @@
+---
+// apps/marketing/src/pages/architecture.astro — /architecture
+// Phase 16 Task 16.7. The 7 layers (plus 2 entrypoints) overview.
+import Layout from '../layouts/Layout.astro'
+
+const LAYERS = [
+  ['Layer 0a', 'Launcher CLI + marketing site (founder entrypoint)'],
+  ['Layer 0b', 'MCP server (agent entrypoint)'],
+  ['Layer 1', 'Verb surface (Taskfile)'],
+  ['Layer 2', 'Toolchain (devenv.nix) + secrets (secretspec)'],
+  ['Layer 3', 'Build orchestration (Nx + Nx Cloud)'],
+  ['Layer 4', 'Container build (BuildKit + cosign)'],
+  ['Layer 5', 'App runtime (Helm library chart)'],
+  ['Layer 6', 'Platform infra (Crossplane + ESO)'],
+  ['Layer 7', 'Bootstrap (Terraform + Ansible, optional)'],
+] as const
+---
+
+<Layout
+  title="Architecture — the 7 layers (plus 2 entrypoints)"
+  description="Two front doors and seven independently replaceable layers. Each layer above consumes only the verb surface or the typed schema of the layer below."
+>
+  <section data-testid="architecture">
+    <h1>The 7 layers (plus 2 entrypoints)</h1>
+    <ul>
+      {
+        LAYERS.map(([name, desc]) => (
+          <li>
+            <strong>{name}</strong> — {desc}
+          </li>
+        ))
+      }
+    </ul>
+    <p>
+      Full mechanics: <code>docs/architecture/seven-layers.md</code>. Founder reference for picking a profile:
+      <a href="/pricing">Pricing</a>.
+    </p>
+  </section>
+</Layout>

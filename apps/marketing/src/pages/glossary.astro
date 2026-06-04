@@ -1,0 +1,29 @@
+---
+// apps/marketing/src/pages/glossary.astro — /glossary
+// Phase 16 Task 16.7. Reads internal/glossary/terms.yaml at build time.
+import Layout from '../layouts/Layout.astro'
+import { loadTerms } from '../lib/glossary-loader'
+
+const terms = await loadTerms()
+---
+
+<Layout
+  title="Glossary — every term used across the platform"
+  description="Alphabetical glossary of platform-foundation terms. Same source the MCP glossary.lookup tool reads."
+>
+  <section data-testid="glossary">
+    <h1>Glossary</h1>
+    <dl>
+      {
+        terms.map((t) => (
+          <div>
+            <dt>{t.term}</dt>
+            <dd>
+              {t.definition} <em>(Section {t.section})</em>
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+</Layout>

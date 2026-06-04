@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '-10'
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - matrix:
+        generators:
+          - list:
+              elements:
+                - cluster: https://kubernetes.default.svc
+          - git:
+              repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+              revision: HEAD
+              directories:
+                - path: infra/crossplane/providers/*
+                - path: infra/crossplane/functions/*
+                - path: infra/crossplane/xrds/*
+                - path: infra/crossplane/compositions/*
+  template:
+    metadata:
+      name: 'platform-{{.path.basename}}'
+      labels:
+        app.kubernetes.io/part-of: platform
+        app.kubernetes.io/component: '{{index .path.segments 2}}'
+      annotations:
+        argocd.argoproj.io/sync-wave: '-2'
+    spec:
+      project: platform
+      source:
+        repoURL: https://github.com/REPLACE_ORG/REPLACE_REPO.git
+        path: '{{.path.path}}'
+        targetRevision: HEAD
+      destination:
+        server: '{{.cluster}}'
+        namespace: crossplane-system
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: false
+        syncOptions:
+          - ServerSideApply=true
+          - ApplyOutOfSyncOnly=true
+          - RespectIgnoreDifferences=true
+        retry:
+          limit: 3
+          backoff:
+            duration: 30s
+            factor: 2
+            maxDuration: 10m

@@ -1,0 +1,20 @@
+version: '3'
+
+tasks:
+  run:
+    desc: Run py-hello locally
+    cmds:
+      - uv run uvicorn py_hello.app:create_app --factory --port 8080
+    dir: apps/py-hello
+
+  test:
+    desc: Unit tests
+    cmds:
+      - uv run pytest tests/test_handlers.py
+    dir: apps/py-hello
+
+  test:integration:
+    desc: Integration tests (testcontainers)
+    cmds:
+      - uv run pytest tests/test_store_integration.py
+    dir: apps/py-hello

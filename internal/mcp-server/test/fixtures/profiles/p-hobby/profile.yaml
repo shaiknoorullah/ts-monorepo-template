@@ -1,0 +1,17 @@
+id: p-hobby
+name: Side Project
+tagline: One small box, one zone, one user.
+cost_band_usd:
+  min: 5
+  max: 30
+dimensions:
+  team_size: '1'
+  ha_level: single-az
+  observability_depth: logs+metrics
+layer_defaults:
+  nx: { cloud: saas-opt-in }
+  helm: { replicaCount: 1 }
+  crossplane: { providers: [hetzner] }
+  terraform: { clouds: [hetzner] }
+  ansible: { hosts: [hcloud-vps-1] }
+  secretspec: { provider: keyring }

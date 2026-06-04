@@ -1,0 +1,5 @@
+env: dev
+workload: { replicas: 1 }
+autoscaling: { enabled: false }
+pdb: { enabled: false }
+observability: { tracing: { samplerArg: "1.0" } }

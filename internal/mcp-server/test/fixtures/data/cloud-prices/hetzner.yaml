@@ -1,0 +1,21 @@
+provider: hetzner
+currency: EUR
+last_updated: 2026-05-28
+source: https://www.hetzner.com/cloud
+skus:
+  - id: cx22
+    vcpu: 2
+    ram_gb: 4
+    disk_gb: 40
+    price_monthly: 4.59
+    egress_tb_included: 20
+  - id: cx32
+    vcpu: 4
+    ram_gb: 8
+    disk_gb: 80
+    price_monthly: 7.59
+    egress_tb_included: 20
+storage:
+  - id: volume-ssd
+    unit: gb-month
+    price: 0.0476

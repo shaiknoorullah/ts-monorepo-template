@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: apps-staging
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '-70'
+spec:
+  syncWindows:
+    - kind: allow
+      schedule: '0 9 * * 1-5'
+      duration: 9h
+      applications:
+        - '*'
+      manualSync: true
+      timeZone: UTC
+    - kind: deny
+      schedule: '0 0 * * 0,6'
+      duration: 24h
+      applications:
+        - '*'
+      manualSync: false
+      timeZone: UTC

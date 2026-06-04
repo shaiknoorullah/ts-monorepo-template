@@ -1,0 +1,9 @@
+apiVersion: v2
+name: py-hello
+version: 0.1.0
+appVersion: "0.1.0"
+description: Day-1 Python reference app for lib-chart.
+dependencies:
+  - name: lib-chart
+    version: 0.1.0
+    repository: file://../../lib-chart

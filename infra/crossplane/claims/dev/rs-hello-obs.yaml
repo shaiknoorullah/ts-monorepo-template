@@ -1,0 +1,38 @@
+apiVersion: pn.cloud/v1alpha1
+kind: ServiceObservabilityClaim
+metadata:
+  name: rs-hello
+  namespace: dev
+  labels:
+    app.kubernetes.io/name: rs-hello
+    app.kubernetes.io/component: observability
+spec:
+  env: dev
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rs-hello
+  metricsPath: /metrics
+  metricsPort: 9090
+  scrapeInterval: 30s
+  slos:
+    - name: availability
+      sli: 'sum(rate(http_requests_total{job="rs-hello",status!~"5.."}[5m])) / sum(rate(http_requests_total{job="rs-hello"}[5m]))'
+      objective: 0.99
+      window: 30d
+    - name: latency-p99
+      sli: 'histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="rs-hello"}[5m])) by (le))'
+      objective: 0.5
+      window: 30d
+    - name: error-rate
+      sli: 'sum(rate(http_requests_total{job="rs-hello",status=~"5.."}[5m])) / sum(rate(http_requests_total{job="rs-hello"}[5m]))'
+      objective: 0.01
+      window: 30d
+  dashboardJSON:
+    sourceRef:
+      kind: ConfigMap
+      name: rs-hello-dashboard
+      key: dashboard.json
+  alertingTo: null
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: default

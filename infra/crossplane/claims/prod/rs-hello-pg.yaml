@@ -1,0 +1,28 @@
+apiVersion: pn.cloud/v1alpha1
+kind: PostgresClusterClaim
+metadata:
+  name: rs-hello
+  namespace: prod
+  labels:
+    app.kubernetes.io/name: rs-hello
+    app.kubernetes.io/component: postgres
+spec:
+  env: prod
+  size: m
+  version: '16'
+  databases:
+    - { name: rs_hello, owner: rs_hello_app }
+  pooler:
+    enabled: true
+    replicas: 2
+    mode: transaction
+  backup:
+    enabled: true
+    retentionDays: 30
+  observability:
+    prometheus: true
+    dashboard: true
+  connectionSecret: rs-hello-pg-conn
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: ha

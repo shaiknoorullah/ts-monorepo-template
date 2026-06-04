@@ -1,0 +1,28 @@
+---
+- name: Skip when disabled
+  ansible.builtin.meta: end_host
+  when: not arc_enroll_enabled
+
+- name: Download azcmagent installer
+  ansible.builtin.get_url:
+    url: 'https://aka.ms/azcmagent'
+    dest: /tmp/azcmagent-install.sh
+    mode: '0755'
+
+- name: Install azcmagent
+  ansible.builtin.command:
+    cmd: /bin/bash /tmp/azcmagent-install.sh
+    creates: /usr/bin/azcmagent
+
+- name: Connect azcmagent
+  ansible.builtin.command:
+    cmd: >-
+      azcmagent connect
+      --service-principal-id {{ arc_service_principal_id }}
+      --service-principal-secret {{ arc_service_principal_secret }}
+      --resource-group {{ arc_resource_group }}
+      --tenant-id {{ arc_tenant_id }}
+      --location {{ arc_location }}
+      --subscription-id {{ arc_subscription_id }}
+    creates: /var/opt/azcmagent/agentconfig.json
+  no_log: true

@@ -1,0 +1,26 @@
+version: '3'
+
+tasks:
+  run:
+    desc: Run go-hello locally
+    cmds:
+      - go run ./cmd/server
+    dir: apps/go-hello
+
+  build:
+    desc: Build go-hello binary
+    cmds:
+      - go build -o ../../dist/apps/go-hello/server ./cmd/server
+    dir: apps/go-hello
+
+  test:
+    desc: Unit tests
+    cmds:
+      - go test ./...
+    dir: apps/go-hello
+
+  test:integration:
+    desc: Integration tests (testcontainers)
+    cmds:
+      - go test -tags=integration ./test/integration/...
+    dir: apps/go-hello

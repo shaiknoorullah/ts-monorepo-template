@@ -1,0 +1,9 @@
+apiVersion: v2
+name: rs-hello
+version: 0.1.0
+appVersion: "0.1.0"
+description: Day-1 Rust reference app for lib-chart (OTelCol sidecar path).
+dependencies:
+  - name: lib-chart
+    version: 0.1.0
+    repository: file://../../lib-chart

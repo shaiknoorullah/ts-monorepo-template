@@ -1,0 +1,14 @@
+---
+common_sshd_permit_root_login: 'prohibit-password'
+common_sshd_password_authentication: 'no'
+common_sshd_allow_tcp_forwarding: 'no'
+common_sshd_max_auth_tries: 3
+common_fail2ban_bantime: '1h'
+common_fail2ban_findtime: '10m'
+common_fail2ban_maxretry: 5
+common_auditd_max_log_file_mb: 64
+common_chrony_servers:
+  - '0.pool.ntp.org'
+  - '1.pool.ntp.org'
+  - '2.pool.ntp.org'
+  - '3.pool.ntp.org'

@@ -1,0 +1,7 @@
+profile_id: p-hobby
+cni: flannel
+addons:
+  - metrics-server
+  - cert-manager
+kernel_params:
+  vm.max_map_count: 262144

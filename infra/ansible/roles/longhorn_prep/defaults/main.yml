@@ -1,0 +1,8 @@
+---
+longhorn_disk: '/dev/sdb'
+longhorn_data_dir: '/var/lib/longhorn'
+longhorn_fs_type: 'ext4'
+longhorn_min_free_gb: 30
+longhorn_asymmetric_warn_pct: 25
+longhorn_node_label:
+  node.longhorn.io/create-default-disk: 'true'

@@ -1,0 +1,30 @@
+---
+- name: Render modules-load drop-in
+  ansible.builtin.template:
+    src: k8s-modules.conf.j2
+    dest: /etc/modules-load.d/k8s.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Load kernel modules
+
+# modprobe is unavailable inside ephemeral Docker containers used by molecule;
+# real VMs will have it. Detect and skip on containerized runs to keep the
+# molecule converge gate green (Section 9.9 expectation).
+- name: Detect virtualization type
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - virtual
+
+- name: Load br_netfilter now
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+  when: ansible_virtualization_type not in ['docker', 'container', 'containerd']
+
+- name: Load overlay now
+  community.general.modprobe:
+    name: overlay
+    state: present
+  when: ansible_virtualization_type not in ['docker', 'container', 'containerd']

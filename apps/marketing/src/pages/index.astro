@@ -21,11 +21,18 @@ const org = jsonLdOrganization({
   </Fragment>
 
   <Hero
-    title="Multi-tenant SaaS, opinionated and open"
-    subtitle="The template that ships everything you need to start, and nothing you don't."
-    primaryCta={{ label: 'Get started', href: '/docs' }}
-    secondaryCta={{ label: 'See pricing', href: '/pricing' }}
+    title="From zero to deployed in 3 commands"
+    subtitle="Pick a profile. Run npx create-platform@latest, task launch, task open. You get a polyglot monorepo, a Kubernetes cluster sized to your budget, signed images, observability, secrets, and an Argo CD reconcile loop."
+    primaryCta={{ label: 'Quickstart', href: '/quickstart' }}
+    secondaryCta={{ label: 'Pick a profile', href: '/pricing' }}
   />
+
+  <section data-testid="hero-foot">
+    <p>
+      <a href="/architecture">How it works</a> · <a href="/troubleshoot">Troubleshoot</a> ·
+      <a href="/glossary">Glossary</a>
+    </p>
+  </section>
 
   <FeatureGrid
     features={[

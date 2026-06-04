@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  role_name: cni_install
+  author: platform-infra
+  description: 'Install CNI plugin per kube_network_plugin group_var'
+  license: Apache-2.0
+  min_ansible_version: '2.16'
+dependencies: []

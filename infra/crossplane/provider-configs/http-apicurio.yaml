@@ -1,0 +1,29 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: provider-http-apicurio-creds
+  namespace: crossplane-system
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: platform-store
+    kind: ClusterSecretStore
+  target:
+    name: provider-http-apicurio-creds
+    creationPolicy: Owner
+  data:
+    - secretKey: authorization
+      remoteRef:
+        key: crossplane/apicurio-basic
+---
+apiVersion: http.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: apicurio
+spec:
+  headers:
+    - name: Authorization
+      valueFromSecret:
+        namespace: crossplane-system
+        name: provider-http-apicurio-creds
+        key: authorization

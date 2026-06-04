@@ -1,0 +1,79 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xbucket-multiprovider
+  labels:
+    pn.cloud/bundle: core
+    pn.cloud/variant: singlenode
+spec:
+  compositeTypeRef:
+    apiVersion: pn.cloud/v1alpha1
+    kind: XBucket
+  mode: Pipeline
+  pipeline:
+    - step: load-env
+      functionRef: { name: function-environment-configs }
+      input:
+        apiVersion: environmentconfigs.fn.crossplane.io/v1beta1
+        kind: Input
+        spec:
+          environmentConfigs:
+            - type: Reference
+              ref: { name: env-dev }
+            - type: Reference
+              ref: { name: env-staging }
+            - type: Reference
+              ref: { name: env-prod }
+    - step: render
+      functionRef: { name: function-go-templating }
+      input:
+        apiVersion: gotemplating.fn.crossplane.io/v1beta1
+        kind: GoTemplate
+        source: Inline
+        inline:
+          template: |
+            {{- $provider := .observed.composite.resource.spec.provider }}
+            {{- $name := .observed.composite.resource.metadata.name }}
+            {{- if eq $provider "s3" }}
+            apiVersion: s3.aws.upbound.io/v1beta2
+            kind: Bucket
+            metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: s3-bucket
+              name: {{ $name }}
+            spec:
+              forProvider:
+                bucket: {{ .observed.composite.resource.spec.name }}
+            {{- else if eq $provider "azureblob" }}
+            apiVersion: storage.azure.upbound.io/v1beta2
+            kind: Account
+            metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: azureblob-account
+              name: {{ $name }}
+            spec:
+              forProvider:
+                accountKind: StorageV2
+            {{- else if eq $provider "r2" }}
+            apiVersion: cloudflare.upbound.io/v1alpha1
+            kind: R2Bucket
+            metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: r2-bucket
+              name: {{ $name }}
+            spec:
+              forProvider:
+                name: {{ .observed.composite.resource.spec.name }}
+            {{- else if eq $provider "gcs" }}
+            apiVersion: storage.gcp.upbound.io/v1beta2
+            kind: Bucket
+            metadata:
+              annotations:
+                gotemplating.fn.crossplane.io/composition-resource-name: gcs-bucket
+              name: {{ $name }}
+            spec:
+              forProvider:
+                location: US
+            {{- end }}
+    - step: ready
+      functionRef: { name: function-auto-ready }

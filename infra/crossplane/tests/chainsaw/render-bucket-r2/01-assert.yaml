@@ -1,0 +1,4 @@
+apiVersion: cloudflare.upbound.io/v1alpha1
+kind: R2Bucket
+metadata:
+  name: app-uploads

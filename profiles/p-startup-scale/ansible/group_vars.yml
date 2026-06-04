@@ -1,0 +1,11 @@
+profile_id: p-startup-scale
+cni: cilium
+addons:
+  - metrics-server
+  - cert-manager
+  - longhorn
+  - linkerd
+kernel_params:
+  vm.max_map_count: 262144
+  fs.inotify.max_user_watches: 524288
+  net.core.somaxconn: 65535

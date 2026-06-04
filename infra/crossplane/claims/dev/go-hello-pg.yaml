@@ -1,0 +1,28 @@
+apiVersion: pn.cloud/v1alpha1
+kind: PostgresClusterClaim
+metadata:
+  name: go-hello
+  namespace: dev
+  labels:
+    app.kubernetes.io/name: go-hello
+    app.kubernetes.io/component: postgres
+spec:
+  env: dev
+  size: xs
+  version: '16'
+  databases:
+    - { name: go_hello, owner: go_hello_app }
+  pooler:
+    enabled: true
+    replicas: 1
+    mode: transaction
+  backup:
+    enabled: false
+    retentionDays: 0
+  observability:
+    prometheus: true
+    dashboard: true
+  connectionSecret: go-hello-pg-conn
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: singlenode

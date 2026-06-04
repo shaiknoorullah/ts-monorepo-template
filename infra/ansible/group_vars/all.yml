@@ -1,0 +1,51 @@
+---
+# Kubespray-style knob set — Section 9.8.
+# Profile materializer (Section 11) overrides these per profile.
+
+# Cluster-level
+kube_version: '1.32.13'
+kube_network_plugin: 'calico' # calico | cilium | flannel
+container_manager: 'containerd' # containerd | cri-o
+etcd_deployment_type: 'stacked' # stacked | external
+kube_proxy_mode: 'iptables' # iptables | ipvs
+ingress_provider: 'none' # ingress installed via Argo later
+
+# Networking
+pod_cidr: '10.244.0.0/16'
+service_cidr: '10.96.0.0/12'
+cluster_dns_domain: 'cluster.local'
+
+# Extra kubelet / apiserver flags
+kubelet_extra_args: {}
+apiserver_extra_args: {}
+controller_manager_extra_args: {}
+scheduler_extra_args: {}
+
+# WireGuard mesh (Section 9.13 forensic borrow)
+wireguard_mesh_enabled: false
+wireguard_mesh_cidr: '10.50.0.0/24'
+wireguard_listen_port: 51820
+wireguard_keepalive: 25
+
+# Longhorn prep
+longhorn_data_dir: '/var/lib/longhorn'
+longhorn_node_label:
+  node.longhorn.io/create-default-disk: 'true'
+longhorn_fs_type: 'ext4'
+
+# Optional enrollments
+arc_enroll_enabled: false
+uems_enroll_enabled: false
+
+# Container runtime pins
+containerd_version: '1.7.22'
+crio_version: '1.32.0'
+runc_version: '1.2.1'
+
+# Apt repo pins
+kubernetes_apt_repo: 'https://pkgs.k8s.io/core:/stable:/v1.32/deb/'
+kubernetes_apt_key_url: 'https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key'
+
+# Forensic-borrowed (Section 9.13)
+calico_vxlan_crosszone_fix: true
+region_label: 'ap-south-1'

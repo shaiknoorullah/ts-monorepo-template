@@ -1,0 +1,15 @@
+# Managed by Ansible role: wireguard_mesh
+[Interface]
+PrivateKey = {{ lookup('file', wireguard_keys_dir + '/privatekey') }}
+Address = {{ hostvars[inventory_hostname].ansible_host }}/24
+ListenPort = {{ wireguard_listen_port }}
+
+{% for peer in groups['all'] if peer != inventory_hostname %}
+[Peer]
+# {{ peer }}
+PublicKey = {{ hostvars[peer].wg_public_key }}
+AllowedIPs = {{ hostvars[peer].ansible_host }}/32
+Endpoint = {{ hostvars[peer].public_ip }}:{{ wireguard_listen_port }}
+PersistentKeepalive = {{ wireguard_keepalive }}
+
+{% endfor %}

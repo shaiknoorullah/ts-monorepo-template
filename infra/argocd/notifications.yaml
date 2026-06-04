@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '-50'
+data:
+  service.slack: |
+    token: $slack-token
+  subscriptions: |
+    - recipients:
+        - slack:platform-alerts
+      triggers:
+        - on-sync-failed
+        - on-health-degraded
+    - recipients:
+        - slack:platform-drift
+      triggers:
+        - on-out-of-sync
+    - recipients:
+        - slack:release-bot
+      triggers:
+        - on-promotion-failed
+        - on-analysis-run-failed
+  trigger.on-sync-failed: |
+    - when: app.status.operationState != nil and app.status.operationState.phase in ['Error', 'Failed']
+      send: [app-sync-failed]
+  trigger.on-out-of-sync: |
+    - when: app.status.sync.status == 'OutOfSync'
+      oncePer: app.status.sync.revision
+      send: [app-out-of-sync]
+  trigger.on-health-degraded: |
+    - when: app.status.health.status == 'Degraded'
+      send: [app-health-degraded]
+  trigger.on-promotion-failed: |
+    - when: app.metadata.labels["kargo.akuity.io/promotion"] == "Failed"
+      send: [kargo-promotion-failed]
+  trigger.on-analysis-run-failed: |
+    - when: app.metadata.labels["kargo.akuity.io/analysis"] == "Failed"
+      send: [kargo-analysis-failed]
+  template.app-sync-failed: |
+    message: |
+      :red_circle: *{{.app.metadata.name}}* failed to sync in env *{{.app.metadata.labels.env}}*
+      Project: {{.app.spec.project}}
+      Revision: {{.app.status.sync.revision}}
+      {{- if .app.status.conditions }}
+      Conditions:
+      {{- range .app.status.conditions }} - {{.message}}{{- end }}
+      {{- end }}
+  template.app-out-of-sync: |
+    message: |
+      :warning: *{{.app.metadata.name}}* is OutOfSync in env *{{.app.metadata.labels.env}}*
+      Project: {{.app.spec.project}}
+      Revision: {{.app.status.sync.revision}}
+  template.app-health-degraded: |
+    message: |
+      :rotating_light: *{{.app.metadata.name}}* is Degraded in env *{{.app.metadata.labels.env}}*
+  template.kargo-promotion-failed: |
+    message: |
+      :no_entry: Kargo promotion failed for *{{.app.metadata.name}}*
+  template.kargo-analysis-failed: |
+    message: |
+      :no_entry: Kargo AnalysisRun failed for *{{.app.metadata.name}}*
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: argocd-notifications-secret
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '-50'
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: profile-secret-store
+    kind: ClusterSecretStore
+  target:
+    name: argocd-notifications-secret
+    creationPolicy: Owner
+  data:
+    - secretKey: slack-token
+      remoteRef:
+        key: argocd/slack-bot-token

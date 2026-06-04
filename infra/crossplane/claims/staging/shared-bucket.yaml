@@ -1,0 +1,20 @@
+apiVersion: pn.cloud/v1alpha1
+kind: BucketClaim
+metadata:
+  name: shared-assets
+  namespace: staging
+  labels:
+    app.kubernetes.io/component: bucket
+    pn.cloud/shared: 'true'
+spec:
+  env: staging
+  provider: azureblob
+  name: shared-assets-staging
+  versioning: true
+  publicRead: false
+  lifecycle:
+    expirationDays: 90
+  connectionSecret: shared-assets-conn
+  compositionSelector:
+    matchLabels:
+      pn.cloud/variant: azureblob

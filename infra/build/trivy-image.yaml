@@ -1,0 +1,13 @@
+# Trivy image scan (spec Section 5.12 pass 1). DB pinned by Renovate weekly.
+scan:
+  scanners:
+    - vuln
+    - secret
+vulnerability:
+  ignore-unfixed: true
+severity: CRITICAL
+exit-code: 1
+format: sarif
+output: trivy-image.sarif
+db:
+  skip-update: true

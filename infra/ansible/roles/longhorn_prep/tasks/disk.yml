@@ -1,0 +1,27 @@
+---
+- name: Ensure data dir exists
+  ansible.builtin.file:
+    path: '{{ longhorn_data_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Format longhorn_disk as ext4
+  community.general.filesystem:
+    fstype: '{{ longhorn_fs_type }}'
+    dev: '{{ longhorn_disk }}'
+
+- name: Discover disk UUID
+  ansible.builtin.command:
+    cmd: 'blkid -s UUID -o value {{ longhorn_disk }}'
+  register: longhorn_uuid
+  changed_when: false
+
+- name: Persist mount via fstab using UUID
+  ansible.posix.mount:
+    path: '{{ longhorn_data_dir }}'
+    src: 'UUID={{ longhorn_uuid.stdout }}'
+    fstype: '{{ longhorn_fs_type }}'
+    opts: 'defaults,noatime'
+    state: mounted

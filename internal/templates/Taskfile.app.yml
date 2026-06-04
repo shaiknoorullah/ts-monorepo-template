@@ -1,0 +1,26 @@
+# internal/templates/Taskfile.app.yml
+# Per-app sub-Taskfile template — copied verbatim by `task new:backend` (Phase 4).
+# Convention enforced by spec §4.12: every app must expose dev/test/lint/db:migrate/db:seed.
+version: '3'
+
+vars:
+  APP_NAME: '{{.APP_NAME | default "app"}}'
+
+tasks:
+  dev:
+    desc: Run this app in dev
+    cmds: ['pnpm nx run {{.APP_NAME}}:dev']
+  test:
+    desc: Run this app's tests
+    cmds: ['pnpm nx run {{.APP_NAME}}:test']
+  lint:
+    desc: Lint this app
+    cmds: ['pnpm nx run {{.APP_NAME}}:lint']
+  build:
+    cmds: ['pnpm nx run {{.APP_NAME}}:build']
+  db:migrate:
+    desc: Run database migrations (delegated)
+    cmds: ['echo "db:migrate not yet wired for {{.APP_NAME}} — see Phase 6 (lib-chart pre-sync Job)"']
+  db:seed:
+    desc: Seed dev data (delegated)
+    cmds: ['echo "db:seed not yet wired for {{.APP_NAME}} — see Phase 6 (lib-chart pre-sync Job)"']

@@ -1,0 +1,20 @@
+image:
+  registry: ghcr.io
+  repository: ts-monorepo-template/go-hello
+replicas: 2
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 1000m
+    memory: 256Mi
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+monitoring:
+  enabled: true

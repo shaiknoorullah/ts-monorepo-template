@@ -1,0 +1,6 @@
+env: staging
+workload:
+  replicas: 2
+observability:
+  tracing:
+    samplerArg: '0.5'

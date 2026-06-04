@@ -1,0 +1,9 @@
+# Per-app container build flags (spec Section 5.5 + 5.10).
+# Read by infra/build/container.sh and the GHA matrix workflow.
+language: typescript
+template: internal/templates/dockerfiles/typescript.Dockerfile.template
+binary: cms
+platforms:
+  - linux/amd64
+# arm64 opt-in (doubles GHA build time via QEMU):
+# - linux/arm64

@@ -1,0 +1,44 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "contracts",
+  "projectType": "library",
+  "sourceRoot": "packages/contracts/src",
+  "tags": ["scope:contracts", "lang:proto"],
+  "implicitDependencies": [],
+  "targets": {
+    "generate": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/buf.yaml",
+        "{projectRoot}/buf.gen.yaml",
+        "{projectRoot}/src/proto/**/*.proto"
+      ],
+      "outputs": [
+        "{projectRoot}/gen/go",
+        "{projectRoot}/gen/ts",
+        "{projectRoot}/gen/rs",
+        "{projectRoot}/gen/py"
+      ],
+      "options": {
+        "cwd": "packages/contracts",
+        "commands": ["buf generate", "bash ../contracts-py/scripts/sync-gen.sh"],
+        "parallel": false
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/buf.yaml", "{projectRoot}/src/proto/**/*.proto"],
+      "options": { "cwd": "packages/contracts", "command": "buf lint" }
+    },
+    "breaking-check": {
+      "executor": "nx:run-commands",
+      "inputs": ["{projectRoot}/buf.yaml", "{projectRoot}/src/proto/**/*.proto"],
+      "options": {
+        "cwd": "packages/contracts",
+        "command": "buf breaking --against '.git#branch=main,subdir=packages/contracts'"
+      }
+    }
+  }
+}

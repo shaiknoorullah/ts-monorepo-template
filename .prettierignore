@@ -20,3 +20,9 @@ sbom
 # YAML anchors trip up prettier's parser
 docker/*.compose.yml
 docker/*.compose.yaml
+
+# buf-generated proto bindings — let buf own these files verbatim
+packages/contracts/gen/
+
+# Helm chart templates contain {{ }} Go-template syntax incompatible with prettier
+infra/helm/

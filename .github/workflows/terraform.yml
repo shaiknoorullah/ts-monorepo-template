@@ -1,0 +1,142 @@
+name: terraform
+
+on:
+  pull_request:
+    paths:
+      - 'infra/terraform/**'
+      - '.github/workflows/terraform.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'infra/terraform/**'
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Target env (dev|staging|prod)'
+        required: true
+        default: 'dev'
+      profile:
+        description: 'Profile id'
+        required: true
+        default: 'p-solo'
+  workflow_call:
+    inputs:
+      env:
+        description: 'Target env (dev|staging|prod)'
+        required: false
+        type: string
+        default: 'dev'
+      profile:
+        description: 'Profile id'
+        required: false
+        type: string
+        default: 'p-solo'
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+jobs:
+  tf-validate:
+    name: tf-validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+          terraform_wrapper: false
+      - name: terraform fmt -check
+        run: terraform -chdir=infra/terraform fmt -check -recursive
+      - name: terraform validate per env
+        run: |
+          set -euo pipefail
+          for e in dev staging prod; do
+            (cd infra/terraform/envs/$e && terraform init -backend=false -input=false && terraform validate -no-color)
+          done
+      - uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.53.0
+      - name: tflint
+        run: |
+          set -euo pipefail
+          TFLINT_CFG="$(pwd)/infra/terraform/.tflint.hcl"
+          tflint --init --config="$TFLINT_CFG"
+          for d in infra/terraform/modules/* infra/terraform/envs/*; do
+            [ -d "$d" ] || continue
+            tflint --chdir="$d" --config="$TFLINT_CFG"
+          done
+      - uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: infra/terraform
+          soft_fail: false
+      - name: terraform plan (mock backend) for every env
+        # Provide dummy values for every cloud provider's required env
+        # auth — terraform plan does not call any cloud APIs (no resources
+        # are actually created), but the provider blocks still validate
+        # that *some* credential variable is present. Real credentials
+        # are wired up at tf-apply time via OIDC / repo secrets.
+        env:
+          # Hetzner Cloud rejects anything but a 64-character token at
+          # config-validation time, even when no resources are touched —
+          # pad the dummy out to the required length. All values are
+          # quoted so YAML keeps them as strings (an unquoted run of
+          # zeros parses as the integer `0`).
+          HCLOUD_TOKEN: '0000000000000000000000000000000000000000000000000000000000000000'
+          CLOUDFLARE_API_TOKEN: '0000000000000000000000000000000000000000'
+          OVH_ENDPOINT: 'ovh-eu'
+          OVH_APPLICATION_KEY: 'ci-plan-dummy'
+          OVH_APPLICATION_SECRET: 'ci-plan-dummy'
+          OVH_CONSUMER_KEY: 'ci-plan-dummy'
+          AWS_ACCESS_KEY_ID: 'AKIAIOSFODNN7EXAMPLE'
+          AWS_SECRET_ACCESS_KEY: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+          AWS_REGION: 'us-east-1'
+          GOOGLE_APPLICATION_CREDENTIALS: '/tmp/gcp-dummy.json'
+          ARM_CLIENT_ID: '00000000-0000-0000-0000-000000000000'
+          ARM_CLIENT_SECRET: 'ci-plan-dummy'
+          ARM_SUBSCRIPTION_ID: '00000000-0000-0000-0000-000000000000'
+          ARM_TENANT_ID: '00000000-0000-0000-0000-000000000000'
+        run: |
+          set -euo pipefail
+          echo '{"type":"service_account"}' > /tmp/gcp-dummy.json
+          for e in dev staging prod; do
+            (cd infra/terraform/envs/$e \
+              && terraform init -backend=false -input=false \
+              && terraform plan -lock=false -input=false -no-color \
+                  -var-file=terraform.tfvars \
+                  -out=plan.tfplan \
+              && terraform show -json plan.tfplan > plan.tfplan.json)
+          done
+      - name: conftest test plans
+        run: |
+          set -euo pipefail
+          curl -sL https://github.com/open-policy-agent/conftest/releases/download/v0.56.0/conftest_0.56.0_Linux_x86_64.tar.gz | tar xz
+          sudo mv conftest /usr/local/bin/
+          for e in dev staging prod; do
+            conftest test --policy infra/terraform/policies infra/terraform/envs/$e/plan.tfplan.json
+          done
+
+  tf-apply:
+    name: tf-apply
+    needs: tf-validate
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.env }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+          terraform_wrapper: false
+      - name: terraform apply
+        env:
+          ENV: ${{ inputs.env }}
+          PROFILE: ${{ inputs.profile }}
+        run: |
+          set -euo pipefail
+          stack=infra/terraform/envs/$ENV
+          (cd "$stack" \
+            && terraform init -input=false \
+            && terraform apply -input=false -auto-approve \
+                -var-file="$(pwd)/../../../profiles/$PROFILE/terraform.tfvars")

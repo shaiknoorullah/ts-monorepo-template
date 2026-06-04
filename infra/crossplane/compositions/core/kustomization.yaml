@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - xpostgrescluster-cnpg-singlenode.yaml
+  - xpostgrescluster-cnpg-ha.yaml
+  - xrediscluster-kubeblocks-singlenode.yaml
+  - xrediscluster-kubeblocks-ha.yaml
+  - xrabbitmqcluster-cluster-operator-singlenode.yaml
+  - xrabbitmqcluster-cluster-operator-ha.yaml
+  - xkafkacluster-strimzi-kraft-small.yaml
+  - xkafkacluster-strimzi-kraft-ha.yaml
+  - xkafkatopic-strimzi.yaml
+  - xclickhousecluster-altinity-singlenode.yaml
+  - xclickhousecluster-altinity-ha.yaml
+  - xopensearchcluster-operator-singlenode.yaml
+  - xopensearchcluster-operator-ha.yaml
+  - xbucket-multiprovider.yaml
+  - xbucket-multiprovider-ha.yaml
+  - xsecretbinding-eso.yaml

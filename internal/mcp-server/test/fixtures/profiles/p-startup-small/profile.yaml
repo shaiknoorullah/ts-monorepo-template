@@ -1,0 +1,17 @@
+id: p-startup-small
+name: Early Startup
+tagline: Small team, 3 envs, one cloud + edge.
+cost_band_usd:
+  min: 30
+  max: 150
+dimensions:
+  team_size: '2-5'
+  ha_level: single-az
+  observability_depth: logs+metrics+traces
+layer_defaults:
+  nx: { cloud: saas-enabled }
+  helm: { replicaCount: 2 }
+  crossplane: { providers: [hetzner, cloudflare] }
+  terraform: { clouds: [hetzner, cloudflare] }
+  ansible: { hosts: [hcloud-vps-1, hcloud-vps-2, hcloud-vps-3] }
+  secretspec: { provider: cloud-kms }

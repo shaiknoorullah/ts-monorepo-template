@@ -1,0 +1,15 @@
+{
+  "cacheFrom": [
+    { "type": "gha", "scopePattern": "${app}-${arch}" },
+    { "type": "local", "destPattern": ".cache/buildx/${app}" }
+  ],
+  "cacheTo": [
+    { "type": "gha", "mode": "max", "scopePattern": "${app}-${arch}" }
+  ],
+  "perLanguageMounts": {
+    "go":         ["/go/pkg/mod", "/root/.cache/go-build"],
+    "python":     ["/root/.cache/uv"],
+    "rust":       ["/usr/local/cargo/registry", "/usr/local/cargo/git", "/src/target"],
+    "typescript": ["/pnpm/store"]
+  }
+}

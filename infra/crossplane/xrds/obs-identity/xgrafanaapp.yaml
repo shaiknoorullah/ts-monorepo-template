@@ -1,0 +1,46 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xgrafanaapps.pn.cloud
+spec:
+  group: pn.cloud
+  names:
+    kind: XGrafanaApp
+    plural: xgrafanaapps
+  claimNames:
+    kind: GrafanaAppClaim
+    plural: grafanaappclaims
+  defaultCompositionRef:
+    name: xgrafanaapp-default
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [name, folder]
+              properties:
+                name: { type: string }
+                folder: { type: string }
+                dashboards:
+                  type: array
+                  items:
+                    type: object
+                    required: [uid, json]
+                    properties:
+                      uid: { type: string }
+                      json: { type: string }
+                alertRules:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true
+                contactPoints:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true

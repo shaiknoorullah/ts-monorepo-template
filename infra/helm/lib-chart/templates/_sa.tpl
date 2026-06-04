@@ -1,0 +1,14 @@
+{{- define "lib-chart.serviceAccount" -}}
+{{- if and .Values.serviceAccount .Values.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "lib-chart.serviceAccountName" . }}
+  labels:
+{{ include "lib-chart.labels" . | indent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+{{- end }}
+{{- end -}}

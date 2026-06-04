@@ -1,0 +1,19 @@
+---
+- name: Install chrony
+  ansible.builtin.apt:
+    name: chrony
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Configure chrony servers
+  ansible.builtin.copy:
+    dest: /etc/chrony/sources.d/k8s-cluster.sources
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      {% for srv in common_chrony_servers %}
+      pool {{ srv }} iburst
+      {% endfor %}
+  notify: Restart chrony

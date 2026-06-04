@@ -1,0 +1,6 @@
+---
+longhorn_disk: '/dev/sdb'
+node_labels:
+  node-role.kubernetes.io/worker: ''
+  node.longhorn.io/create-default-disk: 'true'
+node_taints: []

@@ -1,0 +1,27 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xschemaartifacts.pn.cloud
+spec:
+  group: pn.cloud
+  names: { kind: XSchemaArtifact, plural: xschemaartifacts }
+  claimNames: { kind: SchemaArtifactClaim, plural: schemaartifactclaims }
+  defaultCompositionRef: { name: xschemaartifact-apicurio-http }
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [registry, group, artifactId, type, content]
+              properties:
+                registry: { type: string }
+                group: { type: string }
+                artifactId: { type: string }
+                type: { type: string, enum: [AVRO, PROTOBUF, JSON, OPENAPI, ASYNCAPI] }
+                content: { type: string }
+                version: { type: string }

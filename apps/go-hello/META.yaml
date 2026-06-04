@@ -1,0 +1,45 @@
+apiVersion: ts-monorepo-template.dev/v1
+kind: App
+metadata:
+  name: go-hello
+  language: go
+  framework: chi
+spec:
+  schema: platform.app/v1
+  id: go-hello
+  languageVersion: '1.24'
+  capabilities:
+    - http-api
+    - grpc-api
+    - prometheus-metrics
+    - otel-tracing
+  needs:
+    - kind: XPostgresCluster
+      ref: { name: go-hello-pg, env: '{{env}}' }
+      size: small
+      optional: false
+    - kind: XRedisCluster
+      ref: { name: go-hello-redis, env: '{{env}}' }
+      size: small
+      optional: false
+    - kind: XKafkaTopic
+      topics: [user.created]
+      optional: false
+  exposes:
+    services:
+      - { name: go-hello, port: 8080, protocol: http }
+      - { name: go-hello-grpc, port: 9000, protocol: grpc }
+    metrics: { path: /metrics, port: 9090 }
+    health: { path: /healthz, port: 8080 }
+  contracts:
+    - packages/contracts/proto/user/v1/user.proto
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 500m, memory: 256Mi }
+  profiles:
+    p-solo: { replicas: 1, hpa: false }
+    p-hobby: { replicas: 1, hpa: false }
+    p-startup-small: { replicas: 2, hpa: { min: 2, max: 5 } }
+  costEstimate:
+    minimal: 1usd/month
+    typical: 5usd/month

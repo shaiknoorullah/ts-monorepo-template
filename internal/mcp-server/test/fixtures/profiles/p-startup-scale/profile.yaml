@@ -1,0 +1,17 @@
+id: p-startup-scale
+name: Scaling Startup
+tagline: Multi-AZ HA, two clouds, dedicated DBs.
+cost_band_usd:
+  min: 300
+  max: 2000
+dimensions:
+  team_size: '6-20'
+  ha_level: multi-az
+  observability_depth: logs+metrics+traces
+layer_defaults:
+  nx: { cloud: saas-enabled-dte }
+  helm: { replicaCount: 3 }
+  crossplane: { providers: [hetzner, aws, cloudflare] }
+  terraform: { clouds: [hetzner, aws, cloudflare] }
+  ansible: { hosts: [hcloud-vps-1, hcloud-vps-2, hcloud-vps-3] }
+  secretspec: { provider: vault }
