@@ -9,7 +9,7 @@ go 1.25.0
 replace github.com/ts-monorepo-template/contracts/gen/go => ../../packages/contracts/gen/go
 
 require (
-	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/chi/v5 v5.2.4
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/prometheus/client_golang v1.20.5
